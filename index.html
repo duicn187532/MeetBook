@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會議室預約日曆</title>
+    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #calendar {
+            max-width: 900px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>會議室預約日曆</h1>
+    <button onclick="initLIFF()">初始化 LIFF</button>
+    <div id="calendar"></div>
+
+    <script>
+        const LIFF_ID = "你的_LIFF_ID";  // 記得換成你的 LIFF ID
+        const API_URL = "https://你的Deno伺服器/api/events";  // 你的 Deno API 端點
+
+        async function initLIFF() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                console.log("LIFF 初始化成功");
+                loadCalendar();
+            } catch (err) {
+                console.error("LIFF 初始化失敗", err);
+            }
+        }
+
+        async function loadCalendar() {
+            try {
+                const response = await fetch(API_URL);
+                const events = await response.json();
+
+                const calendarEl = document.getElementById("calendar");
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: "dayGridMonth",
+                    events: events,
+                });
+
+                calendar.render();
+            } catch (err) {
+                console.error("載入日曆失敗", err);
+            }
+        }
+
+        window.onload = () => {
+            initLIFF();
+        };
+    </script>
+</body>
+</html>
