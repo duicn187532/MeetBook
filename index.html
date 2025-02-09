@@ -3,60 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>會議室預約日曆</title>
+    <title>会议室预订</title>
     <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        #calendar {
-            max-width: 900px;
-            margin: 20px auto;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #calendar { max-width: 900px; margin: 20px auto; }
     </style>
 </head>
 <body>
-    <h1>會議室預約日曆</h1>
-    <button onclick="initLIFF()">初始化 LIFF</button>
+    <h1>会议室预订日历</h1>
     <div id="calendar"></div>
 
     <script>
-        const LIFF_ID = "2006866570-Al0e1xqZ";  // 記得換成你的 LIFF ID
-        const API_URL = "https://meetbook.deno.dev/api/events"; // 更新為你的 Deno Deploy URL
+        const API_URL = "https://meetbook.deno.dev/api/events"; // 替换成你的后端 API 地址
+
+        async function fetchEvents() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                return data.data.map(event => ({
+                    title: `房间 ${event.room}`,
+                    start: event.startTime,
+                    end: event.endTime
+                }));
+            } catch (err) {
+                console.error("获取日历数据失败:", err);
+                return [];
+            }
+        }
 
         async function initLIFF() {
             try {
-                await liff.init({ liffId: LIFF_ID });
+                await liff.init({ liffId: "2006866570-Al0e1xqZ" });
                 console.log("LIFF 初始化成功");
-                loadCalendar();
             } catch (err) {
-                console.error("LIFF 初始化失敗", err);
+                console.error("LIFF 初始化失败", err);
             }
         }
 
-        async function loadCalendar() {
-            try {
-                const response = await fetch(API_URL);
-                const events = await response.json();
+        document.addEventListener("DOMContentLoaded", async function () {
+            await initLIFF();
+            const calendarEl = document.getElementById("calendar");
+            const events = await fetchEvents();
 
-                const calendarEl = document.getElementById("calendar");
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: "dayGridMonth",
-                    events: events,
-                });
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: "dayGridMonth",
+                events: events,
+                dateClick: function(info) {
+                    const user = liff.getProfile().then(profile => profile.userId); // 获取 LINE 用户 ID
+                    const room = prompt("请输入会议室编号 (如 A101):");
+                    if (!room) return;
 
-                calendar.render();
-            } catch (err) {
-                console.error("載入日曆失敗", err);
-            }
-        }
+                    const startTime = info.dateStr + "T10:00:00Z"; // 默认 10:00
+                    const endTime = info.dateStr + "T11:00:00Z"; // 默认 11:00
 
-        window.onload = () => {
-            initLIFF();
-        };
+                    fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user, room, startTime, endTime })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert("预订失败: " + data.error);
+                        } else {
+                            alert("预订成功 ✅");
+                            location.reload(); // 重新加载日历
+                        }
+                    })
+                    .catch(err => console.error("提交失败:", err));
+                }
+            });
+
+            calendar.render();
+        });
     </script>
 </body>
 </html>
+
