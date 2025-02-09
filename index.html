@@ -10,23 +10,37 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         #calendar { max-width: 900px; margin: 20px auto; }
+        #eventList { max-width: 600px; margin: 20px auto; text-align: left; }
+        #eventList ul { list-style: none; padding: 0; }
+        #eventList li { padding: 5px; border-bottom: 1px solid #ddd; }
+        #bookingForm { display: none; }
     </style>
 </head>
 <body>
     <h1>会议室预订日历</h1>
     <div id="calendar"></div>
-
+    <div id="eventList" style="display: none;"></div>
+    <button id="addBooking" style="display: none;">新增预约</button>
+    
     <script>
-        const API_URL = "https://meetingbooking.deno.dev/api/bookings"; // 替换成你的后端 API 地址
+        const API_URL = "https://meetingbooking.deno.dev/api/bookings";
 
         async function fetchEvents() {
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
-                return data.data.map(event => ({
-                    title: `房间 ${event.room}`,
+                const now = new Date().toISOString();
+
+                // 过滤过期的预订，并获取最近的 3 条
+                const upcomingEvents = data.data
+                    .filter(event => event.endTime > now)
+                    .slice(0, 3);
+
+                return upcomingEvents.map(event => ({
+                    title: `房间 ${event.room} \n ${event.startTime} - ${event.endTime}`,
                     start: event.startTime,
-                    end: event.endTime
+                    end: event.endTime,
+                    extendedProps: event
                 }));
             } catch (err) {
                 console.error("获取日历数据失败:", err);
@@ -47,39 +61,52 @@
             await initLIFF();
             const calendarEl = document.getElementById("calendar");
             const events = await fetchEvents();
-
+            
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: "dayGridMonth",
                 events: events,
-                dateClick: function(info) {
-                    const user = liff.getProfile().then(profile => profile.userId); // 获取 LINE 用户 ID
-                    const room = prompt("请输入会议室编号 (如 A101):");
-                    if (!room) return;
-
-                    const startTime = info.dateStr + "T10:00:00Z"; // 默认 10:00
-                    const endTime = info.dateStr + "T11:00:00Z"; // 默认 11:00
-
-                    fetch(API_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ user, room, startTime, endTime })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert("预订失败: " + data.error);
-                        } else {
-                            alert("预订成功 ✅");
-                            location.reload(); // 重新加载日历
-                        }
-                    })
-                    .catch(err => console.error("提交失败:", err));
+                dateClick: async function(info) {
+                    const res = await fetch(API_URL);
+                    const data = await res.json();
+                    const selectedDate = info.dateStr;
+                    const dayEvents = data.data.filter(event => event.startTime.startsWith(selectedDate));
+                    
+                    const eventList = document.getElementById("eventList");
+                    eventList.innerHTML = "<h3>当天预订信息:</h3><ul>" + 
+                        (dayEvents.length ? dayEvents.map(event => `<li>${event.startTime} - ${event.endTime} | ${event.room}</li>`).join('') : "<li>无预订</li>") + 
+                        "</ul>";
+                    eventList.style.display = "block";
+                    document.getElementById("addBooking").style.display = "block";
                 }
             });
 
+            document.getElementById("addBooking").addEventListener("click", function() {
+                const user = liff.getProfile().then(profile => profile.userId);
+                const room = prompt("请输入会议室编号 (如 A101):");
+                if (!room) return;
+                
+                const startTime = prompt("请输入开始时间 (YYYY-MM-DDTHH:MM:SSZ):");
+                const endTime = prompt("请输入结束时间 (YYYY-MM-DDTHH:MM:SSZ):");
+                
+                fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user, room, startTime, endTime })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("预订失败: " + data.error);
+                    } else {
+                        alert("预订成功 ✅");
+                        location.reload();
+                    }
+                })
+                .catch(err => console.error("提交失败:", err));
+            });
+            
             calendar.render();
         });
     </script>
 </body>
 </html>
-
