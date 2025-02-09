@@ -7,37 +7,53 @@
     <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         #calendar { max-width: 900px; margin: 20px auto; }
-        #eventList { max-width: 600px; margin: 20px auto; text-align: left; }
-        #eventList ul { list-style: none; padding: 0; }
-        #eventList li { padding: 5px; border-bottom: 1px solid #ddd; }
-        #bookingForm { display: none; }
+        #eventModal, #bookingModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body>
     <h1>会议室预订日历</h1>
     <div id="calendar"></div>
-    <div id="eventList" style="display: none;"></div>
-    <button id="addBooking" style="display: none;">新增预约</button>
+    <div class="modal-overlay" id="overlay"></div>
+
+    <div id="eventModal">
+        <h3>当天预订信息</h3>
+        <ul id="eventList"></ul>
+        <button onclick="closeModal('eventModal')">关闭</button>
+        <button onclick="openModal('bookingModal')">新增预约</button>
+    </div>
+
+    <div id="bookingModal">
+        <h3>新增预约</h3>
+        <label>会议室编号:</label>
+        <input type="text" id="roomInput" placeholder="如 A101"><br>
+        <label>开始时间:</label>
+        <input type="text" id="startTimePicker"><br>
+        <label>结束时间:</label>
+        <input type="text" id="endTimePicker"><br>
+        <button onclick="submitBooking()">提交</button>
+        <button onclick="closeModal('bookingModal')">取消</button>
+    </div>
     
     <script>
         const API_URL = "https://meetingbooking.deno.dev/api/bookings";
+        let selectedDate = "";
 
         async function fetchEvents() {
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
                 const now = new Date().toISOString();
-
-                // 过滤过期的预订，并获取最近的 3 条
                 const upcomingEvents = data.data
                     .filter(event => event.endTime > now)
                     .slice(0, 3);
-
                 return upcomingEvents.map(event => ({
-                    title: `房间 ${event.room} \n ${event.startTime} - ${event.endTime}`,
+                    title: `房间 ${event.room} \n ${formatTime(event.startTime)} - ${formatTime(event.endTime)}`,
                     start: event.startTime,
                     end: event.endTime,
                     extendedProps: event
@@ -61,52 +77,57 @@
             await initLIFF();
             const calendarEl = document.getElementById("calendar");
             const events = await fetchEvents();
-            
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: "dayGridMonth",
                 events: events,
                 dateClick: async function(info) {
+                    selectedDate = info.dateStr;
                     const res = await fetch(API_URL);
                     const data = await res.json();
-                    const selectedDate = info.dateStr;
                     const dayEvents = data.data.filter(event => event.startTime.startsWith(selectedDate));
-                    
-                    const eventList = document.getElementById("eventList");
-                    eventList.innerHTML = "<h3>当天预订信息:</h3><ul>" + 
-                        (dayEvents.length ? dayEvents.map(event => `<li>${event.startTime} - ${event.endTime} | ${event.room}</li>`).join('') : "<li>无预订</li>") + 
-                        "</ul>";
-                    eventList.style.display = "block";
-                    document.getElementById("addBooking").style.display = "block";
+                    document.getElementById("eventList").innerHTML = dayEvents.length 
+                        ? dayEvents.map(event => `<li>${formatTime(event.startTime)} - ${formatTime(event.endTime)} | ${event.room}</li>`).join('')
+                        : "<li>无预订</li>";
+                    openModal('eventModal');
                 }
             });
-
-            document.getElementById("addBooking").addEventListener("click", function() {
-                const user = liff.getProfile().then(profile => profile.userId);
-                const room = prompt("请输入会议室编号 (如 A101):");
-                if (!room) return;
-                
-                const startTime = prompt("请输入开始时间 (YYYY-MM-DDTHH:MM:SSZ):");
-                const endTime = prompt("请输入结束时间 (YYYY-MM-DDTHH:MM:SSZ):");
-                
-                fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user, room, startTime, endTime })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        alert("预订失败: " + data.error);
-                    } else {
-                        alert("预订成功 ✅");
-                        location.reload();
-                    }
-                })
-                .catch(err => console.error("提交失败:", err));
-            });
-            
             calendar.render();
+            flatpickr("#startTimePicker", { enableTime: true, noCalendar: false, dateFormat: "Y-m-d H:00", time_24hr: true });
+            flatpickr("#endTimePicker", { enableTime: true, noCalendar: false, dateFormat: "Y-m-d H:00", time_24hr: true });
         });
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit" });
+        }
+
+        function openModal(id) {
+            document.getElementById("overlay").style.display = "block";
+            document.getElementById(id).style.display = "block";
+        }
+
+        function closeModal(id) {
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById(id).style.display = "none";
+        }
+
+        function submitBooking() {
+            const user = liff.getProfile().then(profile => profile.userId);
+            const room = document.getElementById("roomInput").value;
+            const startTime = document.getElementById("startTimePicker").value + ":00Z";
+            const endTime = document.getElementById("endTimePicker").value + ":00Z";
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user, room, startTime, endTime })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.error ? "预订失败: " + data.error : "预订成功 ✅");
+                location.reload();
+            })
+            .catch(err => console.error("提交失败:", err));
+        }
     </script>
 </body>
 </html>
