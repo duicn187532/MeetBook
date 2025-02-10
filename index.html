@@ -119,6 +119,21 @@
 
         //const API_URL = "http://localhost:8000/api/bookings";
         const API_URL = "https://meetingbooking.deno.dev/api/bookings";
+    
+        async function liffInit() {
+            try {
+                await liff.init({ liffId: "2006866570-Al0e1xqZ" }); // 🔹 替換為你的 LIFF ID
+                if (!liff.isLoggedIn()) {
+                    liff.login(); // ✅ 如果用戶沒登入，跳轉到登入頁面
+                } else {
+                    const profile = await liff.getProfile(); // ✅ 取得用戶資訊
+                    document.getElementById("userInput").value = profile.displayName; // ✅ 自動填入使用者名稱
+                }
+            } catch (error) {
+                console.error("LIFF 初始化失敗:", error);
+            }
+        }
+    
 
         function getRoomColor(room) {
             const colors = { "A101": "blue", "A102": "red", "A103": "green" };
@@ -144,7 +159,7 @@
         
         document.addEventListener("DOMContentLoaded", async function () {
             await renderCalendar("A101");
-        
+            await liffInit();
         });
         async function renderCalendar(room) {
             const calendarEl = document.getElementById(`${room}-calendar`);
@@ -367,6 +382,19 @@
                     alert("預訂失敗: " + result.error);
                 } else {
                     alert("預訂成功 ✅");
+                    // ✅ 回傳預約資訊給 LINE Chatbot
+                    if (liff.isInClient()) {
+                        liff.sendMessages([
+                            {
+                                type: "text",
+                                text: `✅ 預約成功！\n📅 日期: ${selectedDate}\n🕒 時間: ${startTime} - ${endTime}\n🏢 會議室: ${room}`
+                            }
+                        ]).then(() => {
+                            liff.closeWindow(); // ✅ 完成後關閉 LIFF
+                        }).catch((err) => {
+                            console.error("傳送訊息失敗:", err);
+                        });
+                    }
                     closeModal('bookingModal');
                     location.reload();
                 }
