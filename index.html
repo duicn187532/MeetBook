@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>會議室預定</title>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
@@ -118,22 +117,7 @@
         let activeCalendar = null; // 記錄當前顯示的日曆
 
         //const API_URL = "http://localhost:8000/api/bookings";
-        const API_URL = "https://meetingbooking.deno.dev/api/bookings";
-    
-        async function liffInit() {
-            try {
-                await liff.init({ liffId: "2006866570-Al0e1xqZ" }); // 🔹 替換為你的 LIFF ID
-                if (!liff.isLoggedIn()) {
-                    liff.login(); // ✅ 如果用戶沒登入，跳轉到登入頁面
-                } else {
-                    const profile = await liff.getProfile(); // ✅ 取得用戶資訊
-                    document.getElementById("userInput").value = profile.displayName; // ✅ 自動填入使用者名稱
-                }
-            } catch (error) {
-                console.error("LIFF 初始化失敗:", error);
-            }
-        }
-    
+        const API_URL = "https://meetingbooking.deno.dev/api/bookings";    
 
         function getRoomColor(room) {
             const colors = { "A101": "blue", "A102": "red", "A103": "green" };
@@ -159,7 +143,6 @@
         
         document.addEventListener("DOMContentLoaded", async function () {
             await renderCalendar("A101");
-            await liffInit();
         });
         async function renderCalendar(room) {
             const calendarEl = document.getElementById(`${room}-calendar`);
