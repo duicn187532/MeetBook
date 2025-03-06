@@ -1,7 +1,7 @@
 // src/components/ViewToggle.tsx
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ViewMode } from "../types";
+import { ViewMode } from "../types/common";
 
 interface ViewToggleProps {
   selectedView: ViewMode;
