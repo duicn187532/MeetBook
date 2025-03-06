@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
-import Header from "../components/Header";
 import TitleDescription from "../components/TitleDescription";
 import RoomSelector from "../components/RoomSelector";
 import Equipment from "../components/EquipmentDescription";
@@ -14,7 +13,7 @@ import ViewToggle from "../components/ViewToggle";
 import CalendarContent from "../components/CalendarContent";
 import BookingModal from "../components/BookingModal";
 
-import { Meeting, ViewMode } from "../types";
+import { Meeting, ViewMode } from "../types/common";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -22,7 +21,7 @@ dayjs.extend(timezone);
 const API_URL = "https://meetingbooking.deno.dev/api/bookings";
 
 const RoomScheduleView = () => {
-  const [selectedRoom, setSelectedRoom] = useState("A102");
+  const [selectedRoom, setSelectedRoom] = useState("A101");
   const [selectedView, setSelectedView] = useState<ViewMode>("Day");
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -56,9 +55,10 @@ const RoomScheduleView = () => {
           const originalEnd = event.endTime;
           const meetingDate = dayjs.utc(event.startTime).tz("Asia/Taipei").format("YYYY-MM-DD");
           return {
-            id: event.id || event._id || Math.random().toString(),
+            id: event.id,
             title: event.title || `${dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm")} ~ ${dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm")}`,
             organizer: event.user,
+            room: room,
             startTime: dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm"),
             endTime: dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm"),
             date: meetingDate,
@@ -132,14 +132,12 @@ const RoomScheduleView = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-sm relative">
-      <Header />
+    <div className="flex flex-col h-screen bg-white text-sm relative">
       <TitleDescription />
       <RoomSelector
         selectedRoom={selectedRoom}
         onSelectRoom={(room) => {
           setSelectedRoom(room);
-          fetchEvents(room);
         }}
       />
       <Equipment />

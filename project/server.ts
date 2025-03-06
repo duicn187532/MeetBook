@@ -1,6 +1,6 @@
 import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import "https://deno.land/std@0.177.0/dotenv/load.ts";
-import { getAllBooked, addBooking } from "./controller.ts";
+import { getAllBooked, addBooking, deleteBooking } from "./controller.ts";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 
 const app = new Application();
@@ -9,7 +9,7 @@ const router = new Router();
 // ✅ 启用 CORS
 app.use(oakCors({
   origin: "*",
-  methods: ["GET", "POST", "OPTIONS"],
+  methods: ["GET", "POST", "DELETE", "UPDATE"],
   allowedHeaders: ["Content-Type"],
 }));
 
@@ -22,6 +22,11 @@ router.get("/api/bookings", async (ctx) => {
 router.post("/api/bookings", async (ctx) => {
   console.log("📥 收到 POST /api/bookings 请求");
   return await addBooking(ctx);
+});
+
+router.delete("/api/bookings/:id", async (ctx) => {
+  console.log("📥 收到 Delete /api/bookings 请求, id:", ctx.params.id);
+  return await deleteBooking(ctx);
 });
 
 app.use(router.routes());

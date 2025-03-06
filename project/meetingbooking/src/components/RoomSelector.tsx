@@ -6,12 +6,12 @@ interface RoomSelectorProps {
 }
 
 const RoomSelector = ({ selectedRoom, onSelectRoom }: RoomSelectorProps) => (
-  <div className="flex bg-white mt-1">
+  <div className="flex bg-white mt-1 pl-5 pr-28 drop-shadow-xs border-b">
     {["A101", "A102", "A103"].map((room) => (
       <button
         key={room}
         onClick={() => onSelectRoom(room)}
-        className={`flex-1 py-2 text-center ${
+        className={`flex-1 py-2 text-center rounded-t-xl ${
           selectedRoom === room ? "bg-red-500 text-white" : "bg-gray-100 text-gray-700"
         }`}
       >
