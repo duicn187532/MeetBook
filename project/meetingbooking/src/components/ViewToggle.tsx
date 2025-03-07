@@ -1,7 +1,7 @@
 // src/components/ViewToggle.tsx
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ViewMode } from "../types";
+import { ViewMode } from "../types/common";
 
 interface ViewToggleProps {
   selectedView: ViewMode;
@@ -45,18 +45,18 @@ const ViewToggle = ({
   updateBookingDate,
 }: ViewToggleProps) => {
   // 日視圖：t-2 ~ t+2
-  const displayedDates = [-2, -1, 0, 1, 2].map((offset) =>
+  const displayedDates = [0, 1, 2, 3, 4, 5].map((offset) =>
     currentDate.add(offset, "day")
   );
 
   const handlePrevDays = () => {
-    const newDate = currentDate.subtract(5, "day");
+    const newDate = currentDate.subtract(1, "day");
     setCurrentDate(newDate);
     updateBookingDate(newDate);
   };
 
   const handleNextDays = () => {
-    const newDate = currentDate.add(5, "day");
+    const newDate = currentDate.add(1, "day");
     setCurrentDate(newDate);
     updateBookingDate(newDate);
   };
@@ -68,7 +68,7 @@ const ViewToggle = ({
   );
 
   return (
-    <div className="p-2 bg-pink-50">
+    <div className="p-2 flex flex-col bg-[#FFE6E6] items-center rounded-t-2xl">
       <div className="flex rounded-full bg-white w-fit p-0.5">
         {["Day", "Week", "Month"].map((view) => (
           <button
@@ -83,9 +83,9 @@ const ViewToggle = ({
         ))}
       </div>
       {selectedView === "Day" && (
-        <div className="flex justify-between items-center mt-2">
-          <button onClick={handlePrevDays} className="p-1 rounded-full bg-white">
-            <ChevronLeft className="w-3 h-3" />
+        <div className="flex w-full justify-between items-center mt-2">
+          <button onClick={handlePrevDays} className="p-1 rounded-full bg-black">
+            <ChevronLeft className=" text-white w-3 h-3" />
           </button>
           <div className="flex space-x-3">
             {displayedDates.map((date) => (
@@ -97,8 +97,8 @@ const ViewToggle = ({
                 }}
                 className={`text-center px-2 py-1 rounded ${
                   date.isSame(currentDate, "day")
-                    ? "bg-red-500 text-white"
-                    : "bg-gray-100 text-gray-700"
+                    ? "bg-white text-red-500 rounded-lg"
+                    : "text-gray-700"
                 }`}
               >
                 <div className="text-xs font-semibold">{date.format("D")}</div>
@@ -106,8 +106,8 @@ const ViewToggle = ({
               </button>
             ))}
           </div>
-          <button onClick={handleNextDays} className="p-1 rounded-full bg-white">
-            <ChevronRight className="w-3 h-3" />
+          <button onClick={handleNextDays} className="p-1 rounded-full bg-black">
+            <ChevronRight className="w-3 h-3 text-white" />
           </button>
         </div>
       )}
