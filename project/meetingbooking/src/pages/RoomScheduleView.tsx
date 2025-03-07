@@ -5,16 +5,16 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-
-import Header from "../components/Header";
 import TitleDescription from "../components/TitleDescription";
 import RoomSelector from "../components/RoomSelector";
 import Equipment from "../components/EquipmentDescription";
 import ViewToggle from "../components/ViewToggle";
 import CalendarContent from "../components/CalendarContent";
 import BookingModal from "../components/BookingModal";
+import LoadingOverlay from "../components/LoadingOverlay";
 
-import { Meeting, ViewMode } from "../types";
+
+import { Meeting, ViewMode } from "../types/common";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -22,18 +22,25 @@ dayjs.extend(timezone);
 const API_URL = "https://meetingbooking.deno.dev/api/bookings";
 
 const RoomScheduleView = () => {
-  const [selectedRoom, setSelectedRoom] = useState("A102");
+  const [selectedRoom, setSelectedRoom] = useState("A101");
   const [selectedView, setSelectedView] = useState<ViewMode>("Day");
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [loading, setLoading] = useState(false); // 新增 loading state
   const [bookingForm, setBookingForm] = useState({
     title: "",
     user: "",
+    room: selectedRoom,
     selectedDate: currentDate.format("YYYY-MM-DD"),
     startTime: "",
     endTime: "",
+    editPassword: "",
   });
+  useEffect(() => {
+    setBookingForm((prev) => ({ ...prev, room: selectedRoom }));
+  }, [selectedRoom]);
+
   const [errorMessage, setErrorMessage] = useState("");
 
   const getRoomColor = (room: string) => {
@@ -46,6 +53,7 @@ const RoomScheduleView = () => {
   };
 
   async function fetchEvents(room: string) {
+    setLoading(true);
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
@@ -56,9 +64,10 @@ const RoomScheduleView = () => {
           const originalEnd = event.endTime;
           const meetingDate = dayjs.utc(event.startTime).tz("Asia/Taipei").format("YYYY-MM-DD");
           return {
-            id: event.id || event._id || Math.random().toString(),
+            id: event.id,
             title: event.title || `${dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm")} ~ ${dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm")}`,
             organizer: event.user,
+            room: room,
             startTime: dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm"),
             endTime: dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm"),
             date: meetingDate,
@@ -71,7 +80,10 @@ const RoomScheduleView = () => {
       setMeetings(events);
     } catch (err) {
       console.error("取得會議資料失敗:", err);
+      setErrorMessage("取得會議資料失敗:");
       setMeetings([]);
+    }finally {
+      setLoading(false);
     }
   }
 
@@ -87,8 +99,8 @@ const RoomScheduleView = () => {
   };
 
   async function submitBooking() {
-    const {title, user, selectedDate, startTime, endTime } = bookingForm;
-    if (!selectedDate || !user || !startTime || !endTime) {
+    const {title, user, room, selectedDate, startTime, endTime, editPassword } = bookingForm;
+    if (!selectedDate || !user || !room || !startTime || !endTime) {
       setErrorMessage("請填寫所有欄位！");
       return;
     }
@@ -107,11 +119,14 @@ const RoomScheduleView = () => {
     const bookingData = {
       title,
       user,
-      room: selectedRoom,
+      room,
       startTime: start.toISOString(),
       endTime: end.toISOString(),
+      editPassword
     };
 
+    setLoading(true);
+    
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -128,18 +143,18 @@ const RoomScheduleView = () => {
       }
     } catch (error) {
       alert("提交失敗，請稍後重試！");
+    } finally{
+      setLoading(false);
     }
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-sm relative">
-      <Header />
+    <div className="flex flex-col h-screen bg-white text-sm relative">
       <TitleDescription />
       <RoomSelector
         selectedRoom={selectedRoom}
         onSelectRoom={(room) => {
           setSelectedRoom(room);
-          fetchEvents(room);
         }}
       />
       <Equipment />
@@ -155,10 +170,12 @@ const RoomScheduleView = () => {
         currentDate={currentDate}
         meetings={meetings}
         bookingForm={bookingForm}
+        onFetchEvents={fetchEvents} // 傳入父元件的 fetchEvents
+
       />
       <button
         onClick={() => setShowBookingModal(true)}
-        className="absolute bottom-4 right-4 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg"
+        className="absolute bottom-4 right-4 w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center shadow-lg"
       >
         <span className="text-xl">+</span>
       </button>
@@ -171,6 +188,7 @@ const RoomScheduleView = () => {
           onClose={() => setShowBookingModal(false)}
         />
       )}
+      {loading && <LoadingOverlay />}
     </div>
   );
 };

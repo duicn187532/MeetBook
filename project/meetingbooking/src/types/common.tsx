@@ -8,7 +8,8 @@ export interface Meeting {
     endTime: string;
     date: string; // "YYYY-MM-DD"
     color: string;
-    // 保留原始時間用來計算位置
+    room: string;
+    cancelled: boolean;
     originalStart: string;
     originalEnd: string;
   }
