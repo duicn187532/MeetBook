@@ -2,12 +2,23 @@ import { todos } from "./db.ts"; // 引入 MongoDB 实例
 
 async function getAllBooked(ctx: any) {
     try {
-        // console.log("🔍 正在查询数据库...");
         const allBookings = await todos.find().toArray();
-        // console.log("✅ 查询结果:", allBookings);
         
         ctx.response.status = 200;
         ctx.response.body = { data: allBookings };
+    } catch (error) {
+        console.error("❌ 获取数据失败:", error);
+        ctx.response.status = 500;
+        ctx.response.body = { error: "获取数据失败" };
+    }
+}
+
+async function getActiveBooked(ctx: any) {
+    try {
+        const allActiveBookings = await todos.find({ cancelled: false }).toArray();
+        
+        ctx.response.status = 200;
+        ctx.response.body = { data: allActiveBookings };
     } catch (error) {
         console.error("❌ 获取数据失败:", error);
         ctx.response.status = 500;
@@ -29,6 +40,7 @@ async function addBooking(ctx: any) {
         // 預訂衝突檢測
         const conflict = await todos.findOne({
             room,
+            cancelled: false,
             $or: [
                 { startTime: { $lte: endTime, $gte: startTime } },
                 { endTime: { $lte: endTime, $gte: startTime } },
@@ -45,7 +57,7 @@ async function addBooking(ctx: any) {
         const id = crypto.randomUUID();
 
         // 插入新的預訂，使用隨機 id 作為自定義 id
-        const result = await todos.insertOne({ id: id, title, user, room, startTime, endTime });
+        const result = await todos.insertOne({ id: id, title, user, room, cancelled: false, startTime, endTime });
         ctx.response.status = 201;
         ctx.response.body = { id: result.insertedId, message: "預訂成功 ✅"};
     } catch (error) {
@@ -55,32 +67,66 @@ async function addBooking(ctx: any) {
     }
 }
 
-async function deleteBooking(ctx: any) {
-    try {
-        const { id } = ctx.params;
-        if (!id) {
-            ctx.response.status = 400;
-            ctx.response.body = { error: "缺少必要的 id" };
-            return;
+async function updateBooking(ctx: any) {
+  try {
+    const { id, editPassword } = ctx.params;
+    if (!id) {
+      ctx.response.status = 400;
+      ctx.response.body = { error: "缺少必要的 id" };
+      return;
+    }
+
+    // 根據 id 先找到資料
+    const booking = await todos.findOne({ id: id });
+    if (!booking) {
+      ctx.response.status = 404;
+      ctx.response.body = { error: "找不到該筆資料" };
+      return;
+    }
+
+    // 如果該資料有設定編輯密碼，則比對參數中的密碼
+    if (booking.editPassword) {
+      if (!editPassword || booking.editPassword !== editPassword) {
+        ctx.response.status = 403;
+        ctx.response.body = { error: "編輯密碼錯誤，無法更新資料" };
+        return;
+      }
+    }      
+      // 檢查是否有請求主體
+      // 使用正確的方法獲取 body
+      try {
+        // 根據 Oak v17 版本的正確用法
+        const body = await ctx.request.body.json();
+        console.log("收到的更新資料:", body);
+        
+        if (!body || Object.keys(body).length === 0) {
+          ctx.response.status = 400;
+          ctx.response.body = { error: "更新資料不能為空" };
+          return;
         }
         
-        // 根據 _id 來執行刪除操作
-        const result = await todos.deleteOne({ id: id });
+        // 執行更新，使用 $set 更新指定欄位
+        const result = await todos.updateOne({ id: id }, { $set: body });
         
-        // 根據結果判斷是否有刪除成功
-        if (result.deletedCount === 0) {
-            ctx.response.status = 404;
-            ctx.response.body = { error: "未找到符合的資料" };
-            return;
+        if (result.modifiedCount === 0) {
+          ctx.response.status = 404;
+          ctx.response.body = { error: "未找到資料或資料未更新" };
+          return;
         }
         
         ctx.response.status = 200;
-        ctx.response.body = { success: true, message: "刪除成功 ✅" };
+        ctx.response.body = { success: true, message: "更新成功" };
+      } catch (bodyError) {
+        console.error("解析請求體失敗:", bodyError);
+        ctx.response.status = 400;
+        ctx.response.body = { error: "無法解析請求體" };
+      }
     } catch (error) {
-        console.error("❌ 刪除数据失败:", error);
-        ctx.response.status = 500;
-        ctx.response.body = { error: "刪除数据失败" };
+      console.error("更新資料失敗:", error);
+      ctx.response.status = 500;
+      ctx.response.body = { error: "更新資料失敗" };
     }
-}
+  }
+    
 
-export { getAllBooked, addBooking, deleteBooking };
+export { getAllBooked, addBooking, updateBooking, getActiveBooked };

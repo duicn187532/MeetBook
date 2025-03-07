@@ -4,57 +4,83 @@ import dayjs from "dayjs";
 import { ChevronRight } from "lucide-react";
 import { Meeting, ViewMode } from "../types/common";
 import MeetingInfoModal from "./MeetingInfoModal";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import LoadingOverlay from "./LoadingOverlay";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface CalendarContentProps {
   selectedView: ViewMode;
   currentDate: dayjs.Dayjs;
   meetings: Meeting[];
   bookingForm: { selectedDate: string };
+  onFetchEvents: (room: string) => void;
 }
-
-const TIMELINE_START_HOUR = 9;
-const TIMELINE_END_HOUR = 18;
-const TIMELINE_DURATION_MIN =
-  (TIMELINE_END_HOUR - TIMELINE_START_HOUR) * 60; // 540 分鐘
 
 const CalendarContent = ({
   selectedView,
   currentDate,
   meetings,
   bookingForm,
+  onFetchEvents,
 }: CalendarContentProps) => {
-  // 狀態：用來存放被點擊的會議資料
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-
-  // 刪除與修改的回呼範例（你可以改成呼叫後端 API）
-  const handleDelete = async () => {
-    if (selectedMeeting) {
-      console.log("刪除會議：", selectedMeeting.id);
-      try{
-      const res = await fetch(`https://meetingbooking.deno.dev/api/bookings/${selectedMeeting.id}`, {
-        method: "DELETE",
+  const [loading, setLoading] = useState(false);
+  const handleCancel = async () => {
+    if (!selectedMeeting || !selectedMeeting.id) {
+      console.error("沒有選擇會議或會議ID缺失");
+      return;
+    }
+    
+    const cancelled = { "cancelled": true };
+    setLoading(true)
+    try {
+      const url = `https://meetingbooking.deno.dev/api/bookings/${selectedMeeting.id}/123`;
+      console.log("發送取消請求到:", url);
+      console.log("請求內容:", JSON.stringify(cancelled));
+      
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(cancelled),
       });
+      
       if (!res.ok) {
-        throw new Error("刪除失敗");
+        throw new Error(`伺服器回應錯誤: ${res.status}`);
       }
-      console.log("刪除會議：", selectedMeeting.id);
+      
+      const result = await res.json();
+      console.log("取消會議響應:", result);
+      
+      onFetchEvents(selectedMeeting.room);
       setSelectedMeeting(null);
-      } catch (error) {
-        console.error("刪除會議錯誤：", error);
-      }
+    } catch (error) {
+      console.error("取消會議錯誤:", error);
+    } finally{
+      setLoading(false)
     }
   };
-
+      
   const handleUpdate = () => {
     if (selectedMeeting) {
       console.log("修改會議：", selectedMeeting.id);
       // 執行修改邏輯或呼叫後端 API ...
-      setSelectedMeeting(null); // 關閉 Modal
+      setSelectedMeeting(null);
     }
   };
 
-  // 日視圖
   if (selectedView === "Day") {
+    // 組合當天日期與時間字串
+    const dayString = currentDate.format("YYYY-MM-DD");
+    const TIMELINE_START = dayjs.tz(`${dayString} 08:45`, "YYYY-MM-DD HH:mm", "Asia/Taipei");
+    const TIMELINE_END = dayjs.tz(`${dayString} 18:15`, "YYYY-MM-DD HH:mm", "Asia/Taipei");
+    const TIMELINE_DURATION_MIN = TIMELINE_END.diff(TIMELINE_START, "minute"); // 570 分鐘
+  
     const timeSlots = [
       "09:00",
       "10:00",
@@ -67,70 +93,92 @@ const CalendarContent = ({
       "17:00",
       "18:00",
     ];
-
+    
+    // 依然組合完整日期時間字串
+    const firstSlotTime = dayjs.tz(`${dayString} ${timeSlots[0]}`, "YYYY-MM-DD HH:mm", "Asia/Taipei");
+    const topOffsetMinutes = firstSlotTime.diff(TIMELINE_START, "minute"); // 例如 15 分鐘
+    const topOffsetPercent = (topOffsetMinutes / TIMELINE_DURATION_MIN) * 100;
+  
     const dayMeetings = meetings.filter(
       (meeting) => meeting.date === currentDate.format("YYYY-MM-DD")
     );
-
+  
     return (
-      <div className="relative flex-1 overflow-hidden">
-        {timeSlots.map((time) => (
-          <div
-            key={time}
-            className="flex border-t border-gray-200"
-            style={{ height: `${100 / (timeSlots.length - 1)}%` }}
-          >
-            <div className="w-12 py-1 px-1 text-xs text-gray-500">{time}</div>
-            <div className="flex-1 border-l border-gray-200"></div>
-          </div>
-        ))}
-
-        {/* 依據 dayMeetings 渲染每筆會議 */}
+      <div className="my-2 relative flex-1 overflow-auto h-[calc(100vh-64px)]">
+        {/* 頂部空白區塊，對應 08:45~09:00 */}
+        <div className="flex mx-2" style={{ height: `${topOffsetPercent}%` }}>
+          <div className="w-12 py-1 px-1 text-xs"></div>
+          <div className="flex-1 border-l"></div>
+        </div>
+        
+        {/* 每個時間區段 */}
+        {timeSlots.map((time) => {
+          const isLastSlot = time === "18:00";
+          // 15 分鐘的高度百分比
+          const lastSlotHeight = (15 / TIMELINE_DURATION_MIN) * 100;
+          // 若不是 "18:00"，則平均分配剩下的高度（扣除頂部空白與最後 15 分鐘）
+          const slotHeightPercent = isLastSlot
+            ? lastSlotHeight
+            : (100 - topOffsetPercent - lastSlotHeight) / (timeSlots.length - 1);
+          return (
+            <div
+              key={time}
+              className="flex border-gray-200 mx-2"
+              style={{ height: `${slotHeightPercent}%` }}
+            >
+              <div className="w-12 relative py-1 px-1">
+                <span className="absolute top-0 left-0 transform -translate-y-1/2 text-xs">
+                  {time}
+                </span>
+              </div>
+              <div className="flex-1 border-l border-t border-gray-200"></div>
+            </div>
+          );
+        })}
+    
+        {/* 根據 dayMeetings 渲染每筆會議 */}
         {dayMeetings.map((meeting) => {
           const eventStart = dayjs.utc(meeting.originalStart).tz("Asia/Taipei");
           const eventEnd = dayjs.utc(meeting.originalEnd).tz("Asia/Taipei");
-          const startMinutes =
-            eventStart.hour() * 60 +
-            eventStart.minute() -
-            TIMELINE_START_HOUR * 60;
+    
+          // 計算從 TIMELINE_START 開始的分鐘數差距
+          const startMinutes = eventStart.diff(TIMELINE_START, "minute");
           const durationMinutes = eventEnd.diff(eventStart, "minute");
+    
           const topPercent = (startMinutes / TIMELINE_DURATION_MIN) * 100;
           const heightPercent = (durationMinutes / TIMELINE_DURATION_MIN) * 100;
-
+    
           return (
             <div
               key={meeting.id}
-              className={`${meeting.color} absolute left-12 right-0 p-2 shadow-sm flex justify-between items-center`}
+              className={`${meeting.color} rounded absolute left-12 right-0 mx-4 shadow-sm flex justify-between items-center`}
               style={{
                 top: `${topPercent}%`,
                 height: `${heightPercent}%`,
               }}
             >
-              <div>
+              <div className="pl-2">
                 <h3 className="text-xs font-medium">{meeting.title}</h3>
-                <p className="text-xs text-gray-600">
-                  預約者：{meeting.organizer}
-                </p>
+                <p className="text-xs text-gray-600">預約者：{meeting.organizer}</p>
               </div>
-              <button onClick={() => setSelectedMeeting(meeting)}>
-                <ChevronRight className="w-4 h-4 text-white bg-black rounded-full" />
+              <button onClick={() => setSelectedMeeting(meeting)} className="bg-black rounded-full p-1 mr-2">
+                <ChevronRight className="w-3 h-3 text-white" />
               </button>
             </div>
           );
         })}
-
-        {/* Modal：顯示選取的會議資訊 */}
+  
         <MeetingInfoModal
           show={!!selectedMeeting}
           onClose={() => setSelectedMeeting(null)}
           meetingInfo={selectedMeeting}
-          onDelete={handleDelete}
+          onCancel={handleCancel}
           onUpdate={handleUpdate}
         />
       </div>
     );
   }
-
+  
   // 週視圖
   if (selectedView === "Week") {
     const weekStart = currentDate.startOf("week");
@@ -162,12 +210,11 @@ const CalendarContent = ({
           </div>
         </div>
 
-        {/* 同樣放在最外層，方便在週視圖下也能顯示 Modal */}
         <MeetingInfoModal
           show={!!selectedMeeting}
           onClose={() => setSelectedMeeting(null)}
           meetingInfo={selectedMeeting}
-          onDelete={handleDelete}
+          onCancel={handleCancel}
           onUpdate={handleUpdate}
         />
       </>
@@ -202,7 +249,7 @@ const CalendarContent = ({
                 <div className="text-xs">{date.format("D")}</div>
                 {meetings
                   .filter(() => 
-                  date.format("YYYY-MM-DD") === bookingForm.selectedDate
+                    date.format("YYYY-MM-DD") === bookingForm.selectedDate
                   )
                   .map((meeting) => (
                     <div
@@ -221,14 +268,14 @@ const CalendarContent = ({
           show={!!selectedMeeting}
           onClose={() => setSelectedMeeting(null)}
           meetingInfo={selectedMeeting}
-          onDelete={handleDelete}
+          onCancel={handleCancel}
           onUpdate={handleUpdate}
         />
+        {loading && <LoadingOverlay />}
       </>
     );
   }
-
-  // 預防 selectedView 沒有符合 Day/Week/Month
+  
   return null;
 };
 

@@ -14,7 +14,7 @@ interface MeetingInfoModalProps {
   show: boolean;                // 控制此 Modal 是否顯示
   onClose: () => void;          // 點擊背景或取消按鈕後關閉
   meetingInfo: MeetingInfo | null;  // 傳入要顯示的會議資料
-  onDelete: () => void;         // 點擊「刪除」時執行的回呼函式
+  onCancel: () => void;         // 點擊「刪除」時執行的回呼函式
   onUpdate: () => void;         // 點擊「修改」時執行的回呼函式
 }
 
@@ -22,7 +22,7 @@ const MeetingInfoModal = ({
   show,
   onClose,
   meetingInfo,
-  onDelete,
+  onCancel,
   onUpdate,
 }: MeetingInfoModalProps) => {
   // 若未指定 show 或 meetingInfo 為 null，則不顯示 Modal
@@ -72,10 +72,10 @@ const MeetingInfoModal = ({
         <div className="flex justify-between items-center mt-6">
           <button
             className="flex items-center space-x-1 px-3 py-1 text-sm bg-gray-200 rounded"
-            onClick={onDelete}
+            onClick={onCancel}
           >
             <Trash2 className="w-4 h-4" />
-            <span>刪除</span>
+            <span>取消</span>
           </button>
           <button
             className="flex items-center space-x-1 px-3 py-1 text-sm bg-yellow-400 text-white rounded"
