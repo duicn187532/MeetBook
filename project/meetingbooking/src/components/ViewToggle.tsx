@@ -7,7 +7,9 @@ interface ViewToggleProps {
   selectedView: ViewMode;
   onChangeView: (view: ViewMode) => void;
   currentDate: dayjs.Dayjs;
+  viewStartDate: dayjs.Dayjs
   setCurrentDate: (date: dayjs.Dayjs) => void;
+  setViewStartDate: (date: dayjs.Dayjs) => void;
   updateBookingDate: (date: dayjs.Dayjs) => void;
 }
 
@@ -41,23 +43,25 @@ const ViewToggle = ({
   selectedView,
   onChangeView,
   currentDate,
+  viewStartDate,
   setCurrentDate,
+  setViewStartDate,
   updateBookingDate,
 }: ViewToggleProps) => {
-  // 日視圖：t-2 ~ t+2
+  // 日視圖：t ~ t+5
   const displayedDates = [0, 1, 2, 3, 4, 5].map((offset) =>
-    currentDate.add(offset, "day")
+    viewStartDate.add(offset, "day")
   );
 
   const handlePrevDays = () => {
-    const newDate = currentDate.subtract(1, "day");
-    setCurrentDate(newDate);
+    const newDate = viewStartDate.subtract(6, "day");
+    setViewStartDate(newDate);
     updateBookingDate(newDate);
   };
 
   const handleNextDays = () => {
-    const newDate = currentDate.add(1, "day");
-    setCurrentDate(newDate);
+    const newDate = viewStartDate.add(6, "day");
+    setViewStartDate(newDate);
     updateBookingDate(newDate);
   };
 
@@ -95,13 +99,13 @@ const ViewToggle = ({
                   setCurrentDate(date);
                   updateBookingDate(date);
                 }}
-                className={`text-center px-2 py-1 rounded ${
+                className={`text-xl text-center px-2 py-1 rounded ${
                   date.isSame(currentDate, "day")
                     ? "bg-white text-red-500 rounded-lg"
                     : "text-gray-700"
                 }`}
               >
-                <div className="text-xs font-semibold">{date.format("D")}</div>
+                <div className="text-2xl font-semibold">{date.format("D")}</div>
                 <div className="text-xs">{date.format("ddd")}</div>
               </button>
             ))}

@@ -28,6 +28,7 @@ const CalendarContent = ({
 }: CalendarContentProps) => {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(false);
+  const [editPassword, setEditPassword] = useState("");
   const handleCancel = async () => {
     if (!selectedMeeting || !selectedMeeting.id) {
       console.error("沒有選擇會議或會議ID缺失");
@@ -37,7 +38,7 @@ const CalendarContent = ({
     const cancelled = { "cancelled": true };
     setLoading(true)
     try {
-      const url = `https://meetingbooking.deno.dev/api/bookings/${selectedMeeting.id}/123`;
+      const url = `https://meetingbooking.deno.dev/api/bookings/${selectedMeeting.id}/${editPassword}`;
       console.log("發送取消請求到:", url);
       console.log("請求內容:", JSON.stringify(cancelled));
       
@@ -51,14 +52,18 @@ const CalendarContent = ({
       });
       
       if (!res.ok) {
+        if (res.status === 403) {
+          // 當返回 401 時，顯示編輯密碼錯誤的提示
+          alert("編輯密碼不正確，請重新輸入！");
+        }
         throw new Error(`伺服器回應錯誤: ${res.status}`);
       }
       
       const result = await res.json();
       console.log("取消會議響應:", result);
-      
       onFetchEvents(selectedMeeting.room);
       setSelectedMeeting(null);
+      alert("刪除預約成功 ✅");
     } catch (error) {
       console.error("取消會議錯誤:", error);
     } finally{
@@ -174,6 +179,7 @@ const CalendarContent = ({
           meetingInfo={selectedMeeting}
           onCancel={handleCancel}
           onUpdate={handleUpdate}
+          onEditPassword={setEditPassword}
         />
       </div>
     );
@@ -216,6 +222,7 @@ const CalendarContent = ({
           meetingInfo={selectedMeeting}
           onCancel={handleCancel}
           onUpdate={handleUpdate}
+          onEditPassword={setEditPassword}
         />
       </>
     );
@@ -270,6 +277,7 @@ const CalendarContent = ({
           meetingInfo={selectedMeeting}
           onCancel={handleCancel}
           onUpdate={handleUpdate}
+          onEditPassword={setEditPassword}
         />
         {loading && <LoadingOverlay />}
       </>
