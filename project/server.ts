@@ -29,7 +29,7 @@ router.post("/api/bookings", async (ctx) => {
   return await addBooking(ctx);
 });
 
-router.patch("/api/bookings/:id/:pw", async (ctx) => {
+router.patch("/api/bookings/:id/:editPassword?", async (ctx) => {
   console.log("📥 收到 PATCH /api/bookings 请求, id:", ctx.params.id);
   return await updateBooking(ctx);
 });

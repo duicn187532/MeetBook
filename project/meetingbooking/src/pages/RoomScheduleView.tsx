@@ -12,8 +12,6 @@ import ViewToggle from "../components/ViewToggle";
 import CalendarContent from "../components/CalendarContent";
 import BookingModal from "../components/BookingModal";
 import LoadingOverlay from "../components/LoadingOverlay";
-
-
 import { Meeting, ViewMode } from "../types/common";
 
 dayjs.extend(utc);
@@ -25,6 +23,7 @@ const RoomScheduleView = () => {
   const [selectedRoom, setSelectedRoom] = useState("A101");
   const [selectedView, setSelectedView] = useState<ViewMode>("Day");
   const [currentDate, setCurrentDate] = useState(dayjs());
+  const [viewStartDate, setViewStartDate] = useState(dayjs());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [loading, setLoading] = useState(false); // 新增 loading state
@@ -138,6 +137,7 @@ const RoomScheduleView = () => {
         alert("預訂失敗: " + result.error);
       } else {
         alert("預訂成功 ✅");
+        setSelectedRoom(bookingData.room)
         fetchEvents(selectedRoom);
         setShowBookingModal(false);
       }
@@ -164,6 +164,8 @@ const RoomScheduleView = () => {
         currentDate={currentDate}
         setCurrentDate={setCurrentDate}
         updateBookingDate={updateBookingDate}
+        viewStartDate={viewStartDate}
+        setViewStartDate={setViewStartDate}
       />
       <CalendarContent
         selectedView={selectedView}

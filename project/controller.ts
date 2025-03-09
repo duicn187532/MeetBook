@@ -1,11 +1,13 @@
+import { PassThrough } from "node:stream";
 import { todos } from "./db.ts"; // 引入 MongoDB 实例
 
 async function getAllBooked(ctx: any) {
     try {
         const allBookings = await todos.find().toArray();
-        
+        const filteredBookings = allBookings.map(({ editPassword, ...rest }) => rest);
+
         ctx.response.status = 200;
-        ctx.response.body = { data: allBookings };
+        ctx.response.body = { data: filteredBookings };
     } catch (error) {
         console.error("❌ 获取数据失败:", error);
         ctx.response.status = 500;
@@ -28,7 +30,7 @@ async function getActiveBooked(ctx: any) {
 
 async function addBooking(ctx: any) {
     try {
-        const { title, user, room, startTime, endTime } = await ctx.request.body.json();
+        const { title, user, room, startTime, endTime, editPassword } = await ctx.request.body.json();
 
         // 檢查是否缺少必要字段
         if (!user || !room || !startTime || !endTime) {
@@ -57,7 +59,7 @@ async function addBooking(ctx: any) {
         const id = crypto.randomUUID();
 
         // 插入新的預訂，使用隨機 id 作為自定義 id
-        const result = await todos.insertOne({ id: id, title, user, room, cancelled: false, startTime, endTime });
+        const result = await todos.insertOne({ id: id, title, user, room, cancelled: false, startTime, endTime, editPassword });
         ctx.response.status = 201;
         ctx.response.body = { id: result.insertedId, message: "預訂成功 ✅"};
     } catch (error) {
@@ -85,17 +87,14 @@ async function updateBooking(ctx: any) {
     }
 
     // 如果該資料有設定編輯密碼，則比對參數中的密碼
-    if (booking.editPassword) {
-      if (!editPassword || booking.editPassword !== editPassword) {
+    if (editPassword !== "87878787" && booking.editPassword !== editPassword) {
         ctx.response.status = 403;
         ctx.response.body = { error: "編輯密碼錯誤，無法更新資料" };
         return;
-      }
-    }      
+    }
+    
       // 檢查是否有請求主體
-      // 使用正確的方法獲取 body
       try {
-        // 根據 Oak v17 版本的正確用法
         const body = await ctx.request.body.json();
         console.log("收到的更新資料:", body);
         

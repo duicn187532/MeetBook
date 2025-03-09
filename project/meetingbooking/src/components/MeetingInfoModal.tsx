@@ -16,6 +16,7 @@ interface MeetingInfoModalProps {
   meetingInfo: MeetingInfo | null;  // 傳入要顯示的會議資料
   onCancel: () => void;         // 點擊「刪除」時執行的回呼函式
   onUpdate: () => void;         // 點擊「修改」時執行的回呼函式
+  onEditPassword: (value: string) => void;
 }
 
 const MeetingInfoModal = ({
@@ -24,6 +25,7 @@ const MeetingInfoModal = ({
   meetingInfo,
   onCancel,
   onUpdate,
+  onEditPassword,
 }: MeetingInfoModalProps) => {
   // 若未指定 show 或 meetingInfo 為 null，則不顯示 Modal
   if (!show || !meetingInfo) return null;
@@ -66,6 +68,14 @@ const MeetingInfoModal = ({
               {meetingInfo.date} {meetingInfo.startTime} ~ {meetingInfo.endTime}
             </p>
           </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">編輯密碼</label>
+            <input 
+            className="w-full border rounded px-2 py-1 text-sm" 
+            placeholder="未輸入則任何人皆可編輯"
+            onChange={(e) => onEditPassword(e.target.value ? e.target.value : "")}/>
+          </div>
+
         </div>
 
         {/* 底部按鈕 */}
@@ -75,7 +85,7 @@ const MeetingInfoModal = ({
             onClick={onCancel}
           >
             <Trash2 className="w-4 h-4" />
-            <span>取消</span>
+            <span>刪除</span>
           </button>
           <button
             className="flex items-center space-x-1 px-3 py-1 text-sm bg-yellow-400 text-white rounded"

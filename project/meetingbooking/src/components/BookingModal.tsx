@@ -1,6 +1,7 @@
 // src/components/BookingModal.tsx
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useEffect } from "react";
 
 interface BookingModalProps {
   bookingForm: {
@@ -37,8 +38,18 @@ const BookingModal = ({
   onSubmit,
   onClose,
 }: BookingModalProps) => {
-  // 設定一個基準日期用於時間轉換（日期內容無關緊要，只用來表示時間）
-  const defaultStart = new Date(1970, 0, 1, 8, 0); // 08:00
+  const defaultStart = new Date();
+  const defaultEnd = new Date(Date.now() + 3600000);
+
+  useEffect(() => {
+    // 將格式化後的時間字串存入狀態中，但保留 default*Date 為 Date 物件
+    setBookingForm((prev: any) => ({
+      ...prev,
+      startTime: formatTime(defaultStart),
+      endTime: formatTime(defaultEnd),
+    }));
+  }, []);
+
 
   return (
     <div
@@ -99,7 +110,7 @@ const BookingModal = ({
           <label className="block text-sm mb-1">會議名稱</label>
           <input
             type="text"
-            value={bookingForm.title}
+            // value={bookingForm.title}
             onChange={(e) =>
               setBookingForm((prev: any) => ({ ...prev, title: e.target.value }))
             }
@@ -130,6 +141,8 @@ const BookingModal = ({
           <div className="flex-1">
             <label className="block text-sm mb-1">開始時間</label>
             <DatePicker
+              withPortal
+              shouldCloseOnSelect={true}            
               selected={parseTime(bookingForm.startTime, defaultStart)}
               onChange={(date: Date | null) => {
                 if (date) {
@@ -155,7 +168,9 @@ const BookingModal = ({
           <div className="flex-1">
             <label className="block text-sm mb-1">結束時間</label>
             <DatePicker
-              selected={parseTime(bookingForm.endTime, defaultStart)}
+              withPortal
+              shouldCloseOnSelect={true}            
+              selected={parseTime(bookingForm.endTime, defaultEnd)}
               onChange={(date: Date | null) => {
                 if (date) {
                   setBookingForm((prev: any) => ({
