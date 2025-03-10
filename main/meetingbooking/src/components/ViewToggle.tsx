@@ -69,7 +69,7 @@ const ViewToggle = ({
 
   // 週視圖
   const weekStart = currentDate.startOf("week");
-  const displayedWeekDates = Array.from({ length: 7 }, (_, i) =>
+  const displayedWeekDates = Array.from({ length: 6 }, (_, i) =>
     weekStart.add(i, "day")
   );
 
@@ -118,22 +118,37 @@ const ViewToggle = ({
         </div>
       )}
       {selectedView === "Week" && (
-        <div className="flex justify-between items-center mt-2">
-          <button
-            onClick={() => setCurrentDate(currentDate.subtract(7, "day"))}
-            className="p-1 rounded-full bg-white"
+        <div className="flex w-full justify-between items-center mt-2">
+          <button 
+            onClick={() => setCurrentDate(currentDate.subtract(7, "day"))} 
+            className="p-1 rounded-full bg-black"
           >
-            <ChevronLeft className="w-3 h-3" />
+            <ChevronLeft className="text-white w-3 h-3" />
           </button>
-          <div className="text-base font-semibold">
-            {displayedWeekDates[0].format("MMM D")} -{" "}
-            {displayedWeekDates[6].format("MMM D")}
+          <div className="flex space-x-3 bg-white rounded-lg">
+            {displayedWeekDates.map((date) => (
+              <button
+                key={date.format("YYYY-MM-DD")}
+                onClick={() => {
+                  setCurrentDate(date);
+                  updateBookingDate(date);
+                }}
+                className={`text-center px-2 py-1 rounded ${
+                  date.isSame(currentDate, "day")
+                    ? "text-red-500 rounded-lg"
+                    : "text-gray-700"
+                }`}
+              >
+                <div className="text-xs font-semibold">{date.format("D")}</div>
+                <div className="text-xs">{date.format("ddd")}</div>
+              </button>
+            ))}
           </div>
-          <button
-            onClick={() => setCurrentDate(currentDate.add(7, "day"))}
-            className="p-1 rounded-full bg-white"
+          <button 
+            onClick={() => setCurrentDate(currentDate.add(7, "day"))} 
+            className="p-1 rounded-full bg-black"
           >
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-3 h-3 text-white" />
           </button>
         </div>
       )}
