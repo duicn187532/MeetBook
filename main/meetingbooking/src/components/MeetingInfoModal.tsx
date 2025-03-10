@@ -1,4 +1,4 @@
-import { Info, Trash2, Edit } from "lucide-react";
+import { Info} from "lucide-react";
 
 interface MeetingInfo {
   user: string;  // 預約者

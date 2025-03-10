@@ -24,7 +24,7 @@ const CalendarContent = ({
   selectedView,
   currentDate,
   meetings,
-  bookingForm,
+  // bookingForm,
   onFetchEvents,
 }: CalendarContentProps) => {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
