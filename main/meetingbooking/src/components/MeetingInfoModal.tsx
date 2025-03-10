@@ -1,7 +1,7 @@
 import { Info, Trash2, Edit } from "lucide-react";
 
 interface MeetingInfo {
-  organizer: string;  // 預約者
+  user: string;  // 預約者
   room: string;       // 會議室
   title: string;      // 會議名稱
   date: string;       // "YYYY-MM-DD"
@@ -15,7 +15,7 @@ interface MeetingInfoModalProps {
   onClose: () => void;          // 點擊背景或取消按鈕後關閉
   meetingInfo: MeetingInfo | null;  // 傳入要顯示的會議資料
   onCancel: () => void;         // 點擊「刪除」時執行的回呼函式
-  onUpdate: () => void;         // 點擊「修改」時執行的回呼函式
+  onOpenEditModal: (info: any) => void; // <--- 新增這個 callback
   onEditPassword: (value: string) => void;
 }
 
@@ -24,7 +24,7 @@ const MeetingInfoModal = ({
   onClose,
   meetingInfo,
   onCancel,
-  onUpdate,
+  onOpenEditModal,
   onEditPassword,
 }: MeetingInfoModalProps) => {
   // 若未指定 show 或 meetingInfo 為 null，則不顯示 Modal
@@ -39,10 +39,10 @@ const MeetingInfoModal = ({
       ></div>
 
       {/* Modal 主體 */}
-      <div className="relative bg-white p-4 rounded shadow-lg z-10 w-80">
+      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-80">
         {/* Modal 頂部：圖示與標題 */}
         <div className="flex flex-col items-center">
-          <div className="bg-yellow-400 w-12 h-12 flex items-center justify-center rounded-full">
+          <div className="bg-yellow-400 w-12 h-12 flex items-center justify-center rounded-2xl">
             <Info className="text-white w-6 h-6" />
           </div>
           <h3 className="text-lg font-semibold mt-2">預約資訊</h3>
@@ -52,7 +52,7 @@ const MeetingInfoModal = ({
         <div className="mt-4 space-y-3 text-sm">
           <div>
             <label className="block text-xs text-gray-600 mb-1">預約者</label>
-            <div className="w-full border rounded px-2 py-1 text-sm">{meetingInfo.organizer}</div>
+            <div className="w-full border rounded px-2 py-1 text-sm">{meetingInfo.user}</div>
           </div>
           <div>
             <label className="block text-xs text-gray-600 mb-1">會議室</label>
@@ -81,17 +81,15 @@ const MeetingInfoModal = ({
         {/* 底部按鈕 */}
         <div className="flex justify-between items-center mt-6">
           <button
-            className="flex items-center space-x-1 px-3 py-1 text-sm bg-gray-200 rounded"
+            className="bg-gray-300 border border-gray-300 rounded-xl w-full mx-2 py-2 text-sm text-gray-700"
             onClick={onCancel}
           >
-            <Trash2 className="w-4 h-4" />
             <span>刪除</span>
           </button>
           <button
-            className="flex items-center space-x-1 px-3 py-1 text-sm bg-yellow-400 text-white rounded"
-            onClick={onUpdate}
+            className="bg-yellow-300 rounded-xl mx-2 w-full py-2 text-sm"
+            onClick={() => onOpenEditModal(meetingInfo)}
           >
-            <Edit className="w-4 h-4" />
             <span>修改</span>
           </button>
         </div>

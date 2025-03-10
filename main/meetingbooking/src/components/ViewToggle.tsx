@@ -56,12 +56,14 @@ const ViewToggle = ({
   const handlePrevDays = () => {
     const newDate = viewStartDate.subtract(6, "day");
     setViewStartDate(newDate);
+    setCurrentDate(currentDate.subtract(6, "day"))
     updateBookingDate(newDate);
   };
 
   const handleNextDays = () => {
     const newDate = viewStartDate.add(6, "day");
     setViewStartDate(newDate);
+    setCurrentDate(currentDate.add(6, "day"))
     updateBookingDate(newDate);
   };
 

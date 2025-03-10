@@ -22,5 +22,6 @@ try {
 
 const db = client.db(DB_NAME);
 const todos = db.collection("booked");
+const logger = db.collection("syslog");
 
-export { db, todos };
+export { db, todos, logger };

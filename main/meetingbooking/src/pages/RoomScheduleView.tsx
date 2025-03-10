@@ -65,7 +65,7 @@ const RoomScheduleView = () => {
           return {
             id: event.id,
             title: event.title || `${dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm")} ~ ${dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm")}`,
-            organizer: event.user,
+            user: event.user,
             room: room,
             startTime: dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm"),
             endTime: dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm"),
@@ -119,6 +119,7 @@ const RoomScheduleView = () => {
       title,
       user,
       room,
+      date: selectedDate,
       startTime: start.toISOString(),
       endTime: end.toISOString(),
       editPassword
@@ -139,6 +140,8 @@ const RoomScheduleView = () => {
         alert("預訂成功 ✅");
         setSelectedRoom(bookingData.room)
         fetchEvents(selectedRoom);
+        setCurrentDate(dayjs(bookingData.date));
+        setViewStartDate(dayjs(bookingData.date));
         setShowBookingModal(false);
       }
     } catch (error) {
@@ -149,7 +152,7 @@ const RoomScheduleView = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white text-sm relative">
+    <div className="flex flex-col h-screen">
       <TitleDescription />
       <RoomSelector
         selectedRoom={selectedRoom}
@@ -167,6 +170,7 @@ const RoomScheduleView = () => {
         viewStartDate={viewStartDate}
         setViewStartDate={setViewStartDate}
       />
+      <div className="flex-1 overflow-y-auto">
       <CalendarContent
         selectedView={selectedView}
         currentDate={currentDate}
@@ -175,6 +179,7 @@ const RoomScheduleView = () => {
         onFetchEvents={fetchEvents} // 傳入父元件的 fetchEvents
 
       />
+      </div>
       <button
         onClick={() => setShowBookingModal(true)}
         className="absolute bottom-4 right-4 w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center shadow-lg"
