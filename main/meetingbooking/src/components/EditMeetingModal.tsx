@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import CustomTimeInput from "./CustomInput";
 import { MeetingInfo } from "../types/common";
-import { RefreshCw, RefreshCcw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface EditMeetingModalProps {
   show: boolean;
