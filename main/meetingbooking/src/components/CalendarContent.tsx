@@ -3,7 +3,8 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { ChevronRight } from "lucide-react";
 import { Meeting, ViewMode } from "../types/common";
-import MeetingInfoModal from "./MeetingInfoModal";
+import MeetingInfoModal from "./MeetingInfoModal"
+import EditMeetingModal from "./EditMeetingModal";
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import LoadingOverlay from "./LoadingOverlay";
@@ -29,6 +30,9 @@ const CalendarContent = ({
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(false);
   const [editPassword, setEditPassword] = useState("");
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editMeetingInfo, setEditMeetingInfo] = useState<any>(null);
   const handleCancel = async () => {
     if (!selectedMeeting || !selectedMeeting.id) {
       console.error("沒有選擇會議或會議ID缺失");
@@ -70,14 +74,63 @@ const CalendarContent = ({
       setLoading(false)
     }
   };
-      
-  const handleUpdate = () => {
-    if (selectedMeeting) {
-      console.log("修改會議：", selectedMeeting.id);
-      // 執行修改邏輯或呼叫後端 API ...
-      setSelectedMeeting(null);
-    }
+  
+  const handleOpenEditModal = (info: any) => {
+    // 如果需要，可以在這裡把 bookingForm 的資料帶給 editMeetingInfo
+    setEditMeetingInfo(info);
+    setShowInfoModal(false);
+    // 再打開 EditMeetingModal
+    setShowEditModal(true);
   };
+
+  // EditMeetingModal 裡按「更新」時
+  const handleEdit = async (e: any, id: string, pw: string) => {
+      console.log("送出修改資料：", e, id, pw);
+      // ... 做更新的動作 ...
+    if (!id) {
+      console.error("沒有選擇會議或會議ID缺失");
+      return;
+    }
+    setLoading(true)
+    try {
+      const url = `https://meetingbooking.deno.dev/api/bookings/${id}/${pw}`;
+      console.log("發送取消請求到:", url);
+      console.log("請求內容:", JSON.stringify(e));
+      
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(e),
+      });
+      
+      if (!res.ok) {
+        if (res.status === 403) {
+          // 當返回 401 時，顯示編輯密碼錯誤的提示
+          alert("編輯密碼不正確，請重新輸入！");
+        }
+        throw new Error(`伺服器回應錯誤: ${res.status}`);
+      }
+      
+      const result = await res.json();
+      console.log("修改會議響應:", result);
+      onFetchEvents(selectedMeeting!.room);
+      setSelectedMeeting(null);
+      alert("修改預約成功 ✅");
+    } catch (error) {
+      console.error("修改會議錯誤:", error);
+    } finally{
+      setLoading(false)
+    }
+
+    };
+  
+    // EditMeetingModal 裡按「取消」時
+    const handleCloseEditModal = async () => {
+      setShowEditModal(false);
+    };
 
   if (selectedView === "Day") {
     // 組合當天日期與時間字串
@@ -109,7 +162,7 @@ const CalendarContent = ({
     );
   
     return (
-      <div className="my-2 relative flex-1 overflow-auto h-[calc(100vh-64px)]">
+      <div className="my-2 relative flex-1 overflow-y-auto h-[calc(100vh-64px)]">
         {/* 頂部空白區塊，對應 08:45~09:00 */}
         <div className="flex mx-2" style={{ height: `${topOffsetPercent}%` }}>
           <div className="w-12 py-1 px-1 text-xs"></div>
@@ -155,6 +208,10 @@ const CalendarContent = ({
     
           return (
             <div
+              onClick={() => {
+                setSelectedMeeting(meeting);
+                setShowInfoModal(true);
+              }}
               key={meeting.id}
               className={`${meeting.color} rounded absolute left-12 right-0 mx-4 shadow-sm flex justify-between items-center`}
               style={{
@@ -163,24 +220,39 @@ const CalendarContent = ({
               }}
             >
               <div className="pl-2">
-                <h3 className="text-xs font-medium">{meeting.title}</h3>
-                <p className="text-xs text-gray-600">預約者：{meeting.organizer}</p>
+                <h3 className="text-xl font-medium">{meeting.title}</h3>
+                <p className="text-xl text-gray-600">預約者：{meeting.user}</p>
               </div>
-              <button onClick={() => setSelectedMeeting(meeting)} className="bg-black rounded-full p-1 mr-2">
+              <button className="bg-black rounded-full p-1 mr-2">
                 <ChevronRight className="w-3 h-3 text-white" />
               </button>
             </div>
           );
         })}
   
-        <MeetingInfoModal
-          show={!!selectedMeeting}
-          onClose={() => setSelectedMeeting(null)}
-          meetingInfo={selectedMeeting}
-          onCancel={handleCancel}
-          onUpdate={handleUpdate}
-          onEditPassword={setEditPassword}
+        {showInfoModal && (
+          <MeetingInfoModal
+            show={showInfoModal}
+            onClose={() => {
+              setSelectedMeeting(null);
+              setShowInfoModal(false);
+            }}
+            meetingInfo={selectedMeeting}
+            onCancel={handleCancel}
+            onOpenEditModal={handleOpenEditModal}
+            onEditPassword={setEditPassword}
+          />
+        )}
+        {showEditModal && (
+        <EditMeetingModal
+          show={showEditModal}
+          onClose={handleCloseEditModal}
+          MeetingInfo={editMeetingInfo}
+          // setEditMeetingInfo={setEditMeetingInfo}
+          EditPassword={editPassword}
+          onSubmit={handleEdit}
         />
+      )}
       </div>
     );
   }
@@ -216,14 +288,29 @@ const CalendarContent = ({
           </div>
         </div>
 
+      {showInfoModal && (
         <MeetingInfoModal
-          show={!!selectedMeeting}
-          onClose={() => setSelectedMeeting(null)}
+          show={showInfoModal}
+          onClose={() => {
+            setSelectedMeeting(null);
+            setShowInfoModal(false);
+          }}
           meetingInfo={selectedMeeting}
           onCancel={handleCancel}
-          onUpdate={handleUpdate}
+          onOpenEditModal={handleOpenEditModal}
           onEditPassword={setEditPassword}
         />
+      )}
+      {showEditModal && (
+        <EditMeetingModal
+          show={showEditModal}
+          onClose={handleCloseEditModal}
+          MeetingInfo={editMeetingInfo}
+          // setEditMeetingInfo={setEditMeetingInfo}
+          EditPassword={editPassword}
+          onSubmit={handleEdit}
+        />
+      )}
       </>
     );
   }
@@ -270,15 +357,29 @@ const CalendarContent = ({
             ))}
           </div>
         </div>
-
+      {showInfoModal && (
         <MeetingInfoModal
-          show={!!selectedMeeting}
-          onClose={() => setSelectedMeeting(null)}
+          show={showInfoModal}
+          onClose={() => {
+            setSelectedMeeting(null);
+            setShowInfoModal(false);
+          }}
           meetingInfo={selectedMeeting}
           onCancel={handleCancel}
-          onUpdate={handleUpdate}
+          onOpenEditModal={handleOpenEditModal}
           onEditPassword={setEditPassword}
         />
+      )}
+      {showEditModal && (
+        <EditMeetingModal
+          show={showEditModal}
+          onClose={handleCloseEditModal}
+          MeetingInfo={editMeetingInfo}
+          // setEditMeetingInfo={setEditMeetingInfo}
+          EditPassword={editPassword}
+          onSubmit={handleEdit}
+        />
+      )}
         {loading && <LoadingOverlay />}
       </>
     );

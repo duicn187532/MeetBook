@@ -1,6 +1,7 @@
 // src/components/BookingModal.tsx
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import CustomTimeInput from "./CustomInput";
 import { useEffect } from "react";
 
 interface BookingModalProps {
@@ -54,19 +55,18 @@ const BookingModal = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      onClick={onClose}
     >
       {/* 背景遮罩 */}
-      <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
 
       {/* 表單容器 */}
       <div
-        className="relative bg-white w-full max-w-sm rounded shadow-lg p-4"
+        className="relative bg-white w-full max-w-sm rounded-2xl shadow-lg p-4"
         onClick={(e) => e.stopPropagation()} // 避免點擊表單本體關閉
       >
         {/* 頂部的「+」按鈕 */}
-        <div className="flex justify-center mb-2">
-          <button className="bg-red-500 w-12 h-12 rounded-full flex items-center justify-center">
+        <div className="flex justify-center my-1">
+          <button className="bg-red-500 w-12 h-12 rounded-2xl flex items-center justify-center">
             <span className="text-white text-2xl leading-none">+</span>
           </button>
         </div>
@@ -141,8 +141,8 @@ const BookingModal = ({
           <div className="flex-1">
             <label className="block text-sm mb-1">開始時間</label>
             <DatePicker
-              withPortal
-              shouldCloseOnSelect={true}            
+              customInput={<CustomTimeInput />}
+              shouldCloseOnSelect={true}
               selected={parseTime(bookingForm.startTime, defaultStart)}
               onChange={(date: Date | null) => {
                 if (date) {
@@ -168,7 +168,7 @@ const BookingModal = ({
           <div className="flex-1">
             <label className="block text-sm mb-1">結束時間</label>
             <DatePicker
-              withPortal
+              customInput={<CustomTimeInput />}
               shouldCloseOnSelect={true}            
               selected={parseTime(bookingForm.endTime, defaultEnd)}
               onChange={(date: Date | null) => {
@@ -218,13 +218,13 @@ const BookingModal = ({
         <div className="flex justify-between mt-4">
           <button
             onClick={onClose}
-            className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-700"
+            className="bg-gray-300 border border-gray-300 rounded-xl w-full mx-2 py-2 text-sm text-gray-700"
           >
             取消
           </button>
           <button
             onClick={onSubmit}
-            className="bg-red-500 text-white rounded px-4 py-2 text-sm"
+            className="bg-red-500 text-white rounded-xl mx-2 w-full py-2 text-sm"
           >
             預定
           </button>
