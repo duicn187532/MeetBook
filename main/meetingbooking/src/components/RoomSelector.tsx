@@ -10,7 +10,7 @@ type RoomKey = "A101" | "A102" | "A103";
 const roomColors: Record<RoomKey, string> = {
   A101: "bg-blue-500 text-white",
   A102: "bg-red-500 text-white",
-  A103: "bg-green-400 text-white",
+  A103: "bg-[#17C2B6] text-white",
 };
 
 const rooms: RoomKey[] = ["A101", "A102", "A103"];
