@@ -8,6 +8,8 @@ import EditMeetingModal from "./EditMeetingModal";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import LoadingOverlay from "./LoadingOverlay";
+import ConfirmationModal from "./ConfirmationModal";
+
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -33,6 +35,43 @@ const CalendarContent = ({
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editMeetingInfo, setEditMeetingInfo] = useState<any>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<() => void>(() => () => {});
+  const [modalProps, setModalProps] = useState({
+    title: "",
+    message: "",
+    confirmLabel: "確定",
+    cancelLabel: "取消",
+    confirmColor: "bg-red-500",
+    iconColor: "bg-red-500",
+  });
+
+  const handleDeleteClick = () => {
+    setModalProps({
+      title: "確定刪除嗎？",
+      message: "刪除後無法恢復。",
+      confirmLabel: "確定",
+      cancelLabel: "取消",
+      confirmColor: "bg-red-500",
+      iconColor: "bg-red-500",
+    });
+    setConfirmAction(() => handleCancel);
+    setShowConfirmModal(true);
+  };
+  
+  const handleEditClick = () => {
+    setModalProps({
+      title: "確定修改嗎？",
+      message: "請確認修改內容。",
+      confirmLabel: "確定",
+      cancelLabel: "取消",
+      confirmColor: "bg-gray-800",
+      iconColor: "bg-gray-800",
+    });
+    setConfirmAction(() => () => handleEdit(editMeetingInfo, selectedMeeting!.id, editPassword));
+    setShowConfirmModal(true);
+  };
+  
 
   const handleCancel = async () => {
     if (!selectedMeeting || !selectedMeeting.id) {
@@ -82,7 +121,6 @@ const CalendarContent = ({
   };
 
   const handleEdit = async (e: any, id: string, pw: string) => {
-    console.log("送出修改資料：", e, id, pw);
     if (!id) {
       console.error("沒有選擇會議或會議ID缺失");
       return;
@@ -225,7 +263,7 @@ const CalendarContent = ({
               setShowInfoModal(false);
             }}
             meetingInfo={selectedMeeting}
-            onCancel={handleCancel}
+            onCancel={handleDeleteClick}
             onOpenEditModal={handleOpenEditModal}
             onEditPassword={setEditPassword}
           />
@@ -236,9 +274,24 @@ const CalendarContent = ({
             onClose={handleCloseEditModal}
             MeetingInfo={editMeetingInfo}
             EditPassword={editPassword}
-            onSubmit={handleEdit}
+            onSubmit={handleEditClick}
           />
         )}
+        <ConfirmationModal
+          show={showConfirmModal}
+          title={modalProps.title}
+          message={modalProps.message}
+          confirmLabel={modalProps.confirmLabel}
+          cancelLabel={modalProps.cancelLabel}
+          confirmColor={modalProps.confirmColor}
+          iconColor={modalProps.iconColor}
+          onConfirm={() => {
+            confirmAction();
+            setShowConfirmModal(false);
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+
         {loading && <LoadingOverlay />}
       </div>
     );
@@ -382,7 +435,7 @@ const CalendarContent = ({
               setShowInfoModal(false);
             }}
             meetingInfo={selectedMeeting}
-            onCancel={handleCancel}
+            onCancel={handleDeleteClick}
             onOpenEditModal={handleOpenEditModal}
             onEditPassword={setEditPassword}
           />
@@ -393,7 +446,7 @@ const CalendarContent = ({
             onClose={handleCloseEditModal}
             MeetingInfo={editMeetingInfo}
             EditPassword={editPassword}
-            onSubmit={handleEdit}
+            onSubmit={handleEditClick}
           />
         )}
         {loading && <LoadingOverlay />}
@@ -493,7 +546,7 @@ const CalendarContent = ({
               setShowInfoModal(false);
             }}
             meetingInfo={selectedMeeting}
-            onCancel={handleCancel}
+            onCancel={handleDeleteClick}
             onOpenEditModal={handleOpenEditModal}
             onEditPassword={setEditPassword}
           />
@@ -504,7 +557,7 @@ const CalendarContent = ({
             onClose={handleCloseEditModal}
             MeetingInfo={editMeetingInfo}
             EditPassword={editPassword}
-            onSubmit={handleEdit}
+            onSubmit={handleEditClick}
           />
         )}
         {loading && <LoadingOverlay />}

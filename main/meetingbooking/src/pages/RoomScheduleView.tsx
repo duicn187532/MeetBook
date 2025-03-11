@@ -38,7 +38,7 @@ const RoomScheduleView = () => {
   });
   useEffect(() => {
     setBookingForm((prev) => ({ ...prev, room: selectedRoom }));
-  }, [selectedRoom]);
+    }, [selectedRoom]);
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -160,7 +160,9 @@ const RoomScheduleView = () => {
           setSelectedRoom(room);
         }}
       />
-      <Equipment />
+      <Equipment
+        selectedRoom={selectedRoom} 
+      />
       <ViewToggle
         selectedView={selectedView}
         onChangeView={setSelectedView}
