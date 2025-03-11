@@ -89,6 +89,15 @@ const RoomScheduleView = () => {
   useEffect(() => {
     fetchEvents(selectedRoom);
   }, [selectedRoom]);
+  
+  type RoomKey = "A101" | "A102" | "A103";
+
+  const buttonBGColors: Record<RoomKey, string> = {
+    A101: "bg-[#3C97FF]", // 浅蓝色
+    A102: "bg-[#FF3F3F]", // 浅红色
+    A103: "bg-[#17C2B6]", // 浅绿色
+  };
+  const buttonBGColor = buttonBGColors[selectedRoom as RoomKey]
 
   const updateBookingDate = (date: dayjs.Dayjs) => {
     setBookingForm((prev) => ({
@@ -171,6 +180,7 @@ const RoomScheduleView = () => {
         updateBookingDate={updateBookingDate}
         viewStartDate={viewStartDate}
         setViewStartDate={setViewStartDate}
+        selectedRoom={selectedRoom}
       />
       <div className="flex-1 overflow-y-auto">
       <CalendarContent
@@ -179,12 +189,13 @@ const RoomScheduleView = () => {
         meetings={meetings}
         bookingForm={bookingForm}
         onFetchEvents={fetchEvents} // 傳入父元件的 fetchEvents
+        setLoading={setLoading}
 
       />
       </div>
       <button
         onClick={() => setShowBookingModal(true)}
-        className="absolute bottom-4 right-4 w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center shadow-lg"
+        className={`absolute bottom-4 right-4 w-10 h-10 ${buttonBGColor} text-white rounded-xl flex items-center justify-center shadow-lg`}
       >
         <span className="text-xl">+</span>
       </button>

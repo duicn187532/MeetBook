@@ -7,7 +7,6 @@ import MeetingInfoModal from "./MeetingInfoModal";
 import EditMeetingModal from "./EditMeetingModal";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import LoadingOverlay from "./LoadingOverlay";
 import ConfirmationModal from "./ConfirmationModal";
 
 
@@ -20,17 +19,20 @@ interface CalendarContentProps {
   meetings: Meeting[];
   bookingForm: { selectedDate: string };
   onFetchEvents: (room: string) => void;
+  setLoading: (any: any) => void;
+  
 }
 
 const CalendarContent = ({
   selectedView,
   currentDate,
   meetings,
+  setLoading,
   // bookingForm,
   onFetchEvents,
 }: CalendarContentProps) => {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [editPassword, setEditPassword] = useState("");
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -292,7 +294,7 @@ const CalendarContent = ({
           onCancel={() => setShowConfirmModal(false)}
         />
 
-        {loading && <LoadingOverlay />}
+        {/* {loading && <LoadingOverlay />} */}
       </div>
     );
   }
@@ -449,7 +451,6 @@ const CalendarContent = ({
             onSubmit={handleEditClick}
           />
         )}
-        {loading && <LoadingOverlay />}
       </div>
     );
   }
@@ -560,7 +561,6 @@ const CalendarContent = ({
             onSubmit={handleEditClick}
           />
         )}
-        {loading && <LoadingOverlay />}
       </div>
     );
   }

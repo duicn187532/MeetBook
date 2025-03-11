@@ -11,7 +11,16 @@ interface ViewToggleProps {
   setCurrentDate: (date: dayjs.Dayjs) => void;
   setViewStartDate: (date: dayjs.Dayjs) => void;
   updateBookingDate: (date: dayjs.Dayjs) => void;
+  selectedRoom: string;
 }
+type RoomKey = "A101" | "A102" | "A103";
+
+const roomBackgroundColors: Record<RoomKey, any> = {
+  A101: {bg:"bg-[#D1E7FF]", dates: "bg-[#60AAFF]"}, // 浅蓝色
+  A102: {bg: "bg-[#FFE6E6]", dates: "bg-[#FF3F3F]"}, // 浅红色
+  A103: {bg: "bg-[#D7F3F1]", dates: "bg-[#17C2B6]"}, // 浅绿色
+};
+
 
 const MonthViewHeader = ({
   currentDate,
@@ -47,7 +56,10 @@ const ViewToggle = ({
   setCurrentDate,
   setViewStartDate,
   updateBookingDate,
+  selectedRoom
 }: ViewToggleProps) => {
+  const backgroundColor = roomBackgroundColors[selectedRoom as RoomKey]["bg"] || "bg-gray-100";
+  const datesBackgroundColor = roomBackgroundColors[selectedRoom as RoomKey]["dates"] || "bg-gray-100";
   // 日視圖：t ~ t+5
   const displayedDates = [0, 1, 2, 3, 4, 5].map((offset) =>
     viewStartDate.add(offset, "day")
@@ -74,14 +86,14 @@ const ViewToggle = ({
   );
 
   return (
-    <div className="p-2 flex flex-col bg-[#FFE6E6] items-center rounded-t-2xl">
+    <div className={`p-2 flex flex-col ${backgroundColor} items-center rounded-t-2xl`}>
       <div className="flex rounded-full bg-white w-fit p-0.5">
         {["Day", "Week", "Month"].map((view) => (
           <button
             key={view}
             onClick={() => onChangeView(view as ViewMode)}
             className={`px-3 py-0.5 rounded-full text-xs ${
-              selectedView === view ? "bg-red-500 text-white" : "text-gray-700"
+              selectedView === view ? `${datesBackgroundColor} text-white` : "text-gray-700"
             }`}
           >
             {view}
