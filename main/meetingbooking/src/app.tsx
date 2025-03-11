@@ -1,10 +1,13 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
-import Home from "./Home";
-import "./globals.css"; // 或者 import "./globals.css";
+import "./globals.css";
+
+const Home = lazy(() => import("./Home")); // Lazy load Home.tsx
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Home />
+    <Suspense fallback={<div>載入中...</div>}>
+      <Home />
+    </Suspense>
   </React.StrictMode>
 );
