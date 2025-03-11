@@ -20,7 +20,8 @@ interface CalendarContentProps {
   bookingForm: { selectedDate: string };
   onFetchEvents: (room: string) => void;
   setLoading: (any: any) => void;
-  
+  showPasswordErrorAlert: () => void;
+  showDeleteAlert: () => void;
 }
 
 const CalendarContent = ({
@@ -30,6 +31,8 @@ const CalendarContent = ({
   setLoading,
   // bookingForm,
   onFetchEvents,
+  showPasswordErrorAlert,
+  showDeleteAlert
 }: CalendarContentProps) => {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   // const [loading, setLoading] = useState(false);
@@ -67,8 +70,8 @@ const CalendarContent = ({
       message: "請確認修改內容。",
       confirmLabel: "確定",
       cancelLabel: "取消",
-      confirmColor: "bg-gray-800",
-      iconColor: "bg-gray-800",
+      confirmColor: "bg-[#3F3F3F]",
+      iconColor: "bg-[#3F3F3F]",
     });
     setConfirmAction(() => () => handleEdit(editMeetingInfo, selectedMeeting!.id, editPassword));
     setShowConfirmModal(true);
@@ -99,7 +102,7 @@ const CalendarContent = ({
 
       if (!res.ok) {
         if (res.status === 403) {
-          alert("編輯密碼不正確，請重新輸入！");
+          showPasswordErrorAlert()
         }
         throw new Error(`伺服器回應錯誤: ${res.status}`);
       }
@@ -108,7 +111,7 @@ const CalendarContent = ({
       console.log("取消會議響應:", result);
       onFetchEvents(selectedMeeting.room);
       setSelectedMeeting(null);
-      alert("刪除預約成功 ✅");
+      showDeleteAlert();
     } catch (error) {
       console.error("取消會議錯誤:", error);
     } finally {
@@ -451,6 +454,20 @@ const CalendarContent = ({
             onSubmit={handleEditClick}
           />
         )}
+        <ConfirmationModal
+          show={showConfirmModal}
+          title={modalProps.title}
+          message={modalProps.message}
+          confirmLabel={modalProps.confirmLabel}
+          cancelLabel={modalProps.cancelLabel}
+          confirmColor={modalProps.confirmColor}
+          iconColor={modalProps.iconColor}
+          onConfirm={() => {
+            confirmAction();
+            setShowConfirmModal(false);
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
       </div>
     );
   }
@@ -561,6 +578,20 @@ const CalendarContent = ({
             onSubmit={handleEditClick}
           />
         )}
+        <ConfirmationModal
+          show={showConfirmModal}
+          title={modalProps.title}
+          message={modalProps.message}
+          confirmLabel={modalProps.confirmLabel}
+          cancelLabel={modalProps.cancelLabel}
+          confirmColor={modalProps.confirmColor}
+          iconColor={modalProps.iconColor}
+          onConfirm={() => {
+            confirmAction();
+            setShowConfirmModal(false);
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
       </div>
     );
   }

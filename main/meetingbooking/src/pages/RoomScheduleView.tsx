@@ -13,6 +13,8 @@ import CalendarContent from "../components/CalendarContent";
 import BookingModal from "../components/BookingModal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { Meeting, ViewMode } from "../types/common";
+import AlertModal from "../components/AlertModal";
+
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -26,7 +28,31 @@ const RoomScheduleView = () => {
   const [viewStartDate, setViewStartDate] = useState(dayjs());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [loading, setLoading] = useState(false); // 新增 loading state
+  const [loading, setLoading] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+  const showSuccessAlert = () => {
+    setAlertType("success");
+    setAlertTitle("預約成功");
+    setAlertMessage("");
+    setShowAlertModal(true);
+  };
+  const showDeleteAlert = () => {
+    setAlertType("success");
+    setAlertTitle("刪除成功");
+    setAlertMessage("");
+    setShowAlertModal(true);
+  };
+  
+  const showPasswordErrorAlert = () => {
+    setAlertType("error");
+    setAlertTitle("密碼錯誤");
+    setAlertMessage("請確認後重新輸入");
+    setShowAlertModal(true);
+  };
+  
   const [bookingForm, setBookingForm] = useState({
     title: "",
     user: "",
@@ -146,8 +172,8 @@ const RoomScheduleView = () => {
       if (result.error) {
         alert("預訂失敗: " + result.error);
       } else {
-        alert("預訂成功 ✅");
-        setSelectedRoom(bookingData.room)
+        showSuccessAlert();      
+        setSelectedRoom(bookingData.room);
         fetchEvents(selectedRoom);
         setCurrentDate(dayjs(bookingData.date));
         setViewStartDate(dayjs(bookingData.date));
@@ -157,6 +183,15 @@ const RoomScheduleView = () => {
       alert("提交失敗，請稍後重試！");
     } finally{
       setLoading(false);
+      setBookingForm(() => ({
+        title: "",
+        user: "",
+        room: selectedRoom,
+        selectedDate: currentDate.format("YYYY-MM-DD"),
+        startTime: "",
+        endTime: "",
+        editPassword: "",
+      }));
     }
   }
 
@@ -190,8 +225,9 @@ const RoomScheduleView = () => {
         bookingForm={bookingForm}
         onFetchEvents={fetchEvents} // 傳入父元件的 fetchEvents
         setLoading={setLoading}
-
-      />
+        showPasswordErrorAlert={showPasswordErrorAlert}
+        showDeleteAlert={showDeleteAlert}
+        />
       </div>
       <button
         onClick={() => setShowBookingModal(true)}
@@ -209,6 +245,14 @@ const RoomScheduleView = () => {
         />
       )}
       {loading && <LoadingOverlay />}
+      {showAlertModal && (
+        <AlertModal 
+          type={alertType}
+          title={alertTitle}
+          message={alertMessage}
+          onClose={() => setShowAlertModal(false)}
+          />
+      )}
     </div>
   );
 };
