@@ -79,7 +79,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
       ></div>
 
       {/* Modal 內容容器 */}
-      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-80">
+      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full m-8">
         {/* 頂部：Icon + 標題 */}
         <div className="flex flex-col items-center mb-4">
           <div className="bg-gray-700 text-white w-12 h-12 flex items-center justify-center rounded-2xl">
@@ -91,7 +91,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
 
         {/* 表單內容 */}
         <div className="mb-2">
-          <label className="block text-xs text-gray-600 mb-1">預約者</label>
+          <label className="block font-semibold text-gray-600 mb-1">預約者</label>
           <input
             className="w-full border rounded px-2 py-1 text-sm"
             value={user}
@@ -101,7 +101,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
         </div>
 
         <div className="mb-2">
-          <label className="block text-xs text-gray-600 mb-1">會議室</label>
+          <label className="block font-semibold text-gray-600 mb-1">會議室</label>
           <select
             value={room}
             onChange={(e) => setRoom(e.target.value)}
@@ -115,7 +115,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
         </div>
 
         <div className="mb-2">
-          <label className="block text-xs text-gray-600 mb-1">會議名稱</label>
+          <label className="block font-semibold text-gray-600 mb-1">會議名稱</label>
           <input
             className="w-full border rounded px-2 py-1 text-sm"
             value={title}
@@ -125,7 +125,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
         </div>
 
         <div className="mb-2">
-          <label className="block text-xs text-gray-600 mb-1">使用日期</label>
+          <label className="block font-semibold text-gray-600 mb-1">使用日期</label>
           <input
             type="date"
             className="w-full border rounded px-2 py-1 text-sm"
@@ -137,7 +137,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
 
         <div className="flex space-x-2 mb-2">
           <div className="flex-1">
-            <label className="block text-xs text-gray-600 mb-1">開始時間</label>
+            <label className="block font-semibold text-gray-600 mb-1">開始時間</label>
             <DatePicker
               customInput={<CustomTimeInput />}
               shouldCloseOnSelect={true}
@@ -157,7 +157,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
             />
           </div>
           <div className="flex-1">
-            <label className="block text-xs text-gray-600 mb-1">結束時間</label>
+            <label className="block font-semibold text-gray-600 mb-1">結束時間</label>
             <DatePicker
               customInput={<CustomTimeInput />}
               shouldCloseOnSelect={true}
@@ -179,10 +179,9 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
         </div>
 
         <div className="mb-2">
-          <label className="block text-xs text-gray-600 mb-1">編輯密碼</label>
+          <label className="block font-semibold text-gray-600 mb-1">編輯密碼</label>
           <input
             className="w-full border rounded px-2 py-1 text-sm"
-            value={editPassword}
             onChange={(e) => setEditPassword(e.target.value)}
             placeholder="若有設定密碼，請輸入"
           />
