@@ -28,14 +28,14 @@ const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
   const imageUrlToUse = imageUrl || equipment.imageUrl;
 
   return (
-    <div className="bg-white flex h-16 p-1 pl-6">
+    <div className="bg-white flex h-30 p-1 pl-6 mt-2 mb-2">
       {/* 只有在 imageUrl 存在時才渲染圖片 */}
       {imageUrlToUse && (
-        <div className="w-16 h-full mr-4 flex-shrink-0">
+        <div className="w-20 h-20 mr-4 flex-shrink-0">
           <img 
             src={imageUrlToUse} 
             alt="Room Image" 
-            className="w-full h-full object-contain rounded-2xl"
+            className="w-full h-full object-cover rounded-xl"
           />
         </div>
       )}

@@ -301,7 +301,7 @@ const CalendarContent = ({
 
   // 週視圖
   if (selectedView === "Week") {
-    const weekStart = currentDate.startOf("week");
+    const weekStart = currentDate.startOf("week").add(1,"day");
     const displayedWeekDates = Array.from({ length: 6 }, (_, i) =>
       weekStart.add(i, "day")
     );
@@ -325,7 +325,7 @@ const CalendarContent = ({
     return (
       <div className="flex flex-col flex-1 h-[calc(100vh-64px)]">
         {/* 日期表頭 */}
-        <div className="flex border-b">
+        {/* <div className="flex border-b">
           <div className="w-12 flex-shrink-0"></div>
           {displayedWeekDates.map((date) => (
             <div 
@@ -342,7 +342,7 @@ const CalendarContent = ({
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* 內容區域 */}
         <div className="flex flex-1 overflow-auto">

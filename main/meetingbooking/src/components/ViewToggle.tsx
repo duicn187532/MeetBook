@@ -30,19 +30,19 @@ const MonthViewHeader = ({
   setCurrentDate: (date: dayjs.Dayjs) => void;
 }) => (
   <div className="mt-2">
-    <div className="flex justify-between items-center mb-2">
+    <div className="flex justify-between items-center mt-5">
       <button
         onClick={() => setCurrentDate(currentDate.subtract(1, "month"))}
-        className="p-1 rounded-full bg-white"
+        className="p-1 rounded-full bg-black"
       >
-        <ChevronLeft className="w-3 h-3" />
+        <ChevronLeft className="w-3 h-3 text-white" />
       </button>
-      <div className="text-base font-semibold">{currentDate.format("MMMM YYYY")}</div>
+      <div className="text-2xl font-semibold p-3">{currentDate.format("MMMM YYYY")}</div>
       <button
         onClick={() => setCurrentDate(currentDate.add(1, "month"))}
-        className="p-1 rounded-full bg-white"
+        className="p-1 rounded-full bg-black"
       >
-        <ChevronRight className="w-3 h-3" />
+        <ChevronRight className="w-3 h-3 text-white" />
       </button>
     </div>
   </div>
@@ -80,28 +80,31 @@ const ViewToggle = ({
   };
 
   // 週視圖
-  const weekStart = currentDate.startOf("week");
+  const weekStart = currentDate.startOf("week").add(1, "day"); // 從週一開始
   const displayedWeekDates = Array.from({ length: 6 }, (_, i) =>
     weekStart.add(i, "day")
   );
 
   return (
-    <div className={`p-2 flex flex-col ${backgroundColor} items-center rounded-t-2xl`}>
-      <div className="flex rounded-full bg-white w-fit p-0.5">
+    <div className={`p-2 flex flex-col ${backgroundColor} items-center rounded-t-2xl h-[150px]`}>
+      <div className="flex rounded-full bg-white w-fit p-0.5 shadow-lg">
         {["Day", "Week", "Month"].map((view) => (
           <button
             key={view}
             onClick={() => onChangeView(view as ViewMode)}
-            className={`px-3 py-0.5 rounded-full text-xs ${
-              selectedView === view ? `${datesBackgroundColor} text-white` : "text-gray-700"
+            className={`px-3 py-0.5 rounded-full text-sm font-medium transition-all duration-200 ${
+              selectedView === view 
+                ? `${datesBackgroundColor} text-white shadow-inner transform scale-60` 
+                : 'text-gray-700 hover:bg-gray-50 active:scale-95'
             }`}
           >
             {view}
           </button>
         ))}
       </div>
+
       {selectedView === "Day" && (
-        <div className="flex w-full justify-between items-center mt-2">
+        <div className="flex w-full justify-between items-center mt-8">
           <button onClick={handlePrevDays} className="p-1 rounded-full bg-black">
             <ChevronLeft className=" text-white w-3 h-3" />
           </button>
@@ -121,6 +124,9 @@ const ViewToggle = ({
               >
                 <div className="text-2xl font-semibold">{date.format("D")}</div>
                 <div className="text-xs">{date.format("ddd")}</div>
+                {date.isSame(dayjs(), "day") && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 mx-auto mt-1"></div>
+                )}
               </button>
             ))}
           </div>
@@ -130,39 +136,51 @@ const ViewToggle = ({
         </div>
       )}
       {selectedView === "Week" && (
-        <div className="flex w-full justify-between items-center mt-2">
-          <button 
-            onClick={() => setCurrentDate(currentDate.subtract(7, "day"))} 
-            className="p-1 rounded-full bg-black"
-          >
-            <ChevronLeft className="text-white w-3 h-3" />
-          </button>
-          <div className="flex space-x-3 bg-white rounded-lg">
-            {displayedWeekDates.map((date) => (
-              <button
-                key={date.format("YYYY-MM-DD")}
-                onClick={() => {
-                  setCurrentDate(date);
-                  updateBookingDate(date);
-                }}
-                className={`text-center px-2 py-1 rounded ${
-                  date.isSame(currentDate, "day")
-                    ? "text-red-500 rounded-lg"
-                    : "text-gray-700"
-                }`}
-              >
-                <div className="text-xs font-semibold">{date.format("D")}</div>
-                <div className="text-xs">{date.format("ddd")}</div>
-              </button>
-            ))}
+        <>
+          {/* 添加今天的日期顯示 */}
+          <div className="text-gray-800 mt-2.5 mb-0.5 text-center">
+            <div className="text-xl font-medium">
+              {currentDate.format("MM")}月{currentDate.format("DD")}日
+            </div>
           </div>
-          <button 
-            onClick={() => setCurrentDate(currentDate.add(7, "day"))} 
-            className="p-1 rounded-full bg-black"
-          >
-            <ChevronRight className="w-3 h-3 text-white" />
-          </button>
-        </div>
+
+          <div className="flex w-full justify-between items-center mb-2">
+            <button 
+              onClick={() => setCurrentDate(currentDate.subtract(7, "day"))} 
+              className="p-1 rounded-full bg-black"
+            >
+              <ChevronLeft className="text-white w-3 h-3" />
+            </button>
+            <div className="flex space-x-3 bg-white rounded-lg">
+              {displayedWeekDates.map((date) => (
+                <button
+                  key={date.format("YYYY-MM-DD")}
+                  onClick={() => {
+                    setCurrentDate(date);
+                    updateBookingDate(date);
+                  }}
+                  className={`text-center px-2 py-1 rounded ${
+                    date.isSame(currentDate, "day")
+                      ? "text-red-500 rounded-lg"
+                      : "text-gray-700"
+                  }`}
+                >
+                  <div className="text-2xl font-semibold">{date.format("D")}</div>
+                  <div className="text-xs">{date.format("ddd")}</div>
+                  {date.isSame(dayjs(), "day") && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mx-auto mt-1"></div>
+                  )}
+                </button>
+              ))}
+            </div>
+            <button 
+              onClick={() => setCurrentDate(currentDate.add(7, "day"))} 
+              className="p-1 rounded-full bg-black"
+            >
+              <ChevronRight className="w-3 h-3 text-white" />
+            </button>
+          </div>
+        </>
       )}
       {selectedView === "Month" && (
         <MonthViewHeader currentDate={currentDate} setCurrentDate={setCurrentDate} />
