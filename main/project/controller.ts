@@ -115,7 +115,7 @@ async function addBooking(ctx: any) {
     const id = crypto.randomUUID();
 
     // 插入新的預訂
-    const result = await todos.insertOne({ id, title, user, room, cancelled: false, startTime: sTime, endTime, editPassword });
+    const result = await todos.insertOne({ id, createdTime: Date(), title, user, room, cancelled: false, startTime: sTime, endTime, editPassword });
     ctx.response.status = 201;
     ctx.response.body = { id: result.insertedId, message: "預訂成功 ✅" };
 
