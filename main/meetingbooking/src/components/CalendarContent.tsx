@@ -285,7 +285,7 @@ const CalendarContent = ({
         <ConfirmationModal
           show={showConfirmModal}
           title={modalProps.title}
-          message={modalProps.message}
+          // message={modalProps.message}
           confirmLabel={modalProps.confirmLabel}
           cancelLabel={modalProps.cancelLabel}
           confirmColor={modalProps.confirmColor}
@@ -457,7 +457,7 @@ const CalendarContent = ({
         <ConfirmationModal
           show={showConfirmModal}
           title={modalProps.title}
-          message={modalProps.message}
+          // message={modalProps.message}
           confirmLabel={modalProps.confirmLabel}
           cancelLabel={modalProps.cancelLabel}
           confirmColor={modalProps.confirmColor}
@@ -581,7 +581,7 @@ const CalendarContent = ({
         <ConfirmationModal
           show={showConfirmModal}
           title={modalProps.title}
-          message={modalProps.message}
+          // message={modalProps.message}
           confirmLabel={modalProps.confirmLabel}
           cancelLabel={modalProps.cancelLabel}
           confirmColor={modalProps.confirmColor}

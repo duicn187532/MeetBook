@@ -4,7 +4,7 @@ import { HelpCircle } from "lucide-react";
 interface ConfirmationModalProps {
   show: boolean;
   title: string;
-  message: string;
+  // message: string;
   confirmLabel?: string;
   cancelLabel?: string;
   confirmColor?: string;
@@ -16,7 +16,7 @@ interface ConfirmationModalProps {
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   show,
   title,
-  message,
+  // message,
   confirmLabel = "確定",
   cancelLabel = "取消",
   confirmColor = "bg-red-500",
@@ -32,16 +32,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={onCancel}></div>
 
       {/* 修正：確保 modal 在 overlay 之上，並調整大小 */}
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5 z-50 relative">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm m-8 p-5 z-50 relative">
         
         {/* 修正：確保 HelpCircle 圖示顯示正確 */}
-        <HelpCircle className={`p-3 w-12 h-12 ${iconColor} text-white mx-auto mb-3 rounded-xl`} />
+        <HelpCircle className={`p-3 w-12 h-12 ${iconColor} text-white mx-auto mb-4 rounded-xl`} />
 
         {/* 標題 */}
-        <h2 className="text-lg font-semibold text-center mb-2">{title}</h2>
+        <h2 className="text-lg font-semibold text-center mb-4">{title}</h2>
 
         {/* 訊息 */}
-        <p className="text-gray-600 text-center">{message}</p>
+        {/* <p className="text-gray-600 text-center">{message}</p> */}
 
         {/* 按鈕 */}
         <div className="flex justify-around mt-4">
