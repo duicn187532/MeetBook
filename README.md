@@ -1,2 +1,0 @@
-# MeetBook
-meeting booking app
