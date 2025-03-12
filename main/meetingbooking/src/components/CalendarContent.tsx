@@ -147,7 +147,7 @@ const CalendarContent = ({
 
       if (!res.ok) {
         if (res.status === 403) {
-          alert("編輯密碼不正確，請重新輸入！");
+          showPasswordErrorAlert()
         }
         throw new Error(`伺服器回應錯誤: ${res.status}`);
       }
