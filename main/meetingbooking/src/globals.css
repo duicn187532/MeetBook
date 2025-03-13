@@ -116,3 +116,6 @@ body {
   }
 }
 
+.MuiMultiSectionDigitalClockSection-item.Mui-disabled {
+  display: none !important;
+}

@@ -109,35 +109,55 @@ const BookingModal = ({
             <div className="flex-1">
               <label className="block text-sm mb-1">開始時間</label>
               <TimePicker
-                value={dayjs(`1970-01-01T${bookingForm.startTime}`)}
-                onChange={(newTime) => {
-                  if (newTime) {
-                    setBookingForm((prev: any) => ({ ...prev, startTime: newTime.format("HH:mm") }));
-                  }
-                }}
-                ampm={false}
-                minTime={dayjs().hour(8).minute(45)}
-                maxTime={dayjs().hour(18).minute(15)}
-                desktopModeMediaQuery="(max-width: 9999px)"
-                timeSteps={{ hours: 1, minutes: 1}}
-              />
-            </div>
+              value={dayjs(`1970-01-01T${bookingForm.startTime}`)}
+              onChange={(newTime) => {
+                if (newTime) {
+                  setBookingForm((prev: any) => ({
+                    ...prev,
+                    startTime: newTime.format("HH:mm"),
+                  }));
+                }
+              }}
+              ampm={false}
+              minTime={dayjs().hour(8).minute(45)}
+              maxTime={dayjs().hour(18).minute(15)}
+              desktopModeMediaQuery="(max-width: 9999px)"
+              timeSteps={{ hours: 1, minutes: 1 }}
+              // slotProps={{
+              //   paper: {
+              //     sx: {
+              //       backgroundColor: '#f0f0f0', // 修改這裡以變更背景色
+              //     },
+              //   },
+              // }}
+            />
+          </div>
 
-            {/* 結束時間 */}
-            <div className="flex-1">
-              <label className="block text-sm mb-1">結束時間</label>
+          {/* 結束時間 */}
+          <div className="flex-1">
+            <label className="block text-sm mb-1">結束時間</label>
               <TimePicker
                 value={dayjs(`1970-01-01T${bookingForm.endTime}`)}
                 onChange={(newTime) => {
                   if (newTime) {
-                    setBookingForm((prev: any) => ({ ...prev, endTime: newTime.format("HH:mm") }));
+                    setBookingForm((prev: any) => ({
+                      ...prev,
+                      endTime: newTime.format("HH:mm"),
+                    }));
                   }
                 }}
                 ampm={false}
                 minTime={dayjs().hour(8).minute(45)}
                 maxTime={dayjs().hour(18).minute(15)}
                 desktopModeMediaQuery="(max-width: 9999px)"
-                timeSteps={{ hours: 1, minutes: 1}}
+                timeSteps={{ hours: 1, minutes: 1 }}
+                // slotProps={{
+                //   paper: {
+                //     sx: {
+                //       backgroundColor: '#f0f0f0', // 同上
+                //     },
+                //   },
+                // }}
               />
             </div>
           </div>

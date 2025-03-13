@@ -102,9 +102,13 @@ const ViewToggle = ({
           </button>
         ))}
       </div>
+      
 
       {selectedView === "Day" && (
-        <div className="flex w-full justify-between items-center mt-8">
+        <>
+        <div className="pt-2 text-2xl font-semibold ">{currentDate.format("MMMM YYYY")}</div>
+
+        <div className="flex w-full justify-between items-center">
           <button onClick={handlePrevDays} className="p-1 rounded-full bg-black">
             <ChevronLeft className=" text-white w-3 h-3" />
           </button>
@@ -134,6 +138,7 @@ const ViewToggle = ({
             <ChevronRight className="w-3 h-3 text-white" />
           </button>
         </div>
+        </>
       )}
       {selectedView === "Week" && (
         <>

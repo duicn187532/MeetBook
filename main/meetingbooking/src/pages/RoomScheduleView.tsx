@@ -55,15 +55,15 @@ const RoomScheduleView = () => {
 
   const showUpdatedFailedAlert = () => {
     setAlertType("error");
-    setAlertTitle("資料更新失敗");
-    setAlertMessage("無更新資料或資料庫出錯");
+    setAlertTitle("儲存失敗");
+    setAlertMessage("更新資料失敗,請再重新輸入");
     setShowAlertModal(true);
   }
 
   const showTimeConflictAlert = () => {
     setAlertType("error");
-    setAlertTitle("預約時段重複");
-    setAlertMessage("請嘗試其他時間或其他會議室");
+    setAlertTitle("時段重複");
+    setAlertMessage("已經有人預約囉,請重新選擇時間");
     setShowAlertModal(true);
   }
 
