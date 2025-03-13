@@ -79,7 +79,7 @@ const MeetingInfoModal = ({
         {/* 底部按鈕 */}
         <div className="flex justify-between items-center mt-6">
           <button
-            className="bg-gray-300 border border-gray-300 rounded-xl w-full mx-2 py-2 text-sm text-gray-700"
+            className="border-2 border-[#DFBB00] bg-white rounded-xl w-full mx-2 py-2 text-sm text-gray-700"
             onClick={onCancel}
           >
             <span>刪除</span>
