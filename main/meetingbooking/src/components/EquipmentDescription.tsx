@@ -1,5 +1,5 @@
 // src/components/Equipment.tsx
-import { Users, Monitor, Square } from "lucide-react";
+import { Users, Monitor, Square, Tv } from "lucide-react";
 
 interface EquipmentProps {
   selectedRoom: string;
@@ -8,11 +8,11 @@ interface EquipmentProps {
 
 // 定義每個房間的設備資訊
 const equipmentMapping: { 
-  [room: string]: { seats: number; hasProjector: boolean; hasWhiteboard: boolean; imageUrl: string } 
+  [room: string]: { seats: number; hasProjector: boolean; hasWhiteboard: boolean; hasTv:boolean; imageUrl: string } 
 } = {
-  A101: { seats: 15, hasProjector: true, hasWhiteboard: true, imageUrl: "a101.jpeg" },
-  A102: { seats: 10, hasProjector: false, hasWhiteboard: true, imageUrl: "a102.jpeg" },
-  A103: { seats: 20, hasProjector: true, hasWhiteboard: true, imageUrl: "a103.jpeg" },
+  A101: { seats: 10, hasProjector: true, hasWhiteboard: true, hasTv: false, imageUrl: "a101.jpeg" },
+  A102: { seats: 15, hasProjector: false, hasWhiteboard: true, hasTv: false,imageUrl: "a102.jpeg" },
+  A103: { seats: 20, hasProjector: true, hasWhiteboard: true, hasTv: true,imageUrl: "a103.jpeg" },
 };
 
 const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
@@ -21,6 +21,7 @@ const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
     seats: 20, 
     hasProjector: false, 
     hasWhiteboard: false, 
+    hashTv: false,
     imageUrl: "" 
   };
 
@@ -46,7 +47,7 @@ const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
         <div className="flex space-x-4">
           <div className="flex items-center space-x-1">
             <Users className="w-4 h-4" />
-            <span className="text-xs">{equipment.seats} Seats</span>
+            <span className="text-xs">{equipment.seats}</span>
           </div>
           {equipment.hasProjector && (
             <div className="flex items-center space-x-1">
@@ -57,7 +58,13 @@ const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
           {equipment.hasWhiteboard && (
             <div className="flex items-center space-x-1">
               <Square className="w-4 h-4" />
-              <span className="text-xs">Whiteboard</span>
+              <span className="text-xs">白板</span>
+            </div>
+          )}
+          {equipment.hasTv && (
+            <div className="flex items-center space-x-1">
+              <Tv className="w-4 h-4" />
+              <span className="text-xs">電視</span>
             </div>
           )}
         </div>

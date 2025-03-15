@@ -62,6 +62,10 @@ const MeetingInfoModal = ({
             <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.title}</div>
           </div>
           <div>
+            <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
+            <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.participantsNum}</div>
+          </div>
+          <div>
             <label className="block font-semibold text-gray-600 mb-1">使用時間</label>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm mb-1">{meetingInfo.date}</div>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm">{dayjs.utc(meetingInfo.startTime).tz("Asia/Taipei").format("HH:mm")} ~ {dayjs.utc(meetingInfo.endTime).tz("Asia/Taipei").format("HH:mm")}</div>

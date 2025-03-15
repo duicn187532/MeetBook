@@ -19,6 +19,7 @@ interface CalendarContentProps {
   meetings: Meeting[];
   onFetchEvents: (room: string) => void;
   setLoading: (any: any) => void;
+  onChangeView: (view: ViewMode) => void;
   showPasswordErrorAlert: () => void;
   showDeleteAlert: () => void;
   showUpdatedFailedAlert: () => void;
@@ -494,7 +495,7 @@ const CalendarContent = ({
               </div>
 
               <div className="grid grid-cols-7 mb-2">
-                {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
                   <div 
                     key={day} 
                     className={`text-center font-semibold text-sm ${
