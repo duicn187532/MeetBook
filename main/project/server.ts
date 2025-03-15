@@ -1,18 +1,26 @@
-import { Application, Router } from "https://deno.land/x/oak/mod.ts";
+import { Application, Router } from "https://deno.land/x/oak@v17.1.4/mod.ts";
 import "https://deno.land/std@0.177.0/dotenv/load.ts";
 import { getAllBooked, addBooking, updateBooking, getActiveBooked } from "./controller.ts";
-import { oakCors } from "https://deno.land/x/cors/mod.ts";
+import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
 const app = new Application();
 const router = new Router();
 
 // ✅ 启用 CORS
-app.use(oakCors({
-  origin: "*",
-  methods: ["GET", "POST", "PATCH"],
-  allowedHeaders: ["Content-Type"],
-}));
+const env = Deno.env.get("ENV"); // 假設 "production" 表示正式環境
 
+const corsOrigin =
+  env === "production"
+    ? "https://duicn187532.github.io"
+    : "*";
+
+app.use(
+  oakCors({
+    origin: corsOrigin,
+    methods: ["GET", "POST", "PATCH"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 // ✅ 记录 API 请求
 router.get("/api/bookings/:room?", async (ctx) => {
   console.log("📥 收到 GET /api/bookings 请求");

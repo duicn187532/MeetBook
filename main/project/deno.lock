@@ -10,6 +10,7 @@
     "jsr:@std/http@1": "1.0.13",
     "jsr:@std/media-types@1": "1.1.0",
     "jsr:@std/path@1": "1.0.8",
+    "npm:dayjs@^1.11.13": "1.11.13",
     "npm:mongodb@5.6.0": "5.6.0",
     "npm:path-to-regexp@^6.3.0": "6.3.0"
   },
@@ -69,6 +70,9 @@
     },
     "bson@5.5.1": {
       "integrity": "sha512-ix0EwukN2EpC0SRWIj/7B5+A6uQMQy6KMREI9qQqvgpkV2frH63T0UDVd1SYedL6dNCmDBYB3QtXi4ISk9YT+g=="
+    },
+    "dayjs@1.11.13": {
+      "integrity": "sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg=="
     },
     "ip-address@9.0.5": {
       "integrity": "sha512-zHtQzGojZXTwZTHQqra+ETKd4Sn3vgi7uBmlPoXVWZqYvuKmtI0l/VZTjqGmJY9x88GGOaZ9+G9ES8hC4T4X8g==",
@@ -211,6 +215,11 @@
   "workspace": {
     "dependencies": [
       "npm:mongodb@5.6.0"
-    ]
+    ],
+    "packageJson": {
+      "dependencies": [
+        "npm:dayjs@^1.11.13"
+      ]
+    }
   }
 }

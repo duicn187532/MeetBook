@@ -1,6 +1,21 @@
+let sourceToken = "";
+let api_key = "";
+
 // 使用 Logflare 作為 logger
-const sourceToken = Deno.env.get("LOGFLARE_SOURCE_TOKEN") || "";
-const api_key = Deno.env.get("LOGFLARE_API_KEY")
+const env = Deno.env.get("ENV") || "development";
+
+if (env === "production") {
+  // 直接使用部署環境中的 Secrets
+  sourceToken = Deno.env.get("LOGFLARE_SOURCE_TOKEN") || "";
+  api_key = Deno.env.get("LOGFLARE_API_KEY") || "";
+} else {
+  // 本地開發時載入 .env 檔案
+  const { load } = await import("https://deno.land/std@0.177.0/dotenv/mod.ts");
+  const envVars = await load({ envPath: ".env.development" });
+  sourceToken = envVars.LOGFLARE_SOURCE_TOKEN || "";
+  api_key = envVars.LOGFLARE_API_KEY || "";
+}
+
 if (!sourceToken) {
   console.error("LOGFLARE_SOURCE_TOKEN is not set");
   Deno.exit(1);
