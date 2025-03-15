@@ -1,5 +1,5 @@
 # Node modules (會同時忽略 meetingbooking 與 project 資料夾裡的 node_modules)
-**/node_modules
+main/project/node_modules
 
 # Deno 相關
 **/.deno
@@ -13,8 +13,8 @@
 **/.env
 
 # macOS 與 Windows 系統檔
-.DS_Store
-Thumbs.db
+**/.DS_Store
+
 
 # 其他可依需求新增，例如：
 # 1. 打包輸出資料夾 (若有 build、dist 或 out)
