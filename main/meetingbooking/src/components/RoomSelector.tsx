@@ -2,7 +2,7 @@ import { RoomKey, roomNames } from "../types/common";
 
 interface RoomSelectorProps {
   selectedRoom: string;
-  onSelectRoom: (room: string) => void;
+  onSelectRoom: (room: RoomKey) => void;
 }
 
 const roomStyle: Record<RoomKey, any> = {

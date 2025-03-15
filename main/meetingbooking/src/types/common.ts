@@ -34,6 +34,50 @@ export interface BookingForm {
     editPassword: string;
   };
 
+export interface Meeting {
+  id: string;
+  title: string;
+  user: string;
+  room: string;
+  participantsNum: number;
+  startTime: string;
+  endTime: string;
+  TaipeiStartTime: string;
+  TaipeiEndTime: string;
+  date: string;
+  updatedCount?: number;
+}
+
+export interface BookingFormData {
+  title: string;
+  user: string;
+  room: string;
+  participantsNum: number;
+  selectedDate: string;
+  startTime: string;
+  endTime: string;
+  editPassword: string;
+}
+
+export interface ConfirmationModalProps {
+  show: boolean;
+  title: string;
+  message?: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  confirmColor: string;
+  iconColor: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export interface AlertModalProps {
+  type: "success" | "error";
+  title: string;
+  message?: string;
+  onClose: () => void;
+}
+
   export type ViewMode = "Day" | "Week" | "Month";
   
   export type RoomKey = "A101" | "A102" | "A103";

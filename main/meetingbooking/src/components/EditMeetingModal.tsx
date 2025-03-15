@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { MeetingInfo } from "../types/common";
 import { RefreshCw } from "lucide-react";
+
+// 初始化插件與設定預設台北時區
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Taipei");
+
 
 interface EditMeetingModalProps {
   show: boolean;
@@ -27,8 +35,8 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   const [title, setTitle] = useState(MeetingInfo.title);
   const [participantsNum, setParticipantsNum] = useState(MeetingInfo.participantsNum);
   const [date, setDate] = useState(MeetingInfo.date);
-  const [startTime, setStartTime] = useState(dayjs(MeetingInfo.startTime));
-  const [endTime, setEndTime] = useState(dayjs(MeetingInfo.endTime));
+  const [startTime, setStartTime] = useState(dayjs(MeetingInfo.startTime).tz("Asia/Taipei"));
+  const [endTime, setEndTime] = useState(dayjs(MeetingInfo.endTime).tz("Asia/Taipei"));
   const [editPassword, setEditPassword] = useState("");
 
   // 當 MeetingInfo 變更時，確保狀態同步更新
@@ -38,11 +46,25 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
       setRoom(MeetingInfo.room);
       setTitle(MeetingInfo.title);
       setDate(MeetingInfo.date);
-      setStartTime(dayjs(MeetingInfo.startTime)); // 保持日期時間格式
-      setEndTime(dayjs(MeetingInfo.endTime));
+      setStartTime(dayjs(MeetingInfo.startTime).tz("Asia/Taipei"));
+      setEndTime(dayjs(MeetingInfo.endTime).tz("Asia/Taipei"));
     }
   }, [MeetingInfo]);
 
+  useEffect(() => {
+    setStartTime((prev) =>
+      dayjs.tz(date, "YYYY-MM-DD", "Asia/Taipei")
+        .hour(prev.hour())
+        .minute(prev.minute())
+        .second(0)
+    );
+    setEndTime((prev) =>
+      dayjs.tz(date, "YYYY-MM-DD", "Asia/Taipei")
+        .hour(prev.hour())
+        .minute(prev.minute())
+        .second(0)
+    );
+  }, [date]);
 
   // 當日期改變時，更新 startTime 和 endTime 的日期部分
   const handleDateChange = (newDateStr: string) => {
@@ -90,17 +112,30 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
           />
         </div>
 
-        <div className="mb-2">
-          <label className="block font-semibold text-gray-600 mb-1">會議室</label>
-          <select
-            value={room}
-            onChange={(e) => setRoom(e.target.value)}
-            className="border border-gray-300 rounded w-full px-3 py-2 text-sm focus:outline-none"
-          >
-            <option value="A101">Alpha</option>
-            <option value="A102">Beta</option>
-            <option value="A103">StartUp</option>
-          </select>
+        <div className="flex space-x-2 mb-2">
+          <div className="flex-1">
+            <label className="block font-semibold text-gray-600 mb-1">會議室</label>
+            <select
+              value={room}
+              onChange={(e) => setRoom(e.target.value)}
+              className="border border-gray-300 rounded w-full px-3 py-2 text-sm focus:outline-none"
+            >
+              <option value="A101">Alpha</option>
+              <option value="A102">Beta</option>
+              <option value="A103">StartUp</option>
+            </select>
+          </div>
+
+          <div className="flex-1">
+            <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
+            <input
+              type="number"
+              className="w-full border rounded px-3 py-2 text-sm"
+              value={participantsNum}
+              onChange={(e) => setParticipantsNum(e.target.valueAsNumber)}
+              placeholder="請輸入與會人數"
+            />
+          </div>
         </div>
 
         <div className="mb-2">
@@ -110,17 +145,6 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="請輸入會議主題"
-          />
-        </div>
-
-        <div className="mb-2">
-          <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
-          <input
-            type="number"
-            className="w-full border rounded px-2 py-1 text-sm"
-            value={participantsNum}
-            onChange={(e) => setParticipantsNum(e.target.valueAsNumber)}
-            placeholder="請輸入與會人數"
           />
         </div>
 
@@ -141,7 +165,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
               value={startTime}
               onChange={(newTime) => {
                 if (newTime) {
-                  setStartTime(newTime);
+                  setStartTime(newTime.tz("Asia/Taipei"));
                 }
               }}
               ampm={false}
@@ -157,7 +181,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
               value={endTime}
               onChange={(newTime) => {
                 if (newTime) {
-                  setEndTime(newTime);
+                  setStartTime(newTime.tz("Asia/Taipei"));
                 }
               }}
               ampm={false}
