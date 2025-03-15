@@ -65,17 +65,31 @@ const ViewToggle = ({
     viewStartDate.add(offset, "day")
   );
 
-  const handlePrevDays = () => {
+  const handlePrevDaysOnDay = () => {
     const newDate = viewStartDate.subtract(6, "day");
     setViewStartDate(newDate);
     setCurrentDate(currentDate.subtract(6, "day"))
     updateBookingDate(newDate);
   };
 
-  const handleNextDays = () => {
+  const handleNextDaysOnDay = () => {
     const newDate = viewStartDate.add(6, "day");
     setViewStartDate(newDate);
     setCurrentDate(currentDate.add(6, "day"))
+    updateBookingDate(newDate);
+  };
+
+  const handlePrevDaysOnWeek = () => {
+    const newDate = viewStartDate.subtract(7, "day");
+    setViewStartDate(newDate);
+    setCurrentDate(currentDate.subtract(7, "day"))
+    updateBookingDate(newDate);
+  };
+
+  const handleNextDaysOnWeek = () => {
+    const newDate = viewStartDate.add(7, "day");
+    setViewStartDate(newDate);
+    setCurrentDate(currentDate.add(7, "day"))
     updateBookingDate(newDate);
   };
 
@@ -106,10 +120,10 @@ const ViewToggle = ({
 
       {selectedView === "Day" && (
         <>
-        <div className="pt-2 text-2xl font-semibold ">{currentDate.format("MMMM YYYY")}</div>
+        <div className="pt-2 text-2xl font-normal ">{currentDate.format("MMMM YYYY")}</div>
 
         <div className="flex w-full justify-between items-center">
-          <button onClick={handlePrevDays} className="p-1 rounded-full bg-black">
+          <button onClick={handlePrevDaysOnDay} className="p-1 rounded-full bg-black">
             <ChevronLeft className=" text-white w-3 h-3" />
           </button>
           <div className="flex space-x-3">
@@ -128,13 +142,14 @@ const ViewToggle = ({
               >
                 <div className="text-2xl font-semibold">{date.format("D")}</div>
                 <div className="text-xs">{date.format("ddd")}</div>
-                {date.isSame(dayjs(), "day") && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 mx-auto mt-1"></div>
-                )}
+                {date.isSame(dayjs(), "day") ? (
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mx-auto mt-1"></div>
+                  ):<div className="w-1.5 h-1.5 rounded-full mx-auto mt-1"></div>
+                  }
               </button>
             ))}
           </div>
-          <button onClick={handleNextDays} className="p-1 rounded-full bg-black">
+          <button onClick={handleNextDaysOnDay} className="p-1 rounded-full bg-black">
             <ChevronRight className="w-3 h-3 text-white" />
           </button>
         </div>
@@ -143,20 +158,17 @@ const ViewToggle = ({
       {selectedView === "Week" && (
         <>
           {/* 添加今天的日期顯示 */}
-          <div className="text-gray-800 mt-2.5 mb-0.5 text-center">
-            <div className="text-xl font-medium">
-              {currentDate.format("MM")}月{currentDate.format("DD")}日
-            </div>
-          </div>
+            <div className="pt-2 text-2xl font-normal">{currentDate.format("MMMM YYYY")}</div>
+
 
           <div className="flex w-full justify-between items-center mb-2">
             <button 
-              onClick={() => setCurrentDate(currentDate.subtract(7, "day"))} 
+              onClick={handlePrevDaysOnWeek} 
               className="p-1 rounded-full bg-black"
             >
               <ChevronLeft className="text-white w-3 h-3" />
             </button>
-            <div className="flex space-x-3 bg-white rounded-lg">
+            <div className="flex justify-between items-center h-full space-x-3 bg-white w-full mx-4 rounded-lg">
               {displayedWeekDates.map((date) => (
                 <button
                   key={date.format("YYYY-MM-DD")}
@@ -172,14 +184,15 @@ const ViewToggle = ({
                 >
                   <div className="text-2xl font-semibold">{date.format("D")}</div>
                   <div className="text-xs">{date.format("ddd")}</div>
-                  {date.isSame(dayjs(), "day") && (
+                  {date.isSame(dayjs(), "day") ? (
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 mx-auto mt-1"></div>
-                  )}
+                  ):<div className="w-1.5 h-1.5 rounded-full mx-auto mt-1"></div>
+                  }
                 </button>
               ))}
             </div>
             <button 
-              onClick={() => setCurrentDate(currentDate.add(7, "day"))} 
+              onClick={handleNextDaysOnWeek} 
               className="p-1 rounded-full bg-black"
             >
               <ChevronRight className="w-3 h-3 text-white" />

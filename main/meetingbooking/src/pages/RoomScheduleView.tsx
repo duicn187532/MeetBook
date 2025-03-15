@@ -1,4 +1,3 @@
-// src/pages/RoomScheduleView.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,18 +11,18 @@ import ViewToggle from "../components/ViewToggle";
 import CalendarContent from "../components/CalendarContent";
 import BookingModal from "../components/BookingModal";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { Meeting, ViewMode } from "../types/common";
+import { Meeting, ViewMode ,RoomKey} from "../types/common";
 import AlertModal from "../components/AlertModal";
 
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const API_URL = "https://meetingbooking.deno.dev/api/bookings";
+const API_URL = "https://meetingbooking.deno.dev/api/bookings/";
 
 const RoomScheduleView = () => {
   const [selectedRoom, setSelectedRoom] = useState("A101");
-  const [selectedView, setSelectedView] = useState<ViewMode>("Day");
+  const [selectedView, setSelectedView] = useState<ViewMode>("Week");
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [viewStartDate, setViewStartDate] = useState(dayjs());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -78,6 +77,7 @@ const RoomScheduleView = () => {
     title: "",
     user: "",
     room: selectedRoom,
+    participantsNum: 0,
     selectedDate: currentDate.format("YYYY-MM-DD"),
     startTime: "",
     endTime: "",
@@ -101,10 +101,10 @@ const RoomScheduleView = () => {
   async function fetchEvents(room: string) {
     setLoading(true);
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL + room);
       const data = await res.json();
       const events: Meeting[] = data.data
-        .filter((event: any) => event.room === room)
+        // .filter((event: any) => event.room === room)
         .map((event: any) => {
           const startTime = event.startTime;
           const endTime = event.endTime;
@@ -114,6 +114,7 @@ const RoomScheduleView = () => {
             title: event.title || `${dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm")} ~ ${dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm")}`,
             user: event.user,
             room: room,
+            participantsNum: event.participantsNum,
             startTime,
             endTime,
             TaipeiStartTime: dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm"),
@@ -138,8 +139,6 @@ const RoomScheduleView = () => {
     fetchEvents(selectedRoom);
   }, [selectedRoom]);
   
-  type RoomKey = "A101" | "A102" | "A103";
-
   const buttonBGColors: Record<RoomKey, string> = {
     A101: "bg-[#3C97FF]", // 浅蓝色
     A102: "bg-[#FF3F3F]", // 浅红色
@@ -155,7 +154,7 @@ const RoomScheduleView = () => {
   };
 
   async function submitBooking() {
-    const {title, user, room, selectedDate, startTime, endTime, editPassword } = bookingForm;
+    const {title, user, room, participantsNum, selectedDate, startTime, endTime, editPassword } = bookingForm;
     if (!selectedDate || !user || !room || !startTime || !endTime) {
       setErrorMessage("請填寫所有欄位！");
       return;
@@ -176,6 +175,7 @@ const RoomScheduleView = () => {
       title,
       user,
       room,
+      participantsNum,
       date: selectedDate,
       startTime: start.toISOString(),
       endTime: end.toISOString(),
@@ -191,7 +191,6 @@ const RoomScheduleView = () => {
         body: JSON.stringify(bookingData),
       });
       if (response.status === 400) {
-        // alert("預訂失敗: " + result.error);
         showTimeConflictAlert();
       } else {
         showSuccessAlert();      
@@ -209,9 +208,10 @@ const RoomScheduleView = () => {
         title: "",
         user: "",
         room: selectedRoom,
+        participantsNum: 0,
         selectedDate: currentDate.format("YYYY-MM-DD"),
-        startTime: "",
-        endTime: "",
+        startTime: dayjs().format("HH:mm"),
+        endTime: dayjs().add(1, "hour").format("HH:mm"),
         editPassword: "",
       }));
     }
@@ -246,6 +246,7 @@ const RoomScheduleView = () => {
         meetings={meetings}
         onFetchEvents={fetchEvents} // 傳入父元件的 fetchEvents
         setLoading={setLoading}
+        onChangeView={setSelectedView}
         showPasswordErrorAlert={showPasswordErrorAlert}
         showDeleteAlert={showDeleteAlert}
         showUpdatedFailedAlert={showUpdatedFailedAlert}
@@ -257,7 +258,7 @@ const RoomScheduleView = () => {
         onClick={() => setShowBookingModal(true)}
         className={`absolute bottom-4 right-4 w-10 h-10 ${buttonBGColor} text-white rounded-xl flex items-center justify-center shadow-lg`}
       >
-        <span className="text-xl">+</span>
+        <span className="text-2xl">+</span>
       </button>
       {showBookingModal && (
         <BookingModal

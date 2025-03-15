@@ -14,7 +14,7 @@ app.use(oakCors({
 }));
 
 // ✅ 记录 API 请求
-router.get("/api/bookings", async (ctx) => {
+router.get("/api/bookings/:room?", async (ctx) => {
   console.log("📥 收到 GET /api/bookings 请求");
   return await getActiveBooked(ctx);
 });

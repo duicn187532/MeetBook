@@ -8,7 +8,6 @@ interface EditMeetingModalProps {
   show: boolean;
   onClose: () => void;
   MeetingInfo: MeetingInfo | null;
-  // EditPassword: string;
   onSubmit: (updatedInfo: MeetingInfo, id: string, pw: string) => void;
 }
 
@@ -26,6 +25,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   const [user, setUser] = useState(MeetingInfo.user);
   const [room, setRoom] = useState(MeetingInfo.room);
   const [title, setTitle] = useState(MeetingInfo.title);
+  const [participantsNum, setParticipantsNum] = useState(MeetingInfo.participantsNum);
   const [date, setDate] = useState(MeetingInfo.date);
   const [startTime, setStartTime] = useState(dayjs(MeetingInfo.startTime));
   const [endTime, setEndTime] = useState(dayjs(MeetingInfo.endTime));
@@ -52,16 +52,14 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   const handleSubmit = () => {
     const updatedInfo = {
       id,
-      title,
       user,
+      title,
+      participantsNum,
       room,
       date,
       startTime: startTime.toISOString(), // 確保是 ISO 格式
       endTime: endTime.toISOString(),
     };
-
-    console.log("🚀 發送的資料:", updatedInfo); // 測試輸出
-    console.log("🛠 使用者輸入的密碼:", editPassword);
     onSubmit(updatedInfo, MeetingInfo.id, editPassword);
     onClose();
   };
@@ -117,6 +115,17 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
         </div>
 
         <div className="mb-2">
+          <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
+          <input
+            type="number"
+            className="w-full border rounded px-2 py-1 text-sm"
+            value={participantsNum}
+            onChange={(e) => setParticipantsNum(e.target.valueAsNumber)}
+            placeholder="請輸入與會人數"
+          />
+        </div>
+
+        <div className="mb-2">
           <label className="block font-semibold text-gray-600 mb-1">使用日期</label>
           <input
             type="date"
@@ -168,8 +177,8 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
             value={editPassword}
             onChange={(e) => {
               setEditPassword(e.target.value);
-              // console.log("🛠 使用者輸入的密碼:", editPassword);
             }}
+            placeholder="請輸入編輯密碼"
           />
         </div>
 
