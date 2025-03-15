@@ -41,7 +41,11 @@ async function getAllBooked(ctx: any) {
 async function getActiveBooked(ctx: any) {
   const startTime = Date.now();
   try {
-    const allActiveBookings = await todos.find({ cancelled: false }).toArray();
+    const {room} = ctx.params;
+    const query = room ? { room, cancelled: false } : { cancelled: false };
+    const allActiveBookings = await todos.find(query).toArray();
+
+    // const allActiveBookings = await todos.find({ cancelled: false }).toArray();
     const filteredActiveBookings = allActiveBookings.map(({ editPassword, ...rest }) => rest);
     
     ctx.response.status = 200;
@@ -73,44 +77,6 @@ async function getActiveBooked(ctx: any) {
     });
   }
 }
-
-async function getActiveBookedByRoom(ctx: any) {
-  const startTime = Date.now();
-  try {
-    const {room} = ctx.params;
-    const allActiveBookingsByRoom = await todos.find({room, cancelled: false }).toArray();
-    const filteredActiveBookingsByRoom = allActiveBookingsByRoom.map(({ editPassword, ...rest }) => rest);
-    
-    ctx.response.status = 200;
-    ctx.response.body = { data: filteredActiveBookingsByRoom };
-
-    await logEvent("info", "取得活動中預訂資料成功", {
-      module: "BookingController",
-      function: "getActiveBooked",
-      details: { count: filteredActiveBookingsByRoom.length },
-    });
-  } catch (error) {
-    const err = error as Error;
-    console.error("❌ 获取数据失败:", err);
-    ctx.response.status = 500;
-    ctx.response.body = { error: "获取数据失败" };
-
-    await logEvent("error", "取得活動中預訂資料失敗", {
-      module: "BookingController",
-      function: "getActiveBooked",
-      details: { error: err.message },
-      errorStack: err.stack,
-    });
-  } finally {
-    const duration = Date.now() - startTime;
-    await logEvent("debug", "getActiveBooked 執行耗時", {
-      module: "BookingController",
-      function: "getActiveBooked",
-      details: { duration: duration + "ms" },
-    });
-  }
-}
-
 
 async function addBooking(ctx: any) {
   const executionStartTime = Date.now();
