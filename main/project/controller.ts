@@ -81,7 +81,7 @@ async function getActiveBooked(ctx: any) {
 async function addBooking(ctx: any) {
   const executionStartTime = Date.now();
   try {
-    const { title, user, room, participantsNum, startTime: requestStartTime, endTime: requestEndTime, editPassword } = await ctx.request.body.json();
+    const { title, user, room, participantsNum, date, startTime: requestStartTime, endTime: requestEndTime, editPassword } = await ctx.request.body.json();
 
     // 詳細日誌 - 顯示收到的請求
     console.log("收到添加預訂請求:", { title, user, room, startTime: requestStartTime, endTime: requestEndTime });
@@ -210,7 +210,7 @@ async function addBooking(ctx: any) {
     // 生成 `id` & 設定 `createdTime`
     const id = crypto.randomUUID();
     const createdTime = new Date();
-    const date = newStartTime.toISOString().split('T')[0]; // 提取日期部分
+    // const date = newStartTime.toISOString().split('T')[0]; // 提取日期部分
 
     // 執行預訂前的最終檢查
     const finalCheckConflicts = await todos.find({
@@ -469,11 +469,6 @@ async function updateBooking(ctx: any) {
           });
           return;
         }
-      }
-      
-      // 如果更新了開始時間，同步更新日期字段
-      if (body.startTime) {
-        body.date = newStartTime.toISOString().split('T')[0];
       }
       
       // 執行更新

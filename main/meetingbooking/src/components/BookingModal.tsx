@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { TimePicker } from "@mui/x-date-pickers";
 import { BookingForm } from "../types/common";
 
@@ -10,6 +12,10 @@ interface BookingModalProps {
   onSubmit: () => void;
   onClose: () => void;
 }
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Taipei");
 
 
 
@@ -45,7 +51,7 @@ const BookingModal = ({
           <h2 className="text-xl font-bold text-center mb-4">新增預約</h2>
 
           {/* 預約者 */}
-          <div className="mb-3">
+          <div className="mb-2">
             <label className="block text-sm mb-1">預約者</label>
             <input
               type="text"
@@ -89,7 +95,7 @@ const BookingModal = ({
 
 
           {/* 會議名稱 */}
-          <div className="mb-3">
+          <div className="mb-2">
             <label className="block text-sm mb-1">會議名稱</label>
             <input
               type="text"
@@ -103,7 +109,7 @@ const BookingModal = ({
           </div>
 
           {/* 日期 */}
-          <div className="mb-3">
+          <div className="mb-2">
             <label className="block text-sm mb-1">使用日期</label>
             <input
               type="date"
@@ -114,12 +120,12 @@ const BookingModal = ({
           </div>
 
           {/* 時間選擇區塊 */}
-          <div className="flex space-x-2 mb-3">
+          <div className="flex space-x-2 mb-2">
             {/* 開始時間 */}
             <div className="flex-1">
               <label className="block text-sm mb-1">開始時間</label>
               <TimePicker
-              value={dayjs(`1970-01-01T${bookingForm.startTime}`)}
+              value={dayjs.tz(`1970-01-01T${bookingForm.startTime}`, "Asia/Taipei")}
               onChange={(newTime) => {
                 if (newTime) {
                   setBookingForm((prev: any) => ({
@@ -147,7 +153,7 @@ const BookingModal = ({
           <div className="flex-1">
             <label className="block text-sm mb-1">結束時間</label>
               <TimePicker
-                value={dayjs(`1970-01-01T${bookingForm.endTime}`)}
+                value={dayjs.tz(`1970-01-01T${bookingForm.endTime}`, "Asia/Taipei")}
                 onChange={(newTime) => {
                   if (newTime) {
                     setBookingForm((prev: any) => ({
@@ -173,7 +179,7 @@ const BookingModal = ({
           </div>
 
         {/* 刪除密碼欄位 */}
-        <div className="mb-3">
+        <div className="mb-2">
           <label className="block text-sm mb-1">編輯密碼</label>
           <input
             type="text"

@@ -53,24 +53,26 @@ const MeetingInfoModal = ({
             <label className="block font-semibold text-gray-600 mb-1">預約者</label>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.user}</div>
           </div>
-          <div>
-            <label className="block font-semibold text-gray-600 mb-1">會議室</label>
-            <div className="w-full font-normal border rounded px-2 py-1 text-sm" >{roomNames[meetingInfo.room as RoomKey]}</div>
+          <div className="flex mb-2">
+            <div className="flex-1">
+              <label className="block font-semibold text-gray-600 mb-1">會議室</label>
+              <div className="w-full font-normal border rounded px-2 py-1 text-sm" >{roomNames[meetingInfo.room as RoomKey]}</div>
+            </div>
+            <div className="flex-1">
+              <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
+              <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.participantsNum}</div>
+            </div>
           </div>
-          <div>
+          <div className="mb-2">
             <label className="block font-semibold text-gray-600 mb-1">會議名稱</label>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.title}</div>
           </div>
-          <div>
-            <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
-            <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.participantsNum}</div>
-          </div>
-          <div>
+          <div className="mb-2">
             <label className="block font-semibold text-gray-600 mb-1">使用時間</label>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm mb-1">{meetingInfo.date}</div>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm">{dayjs.utc(meetingInfo.startTime).tz("Asia/Taipei").format("HH:mm")} ~ {dayjs.utc(meetingInfo.endTime).tz("Asia/Taipei").format("HH:mm")}</div>
           </div>
-          <div>
+          <div className="mb-2">
             <label className="block font-semibold text-gray-600 mb-1">編輯密碼</label>
             <input 
             className="w-full border font-normal rounded px-2 py-1 text-sm" 
