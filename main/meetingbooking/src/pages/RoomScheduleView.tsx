@@ -18,7 +18,7 @@ import AlertModal from "../components/AlertModal";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const API_URL = "https://meetingbooking.deno.dev/api/bookings/";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const RoomScheduleView = () => {
   const [selectedRoom, setSelectedRoom] = useState("A101");
