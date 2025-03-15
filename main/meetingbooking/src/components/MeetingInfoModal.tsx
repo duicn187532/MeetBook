@@ -1,6 +1,6 @@
 import { Info} from "lucide-react";
 import dayjs from "dayjs";
-import { MeetingInfo } from "../types/common";
+import { MeetingInfo, roomNames, RoomKey } from "../types/common";
 
 interface MeetingInfoModalProps {
   show: boolean;                // 控制此 Modal 是否顯示
@@ -55,7 +55,7 @@ const MeetingInfoModal = ({
           </div>
           <div>
             <label className="block font-semibold text-gray-600 mb-1">會議室</label>
-            <div className="w-full font-normal border rounded px-2 py-1 text-sm" >{meetingInfo.room}</div>
+            <div className="w-full font-normal border rounded px-2 py-1 text-sm" >{roomNames[meetingInfo.room as RoomKey]}</div>
           </div>
           <div>
             <label className="block font-semibold text-gray-600 mb-1">會議名稱</label>
@@ -74,7 +74,7 @@ const MeetingInfoModal = ({
             <label className="block font-semibold text-gray-600 mb-1">編輯密碼</label>
             <input 
             className="w-full border font-normal rounded px-2 py-1 text-sm" 
-            placeholder="請輸入您設定的編輯密碼"
+            placeholder="刪除請輸入您設定的編輯密碼"
             onChange={(e) => onEditPassword(e.target.value ? e.target.value : "")}/>
           </div>
 

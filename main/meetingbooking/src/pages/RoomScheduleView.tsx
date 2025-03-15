@@ -89,14 +89,14 @@ const RoomScheduleView = () => {
 
   const [errorMessage, setErrorMessage] = useState("");
 
-  const getRoomColor = (room: string) => {
-    const colors: { [key: string]: string } = {
-      A101: "bg-blue-200",
-      A102: "bg-red-200",
-      A103: "bg-green-200",
-    };
-    return colors[room] || "bg-gray-200";
-  };
+  // const getRoomColor = (room: string) => {
+  //   const colors: { [key: string]: string } = {
+  //     A101: "bg-blue-200",
+  //     A102: "bg-red-200",
+  //     A103: "bg-green-200",
+  //   };
+  //   return colors[room] || "bg-gray-200";
+  // };
 
   async function fetchEvents(room: string) {
     setLoading(true);
@@ -120,7 +120,6 @@ const RoomScheduleView = () => {
             TaipeiStartTime: dayjs.utc(event.startTime).tz("Asia/Taipei").format("HH:mm"),
             TaipeiEndTime: dayjs.utc(event.endTime).tz("Asia/Taipei").format("HH:mm"),
             date: meetingDate,
-            color: getRoomColor(event.room),
             updatedCount: event.updatedCount,
           };
         });

@@ -97,10 +97,9 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
             onChange={(e) => setRoom(e.target.value)}
             className="border border-gray-300 rounded w-full px-3 py-2 text-sm focus:outline-none"
           >
-            <option value="">請選擇要預約的會議室</option>
-            <option value="A101">A101</option>
-            <option value="A102">A102</option>
-            <option value="A103">A103</option>
+            <option value="A101">Alpha</option>
+            <option value="A102">Beta</option>
+            <option value="A103">StartUp</option>
           </select>
         </div>
 

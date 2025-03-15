@@ -37,3 +37,10 @@ export interface BookingForm {
   export type ViewMode = "Day" | "Week" | "Month";
   
   export type RoomKey = "A101" | "A102" | "A103";
+
+  export const roomNames: Record<RoomKey, string> = {
+    A101: "Alpha",
+    A102: "Beta",
+    A103: "StartUp",
+  };
+  

@@ -27,6 +27,13 @@ interface CalendarContentProps {
   showTimeConflictAlert: () => void;
 }
 
+    const colors: { [key: string]: string } = {
+      A101: "bg-blue-200",
+      A102: "bg-red-200",
+      A103: "bg-green-200",
+    };
+
+
 const CalendarContent = ({
   selectedView,
   currentDate,
@@ -253,7 +260,7 @@ const CalendarContent = ({
                 setShowInfoModal(true);
               }}
               key={meeting.id}
-              className={`${meeting.color} rounded absolute left-12 right-0 mx-4 shadow-sm flex justify-between items-center`}
+              className={`${colors[meeting.room]} rounded absolute left-12 right-0 mx-4 shadow-sm flex justify-between items-center`}
               style={{
                 top: `${topPercent}%`,
                 height: `${heightPercent}%`,
@@ -412,7 +419,7 @@ const CalendarContent = ({
                     return (
                       <div
                         key={meeting.id}
-                        className={`${meeting.color} rounded absolute left-1 right-1 shadow-sm`}
+                        className={`${colors[meeting.room]} rounded absolute left-1 right-1 shadow-sm`}
                         style={{
                           top: `${topPercent}%`,
                           height: `${heightPercent}%`,
@@ -541,7 +548,7 @@ const CalendarContent = ({
                             <div
                               key={meeting.id}
                               className={`w-1.5 h-1.5 rounded-full ${
-                                meeting.color || "bg-blue-400"
+                                colors[meeting.room] || "bg-blue-400"
                               }`}
                               onClick={(e) => {
                                 e.stopPropagation();
