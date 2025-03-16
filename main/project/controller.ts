@@ -11,7 +11,7 @@ async function getAllBooked(ctx: any) {
     ctx.response.status = 200;
     ctx.response.body = { data: filteredBookings };
 
-    await logEvent("info", "取得所有預訂資料成功", {
+    void logEvent("info", "取得所有預訂資料成功", {
       module: "BookingController",
       function: "getAllBooked",
       details: { count: filteredBookings.length },
@@ -22,7 +22,7 @@ async function getAllBooked(ctx: any) {
     ctx.response.status = 500;
     ctx.response.body = { error: "获取数据失败" };
 
-    await logEvent("error", "取得所有預訂資料失敗", {
+    void logEvent("error", "取得所有預訂資料失敗", {
       module: "BookingController",
       function: "getAllBooked",
       details: { error: err.message },
@@ -30,7 +30,7 @@ async function getAllBooked(ctx: any) {
     });
   } finally {
     const duration = Date.now() - startTime;
-    await logEvent("debug", "getAllBooked 執行耗時", {
+    void logEvent("debug", "getAllBooked 執行耗時", {
       module: "BookingController",
       function: "getAllBooked",
       details: { duration: duration + "ms" },
@@ -51,7 +51,7 @@ async function getActiveBooked(ctx: any) {
     ctx.response.status = 200;
     ctx.response.body = { data: filteredActiveBookings };
 
-    await logEvent("info", "取得活動中預訂資料成功", {
+    void logEvent("info", "取得活動中預訂資料成功", {
       module: "BookingController",
       function: "getActiveBooked",
       details: { count: filteredActiveBookings.length },
@@ -62,7 +62,7 @@ async function getActiveBooked(ctx: any) {
     ctx.response.status = 500;
     ctx.response.body = { error: "获取数据失败" };
 
-    await logEvent("error", "取得活動中預訂資料失敗", {
+    void logEvent("error", "取得活動中預訂資料失敗", {
       module: "BookingController",
       function: "getActiveBooked",
       details: { error: err.message },
@@ -70,7 +70,7 @@ async function getActiveBooked(ctx: any) {
     });
   } finally {
     const duration = Date.now() - startTime;
-    await logEvent("debug", "getActiveBooked 執行耗時", {
+    void logEvent("debug", "getActiveBooked 執行耗時", {
       module: "BookingController",
       function: "getActiveBooked",
       details: { duration: duration + "ms" },
@@ -90,7 +90,7 @@ async function addBooking(ctx: any) {
     if (!user || !room || !requestStartTime || !requestEndTime) {
       ctx.response.status = 401;
       ctx.response.body = { error: "缺少必要字段" };
-      await logEvent("warning", "新增預訂失敗，缺少必要字段", {
+      void logEvent("warning", "新增預訂失敗，缺少必要字段", {
         module: "BookingController",
         function: "addBooking",
         details: { user, room, startTime: requestStartTime, endTime: requestEndTime },
@@ -106,7 +106,7 @@ async function addBooking(ctx: any) {
     if (isNaN(newStartTime.getTime()) || isNaN(newEndTime.getTime())) {
       ctx.response.status = 400;
       ctx.response.body = { error: "無效的日期格式" };
-      await logEvent("warning", "新增預訂失敗，無效的日期格式", {
+      void logEvent("warning", "新增預訂失敗，無效的日期格式", {
         module: "BookingController",
         function: "addBooking",
         details: { startTime: requestStartTime, endTime: requestEndTime },
@@ -118,7 +118,7 @@ async function addBooking(ctx: any) {
     if (newEndTime <= newStartTime) {
       ctx.response.status = 400;
       ctx.response.body = { error: "結束時間必須晚於開始時間" };
-      await logEvent("warning", "新增預訂失敗，時間順序錯誤", {
+      void logEvent("warning", "新增預訂失敗，時間順序錯誤", {
         module: "BookingController",
         function: "addBooking",
         details: { startTime: requestStartTime, endTime: requestEndTime },
@@ -199,7 +199,7 @@ async function addBooking(ctx: any) {
           endTime: c.endTime
         }))
       };
-      await logEvent("warning", "新增預訂失敗，時段衝突", {
+      void logEvent("warning", "新增預訂失敗，時段衝突", {
         module: "BookingController",
         function: "addBooking",
         details: { room, startTime: requestStartTime, endTime: requestEndTime, conflicts: queryConflicts },
@@ -265,14 +265,14 @@ async function addBooking(ctx: any) {
     const postInsertCheck = await checkConflicts(room, newStartTime, newEndTime, id);
     if (postInsertCheck.length > 0) {
       console.log("警告：插入後檢測到衝突，但已完成插入:", postInsertCheck);
-      await logEvent("warning", "預訂成功但檢測到衝突，數據庫可能不一致", {
+      void logEvent("warning", "預訂成功但檢測到衝突，數據庫可能不一致", {
         module: "BookingController",
         function: "addBooking",
         details: { id, conflicts: postInsertCheck },
       });
     }
 
-    await logEvent("info", "新增預訂成功", {
+    void logEvent("info", "新增預訂成功", {
       module: "BookingController",
       function: "addBooking",
       details: { id, room, startTime: requestStartTime, endTime: requestEndTime },
@@ -282,7 +282,7 @@ async function addBooking(ctx: any) {
     console.error("❌ 插入數據失敗:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "插入數據失敗" };
-    await logEvent("error", "新增預訂失敗", {
+    void logEvent("error", "新增預訂失敗", {
       module: "BookingController",
       function: "addBooking",
       details: { error: err.message },
@@ -290,7 +290,7 @@ async function addBooking(ctx: any) {
     });
   } finally {
     const duration = Date.now() - executionStartTime;
-    await logEvent("debug", "addBooking 執行耗時", {
+    void logEvent("debug", "addBooking 執行耗時", {
       module: "BookingController",
       function: "addBooking",
       details: { duration: duration + "ms" },
@@ -325,7 +325,7 @@ async function updateBooking(ctx: any) {
     if (!id) {
       ctx.response.status = 401;
       ctx.response.body = { error: "缺少必要的 id" };
-      await logEvent("warning", "更新預訂失敗，缺少 id", {
+      void logEvent("warning", "更新預訂失敗，缺少 id", {
         module: "BookingController",
         function: "updateBooking",
         details: { params: ctx.params },
@@ -340,7 +340,7 @@ async function updateBooking(ctx: any) {
     if (!booking) {
       ctx.response.status = 404;
       ctx.response.body = { error: "找不到該筆資料" };
-      await logEvent("warning", "更新預訂失敗，找不到資料", {
+      void logEvent("warning", "更新預訂失敗，找不到資料", {
         module: "BookingController",
         function: "updateBooking",
         details: { id },
@@ -354,7 +354,7 @@ async function updateBooking(ctx: any) {
     if (booking.editPassword && editPassword !== "87878787" && booking.editPassword !== editPassword) {
       ctx.response.status = 403;
       ctx.response.body = { error: "編輯密碼錯誤，無法更新資料" };
-      await logEvent("warning", "更新預訂失敗，編輯密碼錯誤", {
+      void logEvent("warning", "更新預訂失敗，編輯密碼錯誤", {
         module: "BookingController",
         function: "updateBooking",
         details: { id },
@@ -370,7 +370,7 @@ async function updateBooking(ctx: any) {
       if (!body || Object.keys(body).length === 0) {
         ctx.response.status = 401;
         ctx.response.body = { error: "更新資料不能為空" };
-        await logEvent("warning", "更新預訂失敗，空更新資料", {
+        void logEvent("warning", "更新預訂失敗，空更新資料", {
           module: "BookingController",
           function: "updateBooking",
           details: { id },
@@ -462,7 +462,7 @@ async function updateBooking(ctx: any) {
               endTime: c.endTime
             }))
           };
-          await logEvent("warning", "更新預訂失敗，時段衝突", {
+          void logEvent("warning", "更新預訂失敗，時段衝突", {
             module: "BookingController",
             function: "updateBooking",
             details: { room: roomToCheck, startTime: newStartTime, endTime: newEndTime, conflicts },
@@ -492,7 +492,7 @@ async function updateBooking(ctx: any) {
       if (result.modifiedCount === 0) {
         ctx.response.status = 404;
         ctx.response.body = { error: "資料未更新" };
-        await logEvent("warning", "更新預訂失敗，無資料更新", {
+        void logEvent("warning", "更新預訂失敗，無資料更新", {
           module: "BookingController",
           function: "updateBooking",
           details: { id, update: body },
@@ -506,7 +506,7 @@ async function updateBooking(ctx: any) {
         const postUpdateCheck = await checkConflicts(roomToCheck, newStartTime, newEndTime, id);
         if (postUpdateCheck.length > 0) {
           console.log("警告：更新後檢測到衝突，但已完成更新:", postUpdateCheck);
-          await logEvent("warning", "更新成功但檢測到衝突，數據庫可能不一致", {
+          void logEvent("warning", "更新成功但檢測到衝突，數據庫可能不一致", {
             module: "BookingController",
             function: "updateBooking",
             details: { id, conflicts: postUpdateCheck },
@@ -516,7 +516,7 @@ async function updateBooking(ctx: any) {
       
       ctx.response.status = 200;
       ctx.response.body = { success: true, message: "更新成功" };
-      await logEvent("info", "更新預訂成功", {
+      void logEvent("info", "更新預訂成功", {
         module: "BookingController",
         function: "updateBooking",
         details: { id, update: body },
@@ -526,7 +526,7 @@ async function updateBooking(ctx: any) {
       console.error("解析請求體失敗:", err);
       ctx.response.status = 401;
       ctx.response.body = { error: "無法解析請求體" };
-      await logEvent("error", "解析更新資料失敗", {
+      void logEvent("error", "解析更新資料失敗", {
         module: "BookingController",
         function: "updateBooking",
         details: { id, error: err.message },
@@ -538,7 +538,7 @@ async function updateBooking(ctx: any) {
     console.error("更新資料失敗:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "更新資料失敗" };
-    await logEvent("error", "更新預訂失敗", {
+    void logEvent("error", "更新預訂失敗", {
       module: "BookingController",
       function: "updateBooking",
       details: { error: err.message },
@@ -546,7 +546,7 @@ async function updateBooking(ctx: any) {
     });
   } finally {
     const duration = Date.now() - startTime;
-    await logEvent("debug", "updateBooking 執行耗時", {
+    void logEvent("debug", "updateBooking 執行耗時", {
       module: "BookingController",
       function: "updateBooking",
       details: { duration: duration + "ms" },
