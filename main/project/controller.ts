@@ -18,7 +18,7 @@ async function getAllBooked(ctx: any) {
     });
   } catch (error) {
     const err = error as Error;
-    console.error("❌ 获取数据失败:", err);
+    // console.error("❌ 获取数据失败:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "获取数据失败" };
 
@@ -58,7 +58,7 @@ async function getActiveBooked(ctx: any) {
     });
   } catch (error) {
     const err = error as Error;
-    console.error("❌ 获取数据失败:", err);
+    // console.error("❌ 获取数据失败:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "获取数据失败" };
 
@@ -84,7 +84,7 @@ async function addBooking(ctx: any) {
     const { title, user, room, participantsNum, date, startTime: requestStartTime, endTime: requestEndTime, editPassword } = await ctx.request.body.json();
 
     // 詳細日誌 - 顯示收到的請求
-    console.log("收到添加預訂請求:", { title, user, room, startTime: requestStartTime, endTime: requestEndTime });
+    // console.log("收到添加預訂請求:", { title, user, room, startTime: requestStartTime, endTime: requestEndTime });
 
     // 檢查是否缺少必要字段
     if (!user || !room || !requestStartTime || !requestEndTime) {
@@ -132,7 +132,7 @@ async function addBooking(ctx: any) {
       cancelled: false
     }).toArray();
     
-    console.log(`找到 ${allRoomBookings.length} 筆同房間預訂:`, allRoomBookings);
+    // console.log(`找到 ${allRoomBookings.length} 筆同房間預訂:`, allRoomBookings);
 
     // 先進行手動時間衝突檢測
     const manualConflicts = allRoomBookings.filter(booking => {
@@ -147,7 +147,7 @@ async function addBooking(ctx: any) {
     });
     
     if (manualConflicts.length > 0) {
-      console.log("手動檢測到時間衝突:", manualConflicts);
+      // console.log("手動檢測到時間衝突:", manualConflicts);
       ctx.response.status = 400;
       ctx.response.body = { 
         error: "手動檢測到時間衝突 ❌，請選擇其他時間",
@@ -188,7 +188,7 @@ async function addBooking(ctx: any) {
     }).toArray();
 
     if (queryConflicts.length > 0) {
-      console.log("MongoDB查詢檢測到時間衝突:", queryConflicts);
+      // console.log("MongoDB查詢檢測到時間衝突:", queryConflicts);
       ctx.response.status = 400;
       ctx.response.body = { 
         error: "系統檢測到時間衝突 ❌，請選擇其他時間",
@@ -224,7 +224,7 @@ async function addBooking(ctx: any) {
     }).toArray();
 
     if (finalCheckConflicts.length > 0) {
-      console.log("最終檢查發現衝突:", finalCheckConflicts);
+      // console.log("最終檢查發現衝突:", finalCheckConflicts);
       ctx.response.status = 400;
       ctx.response.body = { 
         error: "最終檢查發現時間衝突 ❌，請選擇其他時間",
@@ -254,7 +254,7 @@ async function addBooking(ctx: any) {
       date // 添加日期字段，方便按日期查詢
     };
     
-    console.log("準備插入新預訂:", document);
+    // console.log("準備插入新預訂:", document);
     
     const result = await todos.insertOne(document);
 
@@ -264,7 +264,7 @@ async function addBooking(ctx: any) {
     // 驗證插入後再次檢查衝突
     const postInsertCheck = await checkConflicts(room, newStartTime, newEndTime, id);
     if (postInsertCheck.length > 0) {
-      console.log("警告：插入後檢測到衝突，但已完成插入:", postInsertCheck);
+      // console.log("警告：插入後檢測到衝突，但已完成插入:", postInsertCheck);
       void logEvent("warning", "預訂成功但檢測到衝突，數據庫可能不一致", {
         module: "BookingController",
         function: "addBooking",
@@ -279,7 +279,7 @@ async function addBooking(ctx: any) {
     });
   } catch (error) {
     const err = error as Error;
-    console.error("❌ 插入數據失敗:", err);
+    // console.error("❌ 插入數據失敗:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "插入數據失敗" };
     void logEvent("error", "新增預訂失敗", {
@@ -333,7 +333,7 @@ async function updateBooking(ctx: any) {
       return;
     }
 
-    console.log(`開始處理ID為 ${id} 的預訂更新請求`);
+    // console.log(`開始處理ID為 ${id} 的預訂更新請求`);
 
     // 根據 id 先找到資料
     const booking = await todos.findOne({ id });
@@ -348,7 +348,7 @@ async function updateBooking(ctx: any) {
       return;
     }
 
-    console.log("找到預訂資料:", booking);
+    // console.log("找到預訂資料:", booking);
 
     // 編輯密碼驗證
     if (booking.editPassword && editPassword !== "87878787" && booking.editPassword !== editPassword) {
@@ -365,7 +365,7 @@ async function updateBooking(ctx: any) {
     // 檢查是否有請求主體
     try {
       const body = await ctx.request.body.json();
-      console.log("收到的更新資料:", body);
+      // console.log("收到的更新資料:", body);
       
       if (!body || Object.keys(body).length === 0) {
         ctx.response.status = 401;
@@ -418,7 +418,7 @@ async function updateBooking(ctx: any) {
           id: { $ne: id } // 排除當前預約
         }).toArray();
         
-        console.log(`找到 ${allRoomBookings.length} 筆同房間其他預訂`);
+        // console.log(`找到 ${allRoomBookings.length} 筆同房間其他預訂`);
 
         // 先進行手動時間衝突檢測
         const manualConflicts = allRoomBookings.filter(b => {
@@ -433,7 +433,7 @@ async function updateBooking(ctx: any) {
         });
         
         if (manualConflicts.length > 0) {
-          console.log("手動檢測到時間衝突:", manualConflicts);
+          // console.log("手動檢測到時間衝突:", manualConflicts);
           ctx.response.status = 400;
           ctx.response.body = { 
             error: "手動檢測到時間衝突 ❌，請選擇其他時間",
@@ -451,7 +451,7 @@ async function updateBooking(ctx: any) {
         const conflicts = await checkConflicts(roomToCheck, newStartTime, newEndTime, id);
 
         if (conflicts.length > 0) {
-          console.log("檢測到時間衝突:", conflicts);
+          // console.log("檢測到時間衝突:", conflicts);
           ctx.response.status = 400;
           ctx.response.body = { 
             error: "此時段已被預訂 ❌，請選擇其他時間",
@@ -477,7 +477,7 @@ async function updateBooking(ctx: any) {
         updatedTime: new Date(),
       };
       
-      console.log("準備更新數據:", updateData);
+      // console.log("準備更新數據:", updateData);
       
       const result = await todos.updateOne(
         { id }, 
@@ -487,7 +487,7 @@ async function updateBooking(ctx: any) {
         }
       );      
       
-      console.log("更新結果:", result);
+      // console.log("更新結果:", result);
       
       if (result.modifiedCount === 0) {
         ctx.response.status = 404;
@@ -505,7 +505,7 @@ async function updateBooking(ctx: any) {
         const roomToCheck = body.room || booking.room;
         const postUpdateCheck = await checkConflicts(roomToCheck, newStartTime, newEndTime, id);
         if (postUpdateCheck.length > 0) {
-          console.log("警告：更新後檢測到衝突，但已完成更新:", postUpdateCheck);
+          // console.log("警告：更新後檢測到衝突，但已完成更新:", postUpdateCheck);
           void logEvent("warning", "更新成功但檢測到衝突，數據庫可能不一致", {
             module: "BookingController",
             function: "updateBooking",
@@ -523,7 +523,7 @@ async function updateBooking(ctx: any) {
       });
     } catch (bodyError) {
       const err = bodyError as Error;
-      console.error("解析請求體失敗:", err);
+      // console.error("解析請求體失敗:", err);
       ctx.response.status = 401;
       ctx.response.body = { error: "無法解析請求體" };
       void logEvent("error", "解析更新資料失敗", {
@@ -535,7 +535,7 @@ async function updateBooking(ctx: any) {
     }
   } catch (error) {
     const err = error as Error;
-    console.error("更新資料失敗:", err);
+    // console.error("更新資料失敗:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "更新資料失敗" };
     void logEvent("error", "更新預訂失敗", {

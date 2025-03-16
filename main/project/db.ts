@@ -17,7 +17,6 @@ if (env === "production") {
   DB_NAME = envVars.DB_NAME || "todo_db";
 }
 
-console.log("MONGODB_URI:", MONGODB_URI);
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not set");
 }
@@ -26,7 +25,7 @@ const client = new MongoClient(MONGODB_URI);
 try {
   await client.connect();
   await client.db("admin").command({ ping: 1 });
-  console.log("Connected to MongoDB");
+  // console.log("Connected to MongoDB");
 } catch (error) {
   console.error("Error connecting to MongoDB:", error);
   throw error;
