@@ -74,7 +74,7 @@ const WeekCalendar = ({
                 date.isSame(currentDate, "day") ? "bg-gray-50" : ""
               }`}
             >
-              <div style={{ height: `${topOffsetPercent}%` }}></div>
+              <div className="border-b" style={{ height: `${topOffsetPercent}%` }}></div>
               {timeSlots.map((time) => {
                 const isLastSlot = time === "18:00";
                 const slotHeight = isLastSlot ? lastSlotHeight : regularSlotHeight;

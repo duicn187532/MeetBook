@@ -48,7 +48,7 @@ const DayCalendar = ({
   );
 
   return (
-    <div className="my-2 relative flex-1 overflow-y-auto h-[calc(100vh-64px)]">
+    <div className="my-2 relative flex-1 h-[calc(100vh-64px)]">
       {/* 頂部空白區塊 */}
       <div className="flex mx-2" style={{ height: `${topOffsetPercent}%` }}>
         <div className="w-12 py-1 px-1 text-xs"></div>
