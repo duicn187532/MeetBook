@@ -4,7 +4,6 @@
   },
   "nodeModulesDir": "auto",
   "entry": "server.ts",
-  "importMap": "import_map.json",
   "deploy": {
     "project": "ac69e907-2c80-4ccb-91e8-3e3cf1ddaf21",
     "exclude": [
