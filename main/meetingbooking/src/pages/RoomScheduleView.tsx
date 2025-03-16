@@ -287,9 +287,9 @@ const RoomScheduleView = () => {
       </div>
       <button
         onClick={() => setShowBookingModal(true)}
-        className={`absolute bottom-4 right-4 w-10 h-10 ${buttonBGColor} text-white rounded-xl flex items-center justify-center shadow-lg`}
+        className={`absolute bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
       >
-        <span className="text-2xl">+</span>
+        <span className="text-3xl">+</span>
       </button>
       {showBookingModal && (
         <BookingModal
