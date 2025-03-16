@@ -53,7 +53,7 @@ const MeetingInfoModal = ({
             <label className="block font-semibold text-gray-600 mb-1">預約者</label>
             <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.user}</div>
           </div>
-          <div className="flex mb-2">
+          <div className="flex space-x-2 mb-2">
             <div className="flex-1">
               <label className="block font-semibold text-gray-600 mb-1">會議室</label>
               <div className="w-full font-normal border rounded px-2 py-1 text-sm" >{roomNames[meetingInfo.room as RoomKey]}</div>
