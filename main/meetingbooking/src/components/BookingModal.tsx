@@ -83,7 +83,7 @@ const BookingModal = ({
               <label className="block text-sm mb-1">與會人數</label>
               <input
                 type="number"
-                // value={bookingForm.title}
+                value={bookingForm.participantsNum}
                 onChange={(e) =>
                   setBookingForm((prev: any) => ({ ...prev, participantsNum: e.target.valueAsNumber }))
                 }
@@ -99,7 +99,7 @@ const BookingModal = ({
             <label className="block text-sm mb-1">會議名稱</label>
             <input
               type="text"
-              // value={bookingForm.title}
+              value={bookingForm.title}
               onChange={(e) =>
                 setBookingForm((prev: any) => ({ ...prev, title: e.target.value }))
               }

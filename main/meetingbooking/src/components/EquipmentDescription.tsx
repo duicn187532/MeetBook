@@ -11,8 +11,8 @@ const equipmentMapping: {
   [room: string]: { seats: number; hasProjector: boolean; hasWhiteboard: boolean; hasTv:boolean; imageUrl: string } 
 } = {
   A101: { seats: 10, hasProjector: true, hasWhiteboard: true, hasTv: false, imageUrl: "a101.jpeg" },
-  A102: { seats: 15, hasProjector: false, hasWhiteboard: true, hasTv: false,imageUrl: "a102.jpeg" },
-  A103: { seats: 20, hasProjector: true, hasWhiteboard: true, hasTv: true,imageUrl: "a103.jpeg" },
+  A102: { seats: 15, hasProjector: true, hasWhiteboard: true, hasTv: false,imageUrl: "a102.jpeg" },
+  A103: { seats: 20, hasProjector: false, hasWhiteboard: true, hasTv: true,imageUrl: "a103.jpeg" },
 };
 
 const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
