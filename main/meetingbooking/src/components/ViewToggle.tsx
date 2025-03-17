@@ -126,7 +126,7 @@ const ViewToggle = ({
           <button onClick={handlePrevDaysOnDay} className="p-1 rounded-full bg-black">
             <ChevronLeft className=" text-white w-3 h-3" />
           </button>
-          <div className="flex w-full mx-4 justify-between space-x-3">
+          <div className="flex w-full mx-3 justify-between space-x-3">
             {displayedDates.map((date) => (
               <button
                 key={date.format("YYYY-MM-DD")}
@@ -168,7 +168,7 @@ const ViewToggle = ({
             >
               <ChevronLeft className="text-white w-3 h-3" />
             </button>
-            <div className="flex justify-between items-center h-full space-x-3 bg-white w-full mx-4 rounded-lg">
+            <div className="flex justify-between items-center h-full space-x-3 bg-white w-full mx-3 rounded-lg">
               {displayedWeekDates.map((date) => (
                 <button
                   key={date.format("YYYY-MM-DD")}

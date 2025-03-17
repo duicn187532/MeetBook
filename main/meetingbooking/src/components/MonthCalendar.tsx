@@ -27,7 +27,7 @@ const MonthCalendar = ({
   const months = [0, 1, 2].map((offset) => currentDate.add(offset, "month"));
   
   return (
-    <div className="flex-1 h-[calc(100vh-64px)]">
+    <div className="flex-1 min-h-screen">
       <div className="flex flex-col p-6">
         {months.map((monthDate) => (
           <div key={monthDate.format("YYYY-MM")} className="mb-8">

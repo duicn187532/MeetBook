@@ -48,8 +48,8 @@ const WeekCalendar = ({
   const regularSlotHeight = (100 - topOffsetPercent - lastSlotHeight) / (timeSlots.length - 1);
 
   return (
-    <div className="flex flex-col flex-1 h-[calc(100vh-64px)]">
-      <div className="flex flex-1 overflow-auto">
+    <div className="flex flex-col flex-1 min-h-screen">
+      <div className="flex flex-1">
         {/* 時間軸 */}
         <div className="w-12 flex-shrink-0">
           <div style={{ height: `${topOffsetPercent}%` }}></div>
