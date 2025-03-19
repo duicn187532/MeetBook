@@ -1,0 +1,16 @@
+FROM public.ecr.aws/lambda/provided:al2
+
+# 安裝 curl 與 unzip
+RUN yum -y install curl unzip
+
+# 安裝 Deno 並建立符號連結
+RUN curl -fsSL https://deno.land/x/install/install.sh | sh \
+    && ln -s /root/.deno/bin/deno /usr/local/bin/deno
+
+WORKDIR /var/task
+
+COPY . .
+
+RUN chmod +x bootstrap
+
+CMD [ "bootstrap" ]
