@@ -1,0 +1,4 @@
+#!/bin/sh
+set -euo pipefail
+# 使用 Deno 執行你的應用程式，根據需求加入權限選項
+exec /usr/local/bin/deno run --allow-net server.ts

@@ -181,7 +181,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
               value={endTime}
               onChange={(newTime) => {
                 if (newTime) {
-                  setStartTime(newTime.tz("Asia/Taipei"));
+                  setEndTime(newTime.tz("Asia/Taipei"));
                 }
               }}
               ampm={false}
