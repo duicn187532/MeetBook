@@ -1,16 +1,30 @@
-FROM public.ecr.aws/lambda/provided:al2
+# 使用官方 Deno 映像 (此處以 Alpine 為例，版本 1.40.0)
+FROM denoland/deno:2.2.4
 
-# 安裝 curl 與 unzip
-RUN yum -y install curl unzip
+# 設置工作目錄
+WORKDIR /app
 
-# 安裝 Deno 並建立符號連結
-RUN curl -fsSL https://deno.land/x/install/install.sh | sh \
-    && ln -s /root/.deno/bin/deno /usr/local/bin/deno
-
-WORKDIR /var/task
-
+# 複製所有應用程式檔案到容器中
 COPY . .
 
-RUN chmod +x bootstrap
+# 預先編譯以提高啟動效能（選用）
+RUN deno cache server.ts
 
-CMD [ "bootstrap" ]
+# 设置环境变量
+ENV PORT=8080
+ENV ENV=production
+ENV MONGODB_URI=mongodb+srv://root:21airr01@mycluster.wk4zgas.mongodb.net/MeetingBooking?retryWrites=true&w=majority&authSource=admin
+ENV DB_NAME=MeetingBooking_production
+ENV LOGFLARE_SOURCE_TOKEN=564f45da-80b0-4830-837b-be31c7b1afb3
+ENV LOGFLARE_API_KEY=w78L1uH5w1iL
+
+# Cloud Run 預設使用 8080 埠口，您的應用需要監聽該埠口
+EXPOSE 8080
+
+# 設定啟動命令
+# 注意：確保 server.ts 內部有邏輯讀取環境變數 PORT，例如：
+#   const port = Number(Deno.env.get("PORT") || 8080);
+# 並在該埠口上啟動 HTTP 伺服器
+CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "--allow-sys", "server.ts"]
+
+
