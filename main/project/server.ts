@@ -7,12 +7,15 @@ const app = new Application();
 const router = new Router();
 
 // ✅ 启用 CORS
-const env = Deno.env.get("ENV"); // 假設 "production" 表示正式環境
+const env = Deno.env.get("ENV"); // 讀取 ENV 變數
+console.log(env);  // 這裡應該會顯示 "production"
 
 const corsOrigin =
   env === "production"
     ? "https://duicn187532.github.io"
     : "*";
+
+console.log(corsOrigin);
 
 app.use(
   oakCors({
@@ -45,5 +48,5 @@ router.patch("/api/bookings/:id/:editPassword?", async (ctx) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-// console.log("✅ Server running on http://localhost:8000");
-await app.listen({ port: 8000 });
+console.log("✅ Server running on http://localhost:8000");
+await app.listen({ port: 8080 });
