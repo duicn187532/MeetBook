@@ -20,16 +20,24 @@ export async function fetchWithFallback(
 
   try {
     const res = await fetch(fullPrimary, options);
-    if (!res.ok) throw new Error("Primary API failed");
+    if (!res.ok) {
+      // 若是 5xx 錯誤，才認定為主伺服器掛了
+      if (res.status >= 500 && res.status < 600) {
+        throw new Error("Primary API server error");
+      }
+      // 若是 4xx（用戶端錯誤）就直接回傳，不切換 API
+      return res;
+    }
     return res;
   } catch (err) {
     console.warn("[⚠️ Fallback] Primary failed, trying backup...", err);
     try {
       const res = await fetch(fullBackup, options);
-      if (!res.ok) throw new Error("Backup API responded but not OK");
+      if (!res.ok) {
+        throw new Error("Backup API responded but not OK");
+      }
       return res;
     } catch (backupErr) {
-      // 🚨 無論是網路錯誤、CORS 或 HTTP 錯誤都會觸發這裡
       alert("伺服器掛了！請通知祐晨 #51164");
       throw backupErr;
     }

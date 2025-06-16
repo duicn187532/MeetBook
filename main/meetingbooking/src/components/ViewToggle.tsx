@@ -13,12 +13,13 @@ interface ViewToggleProps {
   updateBookingDate: (date: dayjs.Dayjs) => void;
   selectedRoom: string;
 }
-type RoomKey = "A101" | "A102" | "A103";
+type RoomKey = "A101" | "A102" | "A103" | "A104";
 
 const roomBackgroundColors: Record<RoomKey, any> = {
-  A101: {bg:"bg-[#D1E7FF]", dates: "bg-[#60AAFF]"}, // 浅蓝色
+  A101: {bg: "bg-[#D1E7FF]", dates: "bg-[#60AAFF]"}, // 浅蓝色
   A102: {bg: "bg-[#FFE6E6]", dates: "bg-[#FF3F3F]"}, // 浅红色
   A103: {bg: "bg-[#D7F3F1]", dates: "bg-[#17C2B6]"}, // 浅绿色
+  A104: {bg: "bg-[#FFEFCC]", dates: "bg-[#ffc855]"}, // 淺黃色
 };
 
 
@@ -30,7 +31,7 @@ const MonthViewHeader = ({
   setCurrentDate: (date: dayjs.Dayjs) => void;
 }) => (
   <div className="mt-2">
-    <div className="flex justify-between items-center mt-5">
+    <div className="flex justify-between items-center mt-5 ">
       <button
         onClick={() => setCurrentDate(currentDate.subtract(1, "month"))}
         className="p-1 rounded-full bg-black"

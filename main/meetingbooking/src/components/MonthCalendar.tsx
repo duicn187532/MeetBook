@@ -14,6 +14,7 @@ const colors: { [key: string]: string } = {
     A101: "bg-[#60AAFF]",
     A102: "bg-[#FF3F3F]",
     A103: "bg-[#17C2B6]",
+    A104: "bg-[#ffc855]",
   };
   
 
@@ -27,7 +28,7 @@ const MonthCalendar = ({
   const months = [0, 1, 2].map((offset) => currentDate.add(offset, "month"));
   
   return (
-    <div className="flex-1 h-[calc(100vh-64px)]">
+    <div className="flex-1 h-[calc(100vh-64px)] bg-white">
       <div className="flex flex-col p-6">
         {months.map((monthDate) => (
           <div key={monthDate.format("YYYY-MM")} className="mb-8">

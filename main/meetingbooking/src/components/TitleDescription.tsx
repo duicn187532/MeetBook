@@ -1,13 +1,36 @@
-// src/components/TitleDescription.tsx
+import { Zap, Calendar } from "lucide-react";
 
-const TitleDescription = () => (
-    <div className="mt-4 mx-4 px-2 py-1 bg-white">
-      <h1 className="text-xl font-bold">數金部會議室 (11F)</h1>
-      <p className="text-xs text-gray-500 my-1">
-        需要會議室？點擊預約，讓會議準備更輕鬆！
-      </p>
+interface TitleDescriptionProps {
+  title: string;
+  subtitle: string;
+  onSwitch?: () => void;
+  mode: string;
+}
+
+const TitleDescription = ({ title, subtitle, onSwitch, mode }: TitleDescriptionProps) => {
+  const isCharge = mode === "charge";
+
+  return (
+    <div className={`px-6 py-2 relative ${isCharge ? "bg-yellow-300 pl-16" : "bg-white"} transition`}>
+      <h1 className="text-xl font-bold">{title}</h1>
+      <p className="text-xs text-gray-600 my-1">{subtitle}</p>
+      
+      {onSwitch && (
+        <button
+          onClick={onSwitch}
+          className={`absolute top-2 ${isCharge ? "left-0 rounded-r-full" : "right-0 rounded-l-full"} h-12 pl-2 pr-5 
+            ${isCharge ? "bg-blue-400" : "bg-yellow-400"} 
+            shadow flex items-center`}
+        >
+          {isCharge ? (
+            <Calendar className="w-6 h-6 text-white" />
+          ) : (
+            <Zap className="w-6 h-6 text-white" />
+          )}
+        </button>
+      )}
     </div>
   );
-  
-  export default TitleDescription;
-  
+};
+
+export default TitleDescription;

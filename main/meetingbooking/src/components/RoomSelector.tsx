@@ -14,7 +14,7 @@ const roomStyle: Record<RoomKey, any> = {
 const rooms: RoomKey[] = ["A101", "A102", "A103"];
 
 const RoomSelector = ({ selectedRoom, onSelectRoom }: RoomSelectorProps) => (
-  <div className="flex bg-white mt-1 pl-5 pr-28 drop-shadow-xs border-b">
+  <div className="flex bg-white mt-1 pl-5 pr-14 drop-shadow-xs border-b">
     {rooms.map((room) => {
       const selectedClasses =
         selectedRoom === room ? roomStyle[room] : "bg-gray-100 text-gray-700";

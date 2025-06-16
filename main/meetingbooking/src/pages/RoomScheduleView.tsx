@@ -29,7 +29,11 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Taipei");
 
-const RoomScheduleView = () => {
+interface RoomScheduleViewProps {
+  setMode: (mode: "room" | "charge") => void;
+}
+
+const RoomScheduleView = ({setMode}:RoomScheduleViewProps) => {
   // UI 狀態管理
   const [selectedRoom, setSelectedRoom] = useState<RoomKey>("A101");
   const [selectedView, setSelectedView] = useState<ViewMode>("Week");
@@ -260,7 +264,12 @@ const RoomScheduleView = () => {
   // 以下為組合各個元件與 UI
   return (
     <div className="flex flex-col h-screen">
-      <TitleDescription />
+      <TitleDescription
+        title="數金部會議室 (11F)"
+        subtitle="需要會議室？點擊預約，讓會議準備更輕鬆！"
+        onSwitch={() => setMode("charge")}
+        mode="room"
+      />
       <RoomSelector selectedRoom={selectedRoom} onSelectRoom={setSelectedRoom} />
       <Equipment selectedRoom={selectedRoom} />
       <ViewToggle
@@ -278,6 +287,7 @@ const RoomScheduleView = () => {
           selectedView={selectedView}
           currentDate={currentDate}
           meetings={meetings}
+          mode="room"
           setSelectedMeeting={setSelectedMeeting}
           setShowInfoModal={setShowInfoModal}
           setCurrentDate={setCurrentDate}

@@ -48,5 +48,5 @@ router.patch("/api/bookings/:id/:editPassword?", async (ctx) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-console.log("✅ Server running on http://localhost:8000");
+console.log("✅ Server running on http://localhost:8080");
 await app.listen({ port: 8080 });
