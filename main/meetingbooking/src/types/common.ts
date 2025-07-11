@@ -1,63 +1,62 @@
-// src/types/index.ts
-
-export interface Meeting {
-    id: string;
-    title: string;
-    user: string;
-    startTime: string;
-    endTime: string;
-    date: string; // "YYYY-MM-DD"
-    color: string;
-    room: string;
-    participantsNum: number,
-    cancelled: boolean;
-}
-export interface MeetingInfo {
-    id: string;
-    user: string;  // 預約者
-    room: string;       // 會議室
-    title: string;      // 會議名稱
-    participantsNum: number;
-    date: string;       // "YYYY-MM-DD"
-    startTime: string; 
-    endTime: string; 
-  }
-
-export interface BookingForm {
-    title: string;
-    user: string;
-    room: string;
-    participantsNum: number;
-    selectedDate: string;
-    startTime: string;
-    endTime: string;
-    editPassword: string;
+export interface UserInfo {
+  id: string;
+  name: string;
+  extension: string;
+  department: {
+    code: string;
+    label: string;
   };
+  group: {
+    code: string;
+    label: string;
+  };
+}
 
 export interface Meeting {
   id: string;
   title: string;
-  user: string;
-  room: string;
-  participantsNum: number;
+  user: UserInfo;
   startTime: string;
   endTime: string;
-  TaipeiStartTime: string;
-  TaipeiEndTime: string;
-  date: string;
-  updatedCount?: number;
+  date: string; // "YYYY-MM-DD"
+  color: string;
+  room: string;
+  participantsNum: number;
+  cancelled: boolean;
 }
 
-export interface BookingFormData {
+export interface MeetingInfo {
+  id: string;
+  user: UserInfo;
+  room: string;
+  title: string;
+  participantsNum: number;
+  date: string; // "YYYY-MM-DD"
+  startTime: string;
+  endTime: string;
+}
+
+export interface BookingForm {
   title: string;
   user: string;
-  room: string;
+  room: string[];
   participantsNum: number;
   selectedDate: string;
   startTime: string;
   endTime: string;
   editPassword: string;
 }
+
+// export interface BookingFormData {
+//   title: string;
+//   user: string;
+//   room: string;
+//   participantsNum: number;
+//   selectedDate: string;
+//   startTime: string;
+//   endTime: string;
+//   editPassword: string;
+// }
 
 export interface ConfirmationModalProps {
   show: boolean;
@@ -78,13 +77,18 @@ export interface AlertModalProps {
   onClose: () => void;
 }
 
-  export type ViewMode = "Day" | "Week" | "Month";
-  
-  export type RoomKey = "A101" | "A102" | "A103";
+export type ViewMode = "Day" | "Week" | "Month";
 
-  export const roomNames: Record<RoomKey, string> = {
-    A101: "Alpha",
-    A102: "Beta",
-    A103: "StartUp",
-  };
-  
+export type RoomKey = "A101" | "A102" | "A103";
+
+export const roomNames: Record<RoomKey, string> = {
+  A101: "Alpha",
+  A102: "Beta",
+  A103: "StartUp",
+};
+
+export interface BookingApiResponse {
+  ok: boolean;
+  status: number;
+  body?: any; // 如果你有回傳資料可以具體定義型別
+}

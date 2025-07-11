@@ -82,7 +82,7 @@ const DayCalendar = ({
         const durationMinutes = eventEnd.diff(eventStart, "minute");
         const topPercent = (startMinutes / TIMELINE_DURATION_MIN) * 100;
         const heightPercent = (durationMinutes / TIMELINE_DURATION_MIN) * 100;
-  
+
         return (
           <div
             key={meeting.id}
@@ -95,8 +95,23 @@ const DayCalendar = ({
           >
             <div className="pl-2">
               <h3 className="text-xl font-medium">{meeting.title}</h3>
-              <p className="text-xl text-gray-600">預約者：{meeting.user}</p>
+              <p className="text-xl text-gray-600">預約者：{meeting.user.name || meeting.user.id}</p>
             </div>
+
+            {/* 組別標籤 */}
+            {typeof meeting.user !== "string" && meeting.user.group?.label && (
+              <div
+                className="absolute top-1 right-10 text-xs font-semibold px-2 py-0.5 rounded"
+                style={{
+                  // backgroundColor: groupColorMap[meeting.user.group.code] || "#888",
+                  backgroundColor: "#888",
+                  color: "white",
+                }}
+              >
+                {meeting.user.group.label}
+              </div>
+            )}
+
             <button className="bg-black rounded-full p-1 mr-2">
               <ChevronRight className="w-3 h-3 text-white" />
             </button>

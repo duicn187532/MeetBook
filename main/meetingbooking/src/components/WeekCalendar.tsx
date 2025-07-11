@@ -16,6 +16,17 @@ interface WeekCalendarProps {
   setShowInfoModal: (show: boolean) => void;
 }
 
+// const groupColorMap: { [key: string]: string } = {
+//   company: "#D97706", // amber-600
+//   person: "#059669", // emerald-500
+//   analysis: "#3B82F6", // blue-500
+//   promotion: "#8B5CF6", // violet-500
+//   management: "#EC4899", // pink-500
+//   innvation: "#F43F5E", // rose-500
+//   header: "#10B981", // green-500
+// };
+
+
 const colors: { [key: string]: string } = {
   A101: "bg-blue-200",
   A102: "bg-red-200",
@@ -70,9 +81,8 @@ const WeekCalendar = ({
           {displayedWeekDates.map((date) => (
             <div
               key={date.format("YYYY-MM-DD")}
-              className={`flex-1 border-l relative ${
-                date.isSame(currentDate, "day") ? "bg-gray-50" : ""
-              }`}
+              className={`flex-1 border-l relative ${date.isSame(currentDate, "day") ? "bg-gray-50" : ""
+                }`}
             >
               <div className="border-b" style={{ height: `${topOffsetPercent}%` }}></div>
               {timeSlots.map((time) => {
@@ -99,20 +109,34 @@ const WeekCalendar = ({
                   return (
                     <div
                       key={meeting.id}
-                      className={`${colors[meeting.room]} rounded absolute left-1 right-1 shadow-sm`}
+                      className={`
+                      ${colors[meeting.room]}
+                      rounded absolute left-1 right-1 shadow-md
+                      transition-transform duration-75 ease-in
+                      active:scale-95
+                      cursor-pointer
+                    `}
                       style={{ top: `${topPercent}%`, height: `${heightPercent}%` }}
                       onClick={() => {
-                        setSelectedMeeting(meeting);
-                        setShowInfoModal(true);
+                        setTimeout(() => {
+                          setSelectedMeeting(meeting);
+                          setShowInfoModal(true);
+                        }, 400);
                       }}
                     >
                       <div className="p-1">
                         <div className="text-xs font-bold truncate">
                           {meeting.title}
                         </div>
-                        <div className="text-xs text-[#444444] font-normal truncate">
-                          {meeting.user}
+                        <div
+                          className={`text-xs text-[#444444] font-normal ${meeting.user.name ? "truncate" : ""
+                            }`}
+                        >
+                          {meeting.user.name || meeting.user.id.slice(-4)}
                         </div>
+                        {/* <div className="text-xs text-[#444444] font-normal">
+                          #{meeting.user.extension}
+                        </div> */}
                       </div>
                     </div>
                   );

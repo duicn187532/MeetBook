@@ -8,14 +8,14 @@ const router = new Router();
 
 // ✅ 启用 CORS
 const env = Deno.env.get("ENV"); // 讀取 ENV 變數
-console.log(env);  // 這裡應該會顯示 "production"
+console.log("Environment:", env);
 
 const corsOrigin =
   env === "production"
     ? "https://duicn187532.github.io"
     : "*";
 
-console.log(corsOrigin);
+console.log("CORS Origin:", corsOrigin);
 
 app.use(
   oakCors({
@@ -24,29 +24,33 @@ app.use(
     allowedHeaders: ["Content-Type"],
   })
 );
+
 // ✅ 记录 API 请求
 router.get("/api/bookings/:room?", async (ctx) => {
-  // console.log("📥 收到 GET /api/bookings 请求");
   return await getActiveBooked(ctx);
 });
 
 router.get("/api/allBookings", async (ctx) => {
-  // console.log("📥 收到 GET /api/activeBookings 请求");
   return await getAllBooked(ctx);
 });
 
 router.post("/api/bookings", async (ctx) => {
-  // console.log("📥 收到 POST /api/bookings 请求");
   return await addBooking(ctx);
 });
 
 router.patch("/api/bookings/:id/:editPassword?", async (ctx) => {
-  // console.log("📥 收到 PATCH /api/bookings 请求, id:", ctx.params.id);
   return await updateBooking(ctx);
 });
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-console.log("✅ Server running on http://localhost:8000");
-await app.listen({ port: 8080 });
+// ✅ 重要修复：读取 Cloud Run 提供的 PORT 环境变量
+const port = parseInt(Deno.env.get("PORT") || "8080");
+console.log(`Starting server on port ${port}...`);
+
+await app.listen({ 
+  port,
+  hostname: "0.0.0.0"  // 必須綁定 0.0.0.0 才能在容器內被 Cloud Run 探測到
+});
+
