@@ -1,0 +1,4808 @@
+[
+  {
+    "_id": "67d8d795574b57f2fa051d4b",
+    "title": "法人產品組週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67d8dc432f8d2adfc933ba5c",
+    "title": "BCNS",
+    "oldUser": "56731-51152",
+    "newUser": {
+      "id": "005673",
+      "name": "",
+      "extension": "51152",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67d8ed01c83e192387e4cd57",
+    "title": "個人產品規劃組工作進度會議",
+    "oldUser": "9971 (#51141)",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67d8eef3c83e192387e4cd58",
+    "title": "天福會議",
+    "oldUser": "10529-51111",
+    "newUser": {
+      "id": "001052",
+      "name": "",
+      "extension": "51111",
+      "department": {
+        "code": "others",
+        "label": "其他"
+      },
+      "group": {
+        "code": "header",
+        "label": "數金部長"
+      }
+    }
+  },
+  {
+    "_id": "67d8fa0898ec6cde627f82da",
+    "title": "AI分享會議內容",
+    "oldUser": "7935",
+    "newUser": {
+      "id": "",
+      "name": "7935",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67d8faa198ec6cde627f82db",
+    "title": "FEP&錢隆",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "67d8fd4998ec6cde627f82dc",
+    "title": "工作會議",
+    "oldUser": "9971 #51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67d9017a655ae63c42d4413f",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67d90840ca2e479aff0a4cba",
+    "title": "創新研發組周會",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67d908ebca2e479aff0a4cbb",
+    "title": "創新研發組周會",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67d90951ca2e479aff0a4cbc",
+    "title": "北科產碩班 媒合說明會",
+    "oldUser": "62413 #51133",
+    "newUser": {
+      "id": "006241",
+      "name": "",
+      "extension": "51133",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "67d92d69d343876376fb77b3",
+    "title": "台大會計系-水電費查詢作業",
+    "oldUser": "48836",
+    "newUser": {
+      "id": "004883",
+      "name": "",
+      "extension": "51114",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67da17f54369726765a5a2ea",
+    "title": "營運持續管理演練後檢討會議",
+    "oldUser": "64033",
+    "newUser": {
+      "id": "006403",
+      "name": "",
+      "extension": "51169",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67da2392bf42a9bdc2e0e303",
+    "title": "數位券",
+    "oldUser": "41874#51149",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67da65a93827c2dc578ec0a9",
+    "title": "錢隆會議",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "67da84d39a54774884378af8",
+    "title": "金融科技產業聯盟會議",
+    "oldUser": "張翔威",
+    "newUser": {
+      "id": "",
+      "name": "張翔威",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67dab979c97b290d789ee03c",
+    "title": "數據分析組_BH報告",
+    "oldUser": "6812851115",
+    "newUser": {
+      "id": "",
+      "name": "6812851115",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67dcb7cf855253dc4347eaf5",
+    "title": "小組討論",
+    "oldUser": "9971-51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67dccafe94a5bba0fdd16815",
+    "title": "Mongodb 掌上銀討論",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67dd2f05e3dae8515c0e6d2f",
+    "title": "台大會計系-水電費查詢作業",
+    "oldUser": "48836#51114",
+    "newUser": {
+      "id": "004883",
+      "name": "",
+      "extension": "51114",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e09f13424e1434f193a938",
+    "title": "行務會議",
+    "oldUser": "Maggie",
+    "newUser": {
+      "id": "",
+      "name": "Maggie",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67e0dcba20e432ec4c3f0f3d",
+    "title": "營運持續管理",
+    "oldUser": "64033",
+    "newUser": {
+      "id": "006403",
+      "name": "",
+      "extension": "51169",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e10365f5b3647cfac27206",
+    "title": "第一季數金業務宣導-北高雄",
+    "oldUser": "68730",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e1088f37ba97361c89122b",
+    "title": "消費者保護暨公平待客委員會",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e20452bc2f45d09512c04a",
+    "title": "數據分析-建模分享",
+    "oldUser": "48836#51114",
+    "newUser": {
+      "id": "004883",
+      "name": "",
+      "extension": "51114",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e2129004392baa26b79ad3",
+    "title": "ORP報表討論",
+    "oldUser": "19178-51174",
+    "newUser": {
+      "id": "001917",
+      "name": "",
+      "extension": "51174",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e394d4a809f67ffdfe5abf",
+    "title": "電支清償基金",
+    "oldUser": "9971 #51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e3a4e90e51c94928d4b1e1",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e4a10682507969bb6728ef",
+    "title": "",
+    "oldUser": "FEP",
+    "newUser": {
+      "id": "",
+      "name": "FEP",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67e4ae78e08d9acbcbb32e2e",
+    "title": "進口轉貸",
+    "oldUser": "54097/51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e4e448332b39a9cc868f1f",
+    "title": "Ewb存匯行銷專案",
+    "oldUser": "64033",
+    "newUser": {
+      "id": "006403",
+      "name": "",
+      "extension": "51169",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e4ea1a45b8a31406f25fe0",
+    "title": "TWQR被掃交易說明會",
+    "oldUser": "69094",
+    "newUser": {
+      "id": "006909",
+      "name": "",
+      "extension": "51151",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67e6083fe1a832c57a27b767",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e6086be1a832c57a27b768",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e6088be1a832c57a27b769",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e608f4e1a832c57a27b76a",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e6090fe1a832c57a27b76b",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e6092ce1a832c57a27b76c",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67e64e9e6a2faa4b661409ff",
+    "title": "小小兵debit卡",
+    "oldUser": "67369/51132",
+    "newUser": {
+      "id": "006736",
+      "name": "",
+      "extension": "51132",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "67e9e1e2b2f28cd694502926",
+    "title": "Sophia 會議",
+    "oldUser": "Sophia ",
+    "newUser": {
+      "id": "",
+      "name": "Sophia ",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67ea1823d73d872f06644bc9",
+    "title": "創新組會議",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67ea3bed9128e48bcfeea30b",
+    "title": "網銀月報需求討論",
+    "oldUser": "61921#51183",
+    "newUser": {
+      "id": "006192",
+      "name": "",
+      "extension": "51183",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "67ea3ff4cdee411bcc81e7ba",
+    "title": "新網銀",
+    "oldUser": "4187",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67eb44a1be5c41706617f566",
+    "title": "創新組",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67eb80e78d9c0afd19419950",
+    "title": "APP專案進度會議",
+    "oldUser": "54097/51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67ecaf74a2a95ca8749621c8",
+    "title": "北科大-線上媒合說明會",
+    "oldUser": "62413/51133",
+    "newUser": {
+      "id": "006241",
+      "name": "",
+      "extension": "51133",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "67ecccfee8576b7d58d1a760",
+    "title": "MX會議",
+    "oldUser": "63711",
+    "newUser": {
+      "id": "006371",
+      "name": "",
+      "extension": "51167",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67eccd35e8576b7d58d1a761",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67ecce30c2515e6f1b685aef",
+    "title": "新網銀專案雙周會",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f31d52e541a7a2e2097114",
+    "title": "營運持續管理",
+    "oldUser": "64033",
+    "newUser": {
+      "id": "006403",
+      "name": "",
+      "extension": "51169",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f31ec8e541a7a2e2097115",
+    "title": "",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f364a95e4541571027a168",
+    "title": "董事會",
+    "oldUser": "51111",
+    "newUser": {
+      "id": "001052",
+      "name": "",
+      "extension": "51111",
+      "department": {
+        "code": "others",
+        "label": "其他"
+      },
+      "group": {
+        "code": "header",
+        "label": "數金部長"
+      }
+    }
+  },
+  {
+    "_id": "67f47a531d90637aba305988",
+    "title": "訊息總覽推播內容討論",
+    "oldUser": "陳健豪",
+    "newUser": {
+      "id": "",
+      "name": "陳健豪",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "67f4826bb65f731d5ac85509",
+    "title": "個人產品組會議",
+    "oldUser": "70190",
+    "newUser": {
+      "id": "007019",
+      "name": "",
+      "extension": "51147",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f4b82571fcbc8bb804b6a7",
+    "title": "Line BC異常問題討論",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67f4b88071fcbc8bb804b6a8",
+    "title": "金融科技園區監理沙龍-RWA代幣化",
+    "oldUser": "68748",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67f4bb8b71fcbc8bb804b6a9",
+    "title": " Line BC異常問題討論",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67f51de2e8222cd92b897f27",
+    "title": "量子計算",
+    "oldUser": "51111",
+    "newUser": {
+      "id": "001052",
+      "name": "",
+      "extension": "51111",
+      "department": {
+        "code": "others",
+        "label": "其他"
+      },
+      "group": {
+        "code": "header",
+        "label": "數金部長"
+      }
+    }
+  },
+  {
+    "_id": "67f5c7174d052057b98d939e",
+    "title": "Visa 合作專案討論",
+    "oldUser": "18571 #51121",
+    "newUser": {
+      "id": "001857",
+      "name": "",
+      "extension": "51121",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "67f5dae4772e23ef1c4f8161",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f5f90769bf5c2284a3dc6c",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f718adf437a13c3b80452b",
+    "title": "財金會議",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f75898c5a63f93e4575d9f",
+    "title": "Mx電文外幣收款人轉換資料範圍",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f863ed4b5b661f1d62e393",
+    "title": "新網銀preonline上線協調會",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f885d9ce4ba5a0e3572420",
+    "title": "進件系統介紹",
+    "oldUser": "56731/51152",
+    "newUser": {
+      "id": "005673",
+      "name": "",
+      "extension": "51152",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f8862bce4ba5a0e3572421",
+    "title": "進件系統介紹",
+    "oldUser": "56731",
+    "newUser": {
+      "id": "005673",
+      "name": "",
+      "extension": "51152",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67f8bd51ab2ffe8f1761f829",
+    "title": "Visa 會議討論",
+    "oldUser": "18571",
+    "newUser": {
+      "id": "001857",
+      "name": "",
+      "extension": "51121",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "67f8cac593f810c0bb15eec2",
+    "title": "進口轉貸會議",
+    "oldUser": "54097/ #51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67fc64b9fa590ca54fd8bec9",
+    "title": "創新組週會",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67fc6abcca4682c33d4e4ab9",
+    "title": "APP專案進度會議",
+    "oldUser": "54097/ #51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67fca8d3e7c4a669660f3176",
+    "title": "TWQR乘車碼說明會",
+    "oldUser": "69094",
+    "newUser": {
+      "id": "006909",
+      "name": "",
+      "extension": "51151",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67fcafe2a010d6f09a43b05c",
+    "title": "商業模式+創新研發組組會",
+    "oldUser": "69973",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67fe0be489522f9582a7696a",
+    "title": "新網銀preonline",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67fe2cd933dd2f9018de7f5e",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "67ff1219e41014367026019a",
+    "title": "數推",
+    "oldUser": "68748 #51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "67ff13cee41014367026019b",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "67ff5d4e1140621c950b9d58",
+    "title": "信用卡加密貨幣回饋討論",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6800475060df81b4f8ecba0a",
+    "title": "FEP新核心轉換",
+    "oldUser": "51171",
+    "newUser": {
+      "id": "003428",
+      "name": "",
+      "extension": "51171",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "680048ba60df81b4f8ecba0b",
+    "title": "新網銀雙周會",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6800bcdd85b6af393ef08b59",
+    "title": "DMS教育訓練",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "6800be2185b6af393ef08b5a",
+    "title": "週會",
+    "oldUser": "9971 #51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6801b3f93c88b3d8cb12ebc0",
+    "title": "萬事達卡&信用卡&數位帳號合作推廣討論",
+    "oldUser": "18571",
+    "newUser": {
+      "id": "001857",
+      "name": "",
+      "extension": "51121",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "6801e5f7c2d1e52dcd574746",
+    "title": "Mx電文",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6801ecb8dbd917fdcdeb25c1",
+    "title": "北祥",
+    "oldUser": "9971#51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6806064748d9ff3ac277139e",
+    "title": "定額台幣匯入 監理門診會議",
+    "oldUser": "40525",
+    "newUser": {
+      "id": "004052",
+      "name": "",
+      "extension": "51145",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6806f143a2576aaa666732a4",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f162a2576aaa666732a5",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f17ba2576aaa666732a6",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f1b8640746939689e4f6",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f1d4640746939689e4f7",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f1ef640746939689e4f8",
+    "title": "RPA企業專題計劃",
+    "oldUser": "99318",
+    "newUser": {
+      "id": "",
+      "name": "99318",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6806f214640746939689e4f9",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f232640746939689e4fa",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6806f24e640746939689e4fb",
+    "title": "RPA企業專題計劃",
+    "oldUser": "09318",
+    "newUser": {
+      "id": "000931",
+      "name": "",
+      "extension": "51101",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "680702e712e6598ee62e47c6",
+    "title": "數位達人課前說明",
+    "oldUser": "69116 #51156",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68072bba1b43df68084e1732",
+    "title": "數位達人課前說明",
+    "oldUser": "69116 #51156",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "680833d2aa38be01f3c297a1",
+    "title": "維運組早會",
+    "oldUser": "51171",
+    "newUser": {
+      "id": "003428",
+      "name": "",
+      "extension": "51171",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "68088d25b0d7573bb5e27687",
+    "title": "VA傳承(4)",
+    "oldUser": "56731-51152",
+    "newUser": {
+      "id": "005673",
+      "name": "",
+      "extension": "51152",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6808d705041794509effe4b3",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6809a3c5aae0f7f8eecc998b",
+    "title": "Ai 訓練會議",
+    "oldUser": "51111",
+    "newUser": {
+      "id": "001052",
+      "name": "",
+      "extension": "51111",
+      "department": {
+        "code": "others",
+        "label": "其他"
+      },
+      "group": {
+        "code": "header",
+        "label": "數金部長"
+      }
+    }
+  },
+  {
+    "_id": "6809a3e8aae0f7f8eecc998c",
+    "title": "Ai 訓練",
+    "oldUser": "51111",
+    "newUser": {
+      "id": "001052",
+      "name": "",
+      "extension": "51111",
+      "department": {
+        "code": "others",
+        "label": "其他"
+      },
+      "group": {
+        "code": "header",
+        "label": "數金部長"
+      }
+    }
+  },
+  {
+    "_id": "6809a3faaae0f7f8eecc998d",
+    "title": "va(4)",
+    "oldUser": "56731-51152",
+    "newUser": {
+      "id": "005673",
+      "name": "",
+      "extension": "51152",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "680ade3c3afa97a39949d880",
+    "title": "網銀組工作討論",
+    "oldUser": "#51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "680b1991d2e53838be37dfcf",
+    "title": "核心一路通收款人約定",
+    "oldUser": "51143",
+    "newUser": {
+      "id": "003656",
+      "name": "",
+      "extension": "51143",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "680b1aa0d2e53838be37dfd0",
+    "title": "核心報表",
+    "oldUser": "51143",
+    "newUser": {
+      "id": "003656",
+      "name": "",
+      "extension": "51143",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "680b3bf7623318cdc2390e5f",
+    "title": "契星科技-Lakehouse規劃說明",
+    "oldUser": "59374#51112",
+    "newUser": {
+      "id": "005937",
+      "name": "",
+      "extension": "51112",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "680eead295497faab2ebdd2d",
+    "title": "FEP P1",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "681061e1b12a127b53f78e05",
+    "title": "數推會",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6811b970eb3e2af1df1b1e1b",
+    "title": "企金RM培訓人員",
+    "oldUser": "19461",
+    "newUser": {
+      "id": "001946",
+      "name": "",
+      "extension": "51162",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "68120ad8a026ba4a8c2cfb14",
+    "title": "虛擬資產業者來訪",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6814184fbfec9f4b909cb58e",
+    "title": "新加坡網銀建置",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "681418a6bfec9f4b909cb58f",
+    "title": "DMS",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "68142d9e9296c205a6102a8e",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142dc49296c205a6102a8f",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142e039296c205a6102a90",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142e3a9296c205a6102a91",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142e729296c205a6102a92",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142eb59296c205a6102a93",
+    "title": " 虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142ee09296c205a6102a94",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68142f119296c205a6102a95",
+    "title": "虛擬資產線上課程",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6814701706cd2992c2caf1c1",
+    "title": "16:00 ~ 17:00",
+    "oldUser": "69116",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68175617367387278bf380a5",
+    "title": "讀書會RPA交流",
+    "oldUser": "6812851115",
+    "newUser": {
+      "id": "",
+      "name": "6812851115",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "68183232059193237eb3015f",
+    "title": "ATM新增防詐辨識-是否配戴口罩安全帽",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "681851f48669defdfe0926d2",
+    "title": "創新組週會",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68188ac93b4c632a3851d1a3",
+    "title": "好時價評估會議",
+    "oldUser": "69965#51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "681963b7379a75f11ae3d530",
+    "title": "發明專利",
+    "oldUser": "63711",
+    "newUser": {
+      "id": "006371",
+      "name": "",
+      "extension": "51167",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6819ce0e6a2f88c3b41958b7",
+    "title": "華南永昌會議討論",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "681aa70f94aa872834ab1e3a",
+    "title": "迪堡業務拜訪",
+    "oldUser": "51171",
+    "newUser": {
+      "id": "003428",
+      "name": "",
+      "extension": "51171",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "681aa759fc5e6817ca0806bf",
+    "title": "維運組早會",
+    "oldUser": "51171",
+    "newUser": {
+      "id": "003428",
+      "name": "",
+      "extension": "51171",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "681ab1107728dad71d92f226",
+    "title": "轉帳顯示戶名 硬體採購檢視",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "681b2a7a9ea34362166ab7c3",
+    "title": "",
+    "oldUser": "虛擬帳號傳承-5",
+    "newUser": {
+      "id": "",
+      "name": "虛擬帳號傳承-5",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b5409fd771404db8f6bff",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b5478fd771404db8f6c00",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b54d6fd771404db8f6c01",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b5506fd771404db8f6c02",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b554ffd771404db8f6c03",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b5566fd771404db8f6c04",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b557bfd771404db8f6c05",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681b5590fd771404db8f6c06",
+    "title": "",
+    "oldUser": "法人產品組早會",
+    "newUser": {
+      "id": "",
+      "name": "法人產品組早會",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "681bf7a786d0f05744e1d2ec",
+    "title": "個人產品規劃組工作討論",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "681c117a073e3cf140a95aeb",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "681c2a9b6c6bed8b930624cf",
+    "title": "AI模型管理平台UAT測試方案討論",
+    "oldUser": "59374#51112",
+    "newUser": {
+      "id": "005937",
+      "name": "",
+      "extension": "51112",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "681c6a269958888b1d744c9f",
+    "title": "新網銀",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "681d640b13fa6442a4c3045f",
+    "title": "港行廠商會議",
+    "oldUser": "Maggie",
+    "newUser": {
+      "id": "",
+      "name": "Maggie",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "682146a7be6043990dc18276",
+    "title": "數位達人",
+    "oldUser": "69116 #51156",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682148cdf31e3b8e7f7ada38",
+    "title": "APP雙週會議",
+    "oldUser": "54097/51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "68214f50e1f208ebc3a3e0e9",
+    "title": "",
+    "oldUser": "69116 #51156",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68216d0bf4e0f87515147d6c",
+    "title": "三商電腦ATM解決方案",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68216d51f4e0f87515147d6d",
+    "title": "三商電腦ATM解決方案",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682187cf80df93b3aa433ebd",
+    "title": "假日撥薪 ㄧ路通進度",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "68218e79d7c75b62b883ee5a",
+    "title": "Line BC問題討論",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6821a94017a8f25c9fb1c230",
+    "title": "中信金「金融科技防詐說明會」",
+    "oldUser": "69973#51185",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6822952701cb72088c54475c",
+    "title": "Tableau",
+    "oldUser": "61921#51183",
+    "newUser": {
+      "id": "006192",
+      "name": "",
+      "extension": "51183",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6822a51f1389ea5a87a52098",
+    "title": "有價證券保證專案會議",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6822a703e4fcd268b5c6ff95",
+    "title": "有價證券保證專案會議",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6822d59484977b0747560b1a",
+    "title": "面談",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6822dad30d9e05c8b6c1f95d",
+    "title": "戶戶有你 萬事如意 行銷討論會",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6823ff2a87633c4e97d1cbac",
+    "title": "假日撥薪規格書進度報告",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "68241c923fff83cbd9457236",
+    "title": "迪堡",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "682428e1201900705bb53b59",
+    "title": "討論分層負責明細表",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6824325210deb981a102ca7d",
+    "title": "業者訪談",
+    "oldUser": "69973#51185",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6824682af133eb4c56dd8854",
+    "title": "個人產品組會議",
+    "oldUser": "51147",
+    "newUser": {
+      "id": "007019",
+      "name": "",
+      "extension": "51147",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68253b693f0a2153da95fa69",
+    "title": "網銀",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68257c278c32aef8dbfcc188",
+    "title": "",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682590b289d5b112a9da7e83",
+    "title": "自動化系統會議",
+    "oldUser": "54097 / 51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6826885f1fa0b26422dbb3dd",
+    "title": "網銀組",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68269ca95848b11a42d77f19",
+    "title": "全民共享普發現金",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6826ac66d7a7cf3ac13a53ae",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6826aca2d7a7cf3ac13a53af",
+    "title": "MongoDB雙週會",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6826acfad7a7cf3ac13a53b0",
+    "title": "金融科技產業聯盟第一次會員大會",
+    "oldUser": "69973#51185",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6826b200f9dfe5190450543a",
+    "title": "安富財金科技來訪",
+    "oldUser": "69965 / 51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68271a6f23bd99764b03b46b",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682be8aa94d136729246260d",
+    "title": "數位達人第一堂01",
+    "oldUser": "#51156 69116",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682c47215c8aea061bdf429e",
+    "title": "三商-ATM帶罩辨識解決方案",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682d1e4f48221856e5bcbc13",
+    "title": "行務會議",
+    "oldUser": "Maghie",
+    "newUser": {
+      "id": "",
+      "name": "Maghie",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "682e73ba655b8a8656dfee74",
+    "title": "FEP會議",
+    "oldUser": "66192",
+    "newUser": {
+      "id": "006619",
+      "name": "",
+      "extension": "51192",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "682e7417655b8a8656dfee75",
+    "title": "網銀組討論",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "682ebda2a9b905e0d0968ada",
+    "title": "虛擬資產",
+    "oldUser": "69965/55137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68300c04cc8c74d0229e1bb2",
+    "title": "網銀組週會",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6833c14f82582150b54708bf",
+    "title": "泰達董事來訪",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683432c7cffca2e1bfbb376b",
+    "title": "環球培訓",
+    "oldUser": "68616/51136",
+    "newUser": {
+      "id": "006861",
+      "name": "",
+      "extension": "51136",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "68343331cffca2e1bfbb376c",
+    "title": "環球培訓",
+    "oldUser": "68616/51136",
+    "newUser": {
+      "id": "006861",
+      "name": "",
+      "extension": "51136",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "68352db1689e767476e0dd37",
+    "title": "新核心1831討論",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6835477953199b65ef4b7554",
+    "title": "新核心1831討論",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "683551a78c788ac83adf7283",
+    "title": "校園接班人面談",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68357eec5e431f23aa3c4b26",
+    "title": "Zodia 虛擬資產POC",
+    "oldUser": "69965/51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6836694737d4f5d56deb9b80",
+    "title": "數推",
+    "oldUser": "68748#51108",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68369577887dc3acb2b1f069",
+    "title": "新加坡網銀建置會議",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "683695d7887dc3acb2b1f06a",
+    "title": "新加坡網銀建置會議",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "68369b4003172a1b0a6b0191",
+    "title": "新加坡網銀建置會議",
+    "oldUser": "68136",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6836a570211e35d83aae9eae",
+    "title": "讀書會",
+    "oldUser": "6812851189",
+    "newUser": {
+      "id": "",
+      "name": "6812851189",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6836a86124292c0b5e716348",
+    "title": "BRH分行系統數金業務功能UI討論",
+    "oldUser": "64033",
+    "newUser": {
+      "id": "006403",
+      "name": "",
+      "extension": "51169",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837b868ec20991f79566636",
+    "title": "NEBI",
+    "oldUser": "51143",
+    "newUser": {
+      "id": "003656",
+      "name": "",
+      "extension": "51143",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837d5a4ef982dfcc09a802a",
+    "title": "Visa簡報",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837dd7f5265622949e83edc",
+    "title": "新分行系統收款人約定",
+    "oldUser": "51143",
+    "newUser": {
+      "id": "003656",
+      "name": "",
+      "extension": "51143",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837de72aa73f30e612b4788",
+    "title": "新分行系統收款人約定",
+    "oldUser": "51143",
+    "newUser": {
+      "id": "003656",
+      "name": "",
+      "extension": "51143",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837ecc9fb3dad2c98cd7de4",
+    "title": "新網銀",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837f20b8be3e181942b434f",
+    "title": "水單憑證",
+    "oldUser": "51143",
+    "newUser": {
+      "id": "003656",
+      "name": "",
+      "extension": "51143",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6837fc3c8156924b74c2ab49",
+    "title": "校園接班人面試",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683824d422e1b3b5b0547a9e",
+    "title": "Open API偉康開發會議",
+    "oldUser": "66796 #51153",
+    "newUser": {
+      "id": "006679",
+      "name": "",
+      "extension": "51153",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "683cfcbff3d30e8717acc85c",
+    "title": "數位達人訓練課程",
+    "oldUser": "69116 #51156",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "683d3c294961e1c1e39afd80",
+    "title": "一路通 失蹤人口註記 交易功能討論",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "683d4216ec0e79e9d33bd440",
+    "title": "網銀",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "683d556b5d921f780269ea7c",
+    "title": "Mongo DB掌上銀",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "683ee020bcf038ecf286b6a7",
+    "title": "網銀季報",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "683ee0fcd584921e083d59f4",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "683fb53f26b2fa6dbc487759",
+    "title": "校園接班人面試",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683ff0a1242d1fbee7ae5142",
+    "title": "Zodia 來訪",
+    "oldUser": "69965/51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683ff0c8242d1fbee7ae5143",
+    "title": "組內會議",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683ffbb5ebf79c4f528c60e6",
+    "title": "面試",
+    "oldUser": "69965/51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683ffbe0ebf79c4f528c60e7",
+    "title": "面試",
+    "oldUser": "69965/51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "683ffe811a6bfe824ef19cbc",
+    "title": "好時價會議",
+    "oldUser": "69965/51137",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68410de53add45071607aad4",
+    "title": "信託中非",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "68410e0d3add45071607aad5",
+    "title": "信託中非",
+    "oldUser": "68748#51107",
+    "newUser": {
+      "id": "006874",
+      "name": "",
+      "extension": "51107",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6842428420248cfb47888291",
+    "title": "09:30 ~ 10:20",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6842681f00d48839b0f7d7b2",
+    "title": "遠傳AI分享",
+    "oldUser": "68128#51189",
+    "newUser": {
+      "id": "006812",
+      "name": "",
+      "extension": "51189",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "analysis",
+        "label": "數據分析"
+      }
+    }
+  },
+  {
+    "_id": "6842735aabe5f1cc36f9b29e",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "684273c4abe5f1cc36f9b29f",
+    "title": "個網",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68429d30578c3f7eebf402f3",
+    "title": "明台產險",
+    "oldUser": "51136",
+    "newUser": {
+      "id": "006861",
+      "name": "",
+      "extension": "51136",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "6846354b05244a5738c5717d",
+    "title": "MX電文時程會議",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6846611b406f37313f6f8fa0",
+    "title": "面談",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68478c7eab8983f53d2baadd",
+    "title": "新加坡網銀建置",
+    "oldUser": "68136#51170",
+    "newUser": {
+      "id": "006813",
+      "name": "",
+      "extension": "51170",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "68478d2dab8983f53d2baade",
+    "title": "數位達人03",
+    "oldUser": "#51156 ",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6847913558e00d8adc68b3b0",
+    "title": "新加坡網銀_廠商分享",
+    "oldUser": "51168",
+    "newUser": {
+      "id": "007004",
+      "name": "",
+      "extension": "51168",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6847c5d340c1cc8ed2eaa446",
+    "title": "APP雙週會議",
+    "oldUser": "54097 / 51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6847c63f40c1cc8ed2eaa447",
+    "title": "APP雙週會議",
+    "oldUser": "54097 / 51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6847d7aca978464a7fcef983",
+    "title": "Ibank",
+    "oldUser": "51141",
+    "newUser": {
+      "id": "000997",
+      "name": "",
+      "extension": "51141",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6847d7f4a978464a7fcef984",
+    "title": "Atm帶罩辨識",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68490ca223dabcb339e168b7",
+    "title": "",
+    "oldUser": "51123",
+    "newUser": {
+      "id": "001684",
+      "name": "",
+      "extension": "51123",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "68498351443791474fc6fa4c",
+    "title": "新網銀",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6849838b443791474fc6fa4d",
+    "title": "新網銀雙周會",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "684a27e9d0271473069f9de0",
+    "title": "維運組",
+    "oldUser": "51142",
+    "newUser": {
+      "id": "000752",
+      "name": "",
+      "extension": "51142",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "684f6e542e15edb4c80827d1",
+    "title": "Net bank seasonal report discussion meeting ",
+    "oldUser": "19267 51199",
+    "newUser": {
+      "id": "001926",
+      "name": "",
+      "extension": "51199",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "684f81ade8f066e6e2536759",
+    "title": "MongoDB專案會議",
+    "oldUser": "59773 #51164",
+    "newUser": {
+      "id": "005977",
+      "name": "祐晨",
+      "extension": "51164",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "684f97fc2d55f0effa3904cd",
+    "title": "MID門號認證服務",
+    "oldUser": "慧雯",
+    "newUser": {
+      "id": "",
+      "name": "慧雯",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "684ff1aee658836b4823c3ec",
+    "title": "台銀來訪",
+    "oldUser": "51137/69965",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6850c7a741a9ea52837bf21b",
+    "title": "向一路通客戶說明換匯使用流程",
+    "oldUser": "18571",
+    "newUser": {
+      "id": "001857",
+      "name": "",
+      "extension": "51121",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "promotion",
+        "label": "行銷推廣"
+      }
+    }
+  },
+  {
+    "_id": "6850cce7d0b6125c3b528a5b",
+    "title": "泰達公司",
+    "oldUser": "69108#51106",
+    "newUser": {
+      "id": "006910",
+      "name": "",
+      "extension": "51106",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "685140aeb353ffcb72515f1b",
+    "title": "金融FAST-ID業務說明會",
+    "oldUser": "70190",
+    "newUser": {
+      "id": "007019",
+      "name": "",
+      "extension": "51147",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "685210b6c4bf1905d6413f02",
+    "title": "數位達人課程",
+    "oldUser": "69116",
+    "newUser": {
+      "id": "006911",
+      "name": "",
+      "extension": "51156",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "68521f44b504f28630705c15",
+    "title": "章則檢視",
+    "oldUser": "69876",
+    "newUser": {
+      "id": "006987",
+      "name": "",
+      "extension": "51146",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6852928720d48230873f3436",
+    "title": "稽核檢討會議",
+    "oldUser": "51161",
+    "newUser": {
+      "id": "",
+      "name": "51161",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "68539fadd5b2ff95a39fffc9",
+    "title": "國泰異業工作圈會議",
+    "oldUser": "69973#51185",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6854aa37ecca1d94f1aa1974",
+    "title": "FinTechSpace",
+    "oldUser": "51137/69965",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "6854f0b52b1ddc9eeed6c401",
+    "title": "告誡戶一路通相關議題",
+    "oldUser": "51173 碧玲",
+    "newUser": {
+      "id": "006873",
+      "name": "",
+      "extension": "51173",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858a68ba7235c65e07536c3",
+    "title": "面談",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858a6f3a7235c65e07536c4",
+    "title": "數位券",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858a700a7235c65e07536c5",
+    "title": "數位帳戶會議",
+    "oldUser": "70190",
+    "newUser": {
+      "id": "007019",
+      "name": "",
+      "extension": "51147",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858a712a7235c65e07536c6",
+    "title": "面談",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858a791a7235c65e07536c7",
+    "title": "收㽞竹合作",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858a7baa7235c65e07536c8",
+    "title": "早會",
+    "oldUser": "41874",
+    "newUser": {
+      "id": "004187",
+      "name": "",
+      "extension": "51149",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "person",
+        "label": "個人產品"
+      }
+    }
+  },
+  {
+    "_id": "6858b6a2c90b01aebe2f20c4",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6858b6f0c90b01aebe2f20c5",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6858b70bc90b01aebe2f20c6",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6858b7bd179e1fd29df11aa6",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6858b7eca0feab8b81f230f3",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6858b839a0feab8b81f230f4",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6858ba531d8e2443cb9d1b85",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "6859082142b7c4d2e1301714",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "68590c420113ae9b4abbccd5",
+    "title": "臨時會議",
+    "oldUser": "測試",
+    "newUser": {
+      "id": "",
+      "name": "測試",
+      "extension": "",
+      "department": {
+        "code": "",
+        "label": ""
+      },
+      "group": {
+        "code": "",
+        "label": ""
+      }
+    }
+  },
+  {
+    "_id": "685a0bafa69f9081ba1486d6",
+    "title": "市民永續",
+    "oldUser": "51137/69965",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "685a0c05ba532261ed87ab3a",
+    "title": "APP雙週會議",
+    "oldUser": "54097 / 51163",
+    "newUser": {
+      "id": "005409",
+      "name": "",
+      "extension": "51163",
+      "department": {
+        "code": "strategy",
+        "label": "數位策略部"
+      },
+      "group": {
+        "code": "company",
+        "label": "法人產品"
+      }
+    }
+  },
+  {
+    "_id": "685a4e7b4e0dc46ea7b7ee07",
+    "title": "自動化設備監控管理系統提升專案會議",
+    "oldUser": "34282",
+    "newUser": {
+      "id": "003428",
+      "name": "",
+      "extension": "51171",
+      "department": {
+        "code": "marketing",
+        "label": "數位行銷部"
+      },
+      "group": {
+        "code": "management",
+        "label": "維運管理"
+      }
+    }
+  },
+  {
+    "_id": "685a54420532e688aae86187",
+    "title": "FTS企業日（匯雲）",
+    "oldUser": "51137/69965",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "685a54dfecb3d22a0f5eac34",
+    "title": "FTS企業日（匯雲）",
+    "oldUser": "51137/69965",
+    "newUser": {
+      "id": "006996",
+      "name": "",
+      "extension": "51137",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "685a6d2df83ba5d69a6f9777",
+    "title": "企業日分享",
+    "oldUser": "69973#51185",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  },
+  {
+    "_id": "685a6ee8f83ba5d69a6f9778",
+    "title": "企業日分享",
+    "oldUser": "69973#51185",
+    "newUser": {
+      "id": "006997",
+      "name": "",
+      "extension": "51185",
+      "department": {
+        "code": "technology",
+        "label": "金融科技部"
+      },
+      "group": {
+        "code": "innovation",
+        "label": "創新研發"
+      }
+    }
+  }
+]

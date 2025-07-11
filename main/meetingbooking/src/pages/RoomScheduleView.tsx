@@ -40,7 +40,7 @@ const RoomScheduleView = () => {
   const [bookingForm, setBookingForm] = useState({
     title: "",
     user: "",
-    room: selectedRoom,
+    room: [selectedRoom],
     participantsNum: 0,
     selectedDate: currentDate.format("YYYY-MM-DD"),
     startTime: dayjs().format("HH:mm"),
@@ -78,7 +78,7 @@ const RoomScheduleView = () => {
 
   // 當選擇房間改變時，同步更新預約表單的房間
   useEffect(() => {
-    setBookingForm((prev) => ({ ...prev, room: selectedRoom }));
+    setBookingForm((prev) => ({ ...prev, room: [selectedRoom] }));
   }, [selectedRoom]);
 
   // 初始與房間切換時取得會議資料
@@ -128,6 +128,12 @@ const RoomScheduleView = () => {
     setAlertMessage("已經有人預約囉,請重新選擇時間");
     setShowAlertModal(true);
   };
+  const showUserNotFoundAlert = () => {
+    setAlertType("error");
+    setAlertTitle("無此使用者");
+    setAlertMessage("行編錯囉，請確認輸入4碼行編。");
+    setShowAlertModal(true);
+  }
 
   const showUpdatedSuccessAlert = () => {
     setAlertType("success");
@@ -136,65 +142,98 @@ const RoomScheduleView = () => {
     setShowAlertModal(true);
   };
 
-  // 提交預約
-  async function handleSubmitBooking() {
-    const { title, user, room, participantsNum, selectedDate, startTime, endTime, editPassword } = bookingForm;
-    if (!selectedDate || !user || !room || !startTime || !endTime) {
-      setErrorMessage("請填寫所有欄位！");
-      return;
-    }
-    const start = dayjs.tz(`${selectedDate}T${startTime}:00`, "Asia/Taipei");
-    const end = dayjs.tz(`${selectedDate}T${endTime}:00`, "Asia/Taipei");
-    if (!start.isValid() || !end.isValid()) {
-      setErrorMessage("無效的時間格式，請重新選擇！");
-      return;
-    }
-    
-    if (!start.isBefore(end)) {
-      setErrorMessage("結束時間必須晚於開始時間！");
-      return;
-    }
-      setErrorMessage("");
-
-    const bookingData = {
-      title,
-      user,
-      room,
-      participantsNum,
-      date: selectedDate,
-      startTime: start.toISOString(),
-      endTime: end.toISOString(),
-      editPassword,
-    };
-
-    try {
-      const response = await submitBooking(bookingData);
-      if (response.status === 400) {
-        showTimeConflictAlert();
-      } else {
-        showSuccessAlert();
-        fetchEvents(bookingData.room);
-        setCurrentDate(dayjs(bookingData.date));
-        setViewStartDate(dayjs(bookingData.date));
-        setSelectedRoom(bookingData.room)
-        setShowBookingModal(false);
-      }
-    } catch (error) {
-      console.error("提交失敗，請稍後重試！");
-    } finally {
-      // 重置預約表單
-      setBookingForm({
-        title: "",
-        user: "",
-        room: selectedRoom,
-        participantsNum: 0,
-        selectedDate: currentDate.format("YYYY-MM-DD"),
-        startTime: dayjs().format("HH:mm"),
-        endTime: dayjs().add(1, "hour").format("HH:mm"),
-        editPassword: "",
-      });
-    }
+// 提交預約
+async function handleSubmitBooking() {
+  const { title, user, room, participantsNum, selectedDate, startTime, endTime, editPassword } = bookingForm;
+  
+  // 驗證必填欄位
+  if (!selectedDate || !user || !room || !startTime || !endTime) {
+    setErrorMessage("請填寫所有欄位！");
+    return;
   }
+
+  // 驗證時間格式和邏輯
+  const start = dayjs.tz(`${selectedDate}T${startTime}:00`, "Asia/Taipei");
+  const end = dayjs.tz(`${selectedDate}T${endTime}:00`, "Asia/Taipei");
+  
+  if (!start.isValid() || !end.isValid()) {
+    setErrorMessage("無效的時間格式，請重新選擇！");
+    return;
+  }
+
+  if (!start.isBefore(end)) {
+    setErrorMessage("結束時間必須晚於開始時間！");
+    return;
+  }
+
+  setErrorMessage("");
+
+  // 準備預約資料
+  const bookingData = {
+    title,
+    user,
+    room,
+    participantsNum,
+    date: selectedDate,
+    startTime: start.toISOString(),
+    endTime: end.toISOString(),
+    editPassword,
+  };
+
+  try {
+    const response = await submitBooking(bookingData);
+    
+    // 處理不同的回應狀態
+    switch (response.status) {
+      case 400:
+        showTimeConflictAlert();
+        // 時間衝突時不重置表單，讓使用者可以調整時間
+        break;
+        
+      case 404:
+        showUserNotFoundAlert();
+        // 使用者驗證錯誤時不重置表單，讓使用者可以修正使用者資訊
+        break;
+        
+      default:
+        if (response.ok) {
+          handleSuccessfulBooking(bookingData);
+        } else {
+          console.error("預約失敗:", response.status);
+          setErrorMessage("預約失敗，請稍後再試");
+        }
+        break;
+    }
+  } catch (error) {
+    console.error("提交失敗:", error);
+    setErrorMessage("網路連線問題，請稍後重試！");
+  }
+}
+
+// 重置表單但保留使用者資訊（僅在成功預約後使用）
+function resetFormExceptUser() {
+  setBookingForm(prev => ({
+    title: "",
+    user: prev.user, // 保留使用者不變
+    room: [selectedRoom],
+    participantsNum: 0,
+    selectedDate: currentDate.format("YYYY-MM-DD"),
+    startTime: prev.startTime,
+    endTime: prev.endTime,
+    editPassword: "",
+  }));
+}
+
+// 處理成功預約後的操作
+function handleSuccessfulBooking(bookingData:any) {
+  showSuccessAlert();
+  fetchEvents(bookingData.room[0]);
+  setCurrentDate(dayjs(bookingData.date));
+  setViewStartDate(dayjs(bookingData.date));
+  setSelectedRoom(bookingData.room[0]);
+  setShowBookingModal(false);
+  resetFormExceptUser();
+}
 
   // 取消會議
   async function handleCancel() {
@@ -254,7 +293,7 @@ const RoomScheduleView = () => {
     setShowConfirmModal(true);
   };
 
-  const [confirmAction, setConfirmAction] = useState<() => void>(() => () => {});
+  const [confirmAction, setConfirmAction] = useState<() => void>(() => () => { });
 
 
   // 以下為組合各個元件與 UI
@@ -286,7 +325,9 @@ const RoomScheduleView = () => {
         />
       </div>
       <button
-        onClick={() => setShowBookingModal(true)}
+        onClick={() => setTimeout(()=>{
+          setShowBookingModal(true);
+        }, 250)}
         className={`absolute bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
       >
         <span className="text-3xl">+</span>

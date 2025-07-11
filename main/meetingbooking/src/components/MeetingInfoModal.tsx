@@ -1,6 +1,10 @@
-import { Info} from "lucide-react";
+import { Info } from "lucide-react";
 import dayjs from "dayjs";
+import { useState } from "react";
+
 import { MeetingInfo, roomNames, RoomKey } from "../types/common";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
 
 interface MeetingInfoModalProps {
   show: boolean;                // 控制此 Modal 是否顯示
@@ -19,6 +23,7 @@ const MeetingInfoModal = ({
   onOpenEditModal,
   onEditPassword,
 }: MeetingInfoModalProps) => {
+  const [showMore, setShowMore] = useState(false);
   // 若未指定 show 或 meetingInfo 為 null，則不顯示 Modal
   if (!show || !meetingInfo) return null;
 
@@ -48,10 +53,34 @@ const MeetingInfoModal = ({
         </div>
 
         {/* 內容區塊 */}
-        <div className="mt-4 space-y-3 font-semibold">
+        <div className="mt-4 space-y-3">
           <div>
             <label className="block font-semibold text-gray-600 mb-1">預約者</label>
-            <div className="w-full font-normal border rounded px-2 py-1 text-sm">{meetingInfo.user}</div>
+            <div className="flex flex-col border rounded">
+              <button
+                onClick={() => setShowMore(!showMore)}
+                className="w-full text-left rounded px-3 py-2 text-sm font-normal relative flex justify-between items-center"
+              >
+                <div className="flex gap-2 items-center">
+                  <div>{meetingInfo.user.name || meetingInfo.user.id}</div>
+                  <div className="text-gray-500 text-sm">#{meetingInfo.user.extension || "無"}</div>
+                </div>
+                <div className="text-gray-500">
+                  {showMore ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </div>
+              </button>
+              {/* 展開詳細資料（部門與組別） */}
+              {showMore && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="col-span-2 flex flex-wrap gap-2 bg-[#fff7db] rounded-md pl-6 py-2 mx-3 mb-3">
+                    <span className="text-sm font-normal">部門</span>
+                    <span className="text-gray-500 text-sm">{meetingInfo.user.department?.label || "未知部門"}</span>
+                    <span className="ml-4 text-sm font-normal">組別</span>
+                    <span className="text-gray-500 text-sm">{meetingInfo.user.group?.label || "未知組別"}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex space-x-2 mb-2">
             <div className="flex-1">
@@ -74,10 +103,10 @@ const MeetingInfoModal = ({
           </div>
           <div className="mb-2">
             <label className="block font-semibold text-gray-600 mb-1">編輯密碼</label>
-            <input 
-            className="w-full border font-normal rounded px-2 py-1 text-sm" 
-            placeholder="刪除請輸入您設定的編輯密碼"
-            onChange={(e) => onEditPassword(e.target.value ? e.target.value : "")}/>
+            <input
+              className="w-full border font-normal rounded px-2 py-1 text-sm"
+              placeholder="刪除請輸入您設定的編輯密碼"
+              onChange={(e) => onEditPassword(e.target.value ? e.target.value : "")} />
           </div>
 
         </div>

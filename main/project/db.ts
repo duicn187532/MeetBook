@@ -33,3 +33,4 @@ try {
 
 const db = client.db(DB_NAME);
 export const todos = db.collection("booked");
+export const users = db.collection("users");

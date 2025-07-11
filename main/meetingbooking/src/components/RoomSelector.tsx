@@ -21,7 +21,9 @@ const RoomSelector = ({ selectedRoom, onSelectRoom }: RoomSelectorProps) => (
       return (
         <button
           key={room}
-          onClick={() => onSelectRoom(room)}
+          onClick={() => setTimeout(()=>{
+            onSelectRoom(room);
+          }, 200)}
           className={`flex-1 py-2 text-center rounded-t-xl ${selectedClasses}`}
         >
           {roomNames[room]}

@@ -1,15 +1,13 @@
 {
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "dev": "deno run --allow-net --allow-read --allow-env --allow-sys --unstable server.ts"
+  },
   "imports": {
     "npm:mongodb": "npm:mongodb@5.6.0"
   },
-  "nodeModulesDir": true,
-  "entry": "server.ts",
-  "deploy": {
-    "project": "ac69e907-2c80-4ccb-91e8-3e3cf1ddaf21",
-    "exclude": [
-      "**/node_modules"
-    ],
-    "include": [],
-    "entrypoint": "server.ts"
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window", "deno.ns"]
   }
 }

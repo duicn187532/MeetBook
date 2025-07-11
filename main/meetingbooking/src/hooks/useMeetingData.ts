@@ -1,6 +1,6 @@
 // hooks/useMeetingData.ts
 import { useState } from "react";
-import { Meeting } from "../types/common";
+import { Meeting, BookingApiResponse } from "../types/common";
 import { fetchEventsApi, submitBookingApi, cancelMeetingApi, editMeetingApi } from "../api/meetingApi";
 
 export default function useMeetingData() {
@@ -22,7 +22,8 @@ export default function useMeetingData() {
     }
   }
 
-  async function submitBooking(bookingData: any): Promise<Response> {
+  
+  async function submitBooking(bookingData: any): Promise<BookingApiResponse> {
     setLoading(true);
     try {
       const response = await submitBookingApi(bookingData);
@@ -34,7 +35,6 @@ export default function useMeetingData() {
       setLoading(false);
     }
   }
-
   async function cancelMeeting(meetingId: string, editPassword: string): Promise<Response> {
     setLoading(true);
     try {

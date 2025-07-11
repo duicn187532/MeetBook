@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { TimePicker, DatePicker } from "@mui/x-date-pickers";
 import { MeetingInfo } from "../types/common";
 import { RefreshCw } from "lucide-react";
 
@@ -106,9 +106,9 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
           <label className="block font-semibold text-gray-600 mb-1">預約者</label>
           <input
             className="w-full border rounded px-2 py-1 text-sm"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
+            value={user.name || user.id}
             placeholder="請輸入您的姓名與分機"
+            readOnly
           />
         </div>
 
@@ -149,14 +149,25 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
         </div>
 
         <div className="mb-2">
-          <label className="block font-semibold text-gray-600 mb-1">使用日期</label>
-          <input
-            type="date"
-            className="w-full border rounded px-2 py-1 text-sm"
-            value={date}
-            onChange={(e) => handleDateChange(e.target.value)}
+          <label className="block text-sm mb-1">使用日期</label>
+          <DatePicker
+            value={dayjs(date)}
+            onChange={(newDate) => {
+              if (newDate) {
+                handleDateChange(newDate.format("YYYY-MM-DD"));
+              }
+            }}
+            format="YYYY-MM-DD"
+            slotProps={{
+              textField: {
+                size: "small",
+                fullWidth: true,
+                className: "text-sm",
+              },
+            }}
           />
         </div>
+
 
         <div className="flex space-x-2 mb-2">
           <div className="flex-1">
