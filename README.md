@@ -46,6 +46,8 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 
 ```bash
 deno task test    # 單元測試
+# 衝突檢查整合測試（需要 MongoDB replica set，未設定 MONGODB_TEST_URI 時略過）
+MONGODB_TEST_URI="mongodb://localhost:27017/?replicaSet=rs0" deno task test:integration
 deno task check   # 型別檢查
 deno lint && deno fmt --check
 ```
@@ -80,4 +82,4 @@ npm run deploy           # build 後發佈到 gh-pages 分支
 
 ## CI
 
-`.github/workflows/ci.yml` 在 push 到 `main` 與 PR 時執行：後端 fmt / lint / 型別檢查 / 測試，前端 lint / build。
+`.github/workflows/ci.yml` 在 push 到 `main` 與 PR 時執行：後端 fmt / lint / 型別檢查 / 單元測試、以 MongoDB replica set 跑衝突檢查整合測試，前端 lint / build。
