@@ -190,14 +190,18 @@ const RoomScheduleView = () => {
   const todayDate = dayjs(now).tz("Asia/Taipei").format("YYYY-MM-DD");
   const todayOverview = todayMode ? buildTodayOverview(meetings, ROOMS, todayDate, now) : null;
 
+  // 點已選的會議室（或已在 Today 時點 Today）重新讀取資料；切換到其他會議室直接用已載入的資料
   function selectRoom(room: RoomKey) {
+    if (!todayMode && room === selectedRoom) {
+      reloadMeetings();
+      return;
+    }
     setTodayMode(false);
     setSelectedRoom(room);
   }
 
   function selectToday() {
-    if (todayMode) return;
-    setTodayMode(true);
+    if (!todayMode) setTodayMode(true);
     reloadMeetings();
   }
 
