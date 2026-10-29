@@ -98,7 +98,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
       <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
 
       {/* Modal 內容容器 */}
-      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full m-8">
+      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full max-w-sm m-8 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
         {/* 頂部：Icon + 標題 */}
         <div className="flex flex-col items-center mb-4">
           <div className="bg-gray-700 text-white w-12 h-12 flex items-center justify-center rounded-2xl">

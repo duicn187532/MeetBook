@@ -38,7 +38,7 @@ const MeetingInfoModal = ({
       ></div>
 
       {/* Modal 主體 */}
-      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full m-8">
+      <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full max-w-sm m-8 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
         {/* 關閉按鈕 */}
         <button
           onClick={onClose}
