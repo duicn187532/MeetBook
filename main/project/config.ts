@@ -13,3 +13,9 @@ export const DB_NAME = Deno.env.get("DB_NAME") || "todo_db";
 export const PORT = parseInt(Deno.env.get("PORT") || "8080");
 
 export const CORS_ORIGIN = ENV === "production" ? "https://duicn187532.github.io" : "*";
+
+// LINE 官方帳號（Messaging API）；未設定時 /line/webhook 回 503
+export const LINE_CHANNEL_SECRET = Deno.env.get("LINE_CHANNEL_SECRET") || "";
+export const LINE_CHANNEL_ACCESS_TOKEN = Deno.env.get("LINE_CHANNEL_ACCESS_TOKEN") || "";
+// 只在本地測試時改成假的 LINE API
+export const LINE_API_BASE = Deno.env.get("LINE_API_BASE") || "https://api.line.me";

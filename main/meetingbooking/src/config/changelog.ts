@@ -12,6 +12,23 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    id: "2026-10-30-line",
+    date: "2026/10/30",
+    sections: [
+      {
+        title: "新功能",
+        items: [
+          {
+            text: "LINE 官方帳號恢復「快速查詢」：傳送「快速查詢」即可查看今天各會議室的預約狀況。",
+          },
+          {
+            text: "LINE 官方帳號恢復「快速預約」：傳送「快速預約」後，複製回覆的模板填入預約人（行編）與會議室（A / B / S）再送出，即可預約今天的時段。預約成功會回覆一組編輯密碼，可在網頁修改或取消。",
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "2026-10-30",
     date: "2026/10/30",
     sections: [

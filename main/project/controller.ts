@@ -116,6 +116,100 @@ async function getActiveBooked(ctx: Ctx) {
   }
 }
 
+export interface NewBookingInput {
+  title: string;
+  user: string; // 行編或分機，以 findUserStrict 比對
+  rooms: string[];
+  startTime: unknown;
+  endTime: unknown;
+  participantsNum?: unknown;
+  editPassword: string;
+}
+
+export type CreateBookingResult =
+  | { ok: true; user: UserInfo; rooms: string[]; startTime: Date; endTime: Date }
+  | {
+    ok: false;
+    status: number;
+    error: string;
+    conflicts?: { room: string; conflicts: ReturnType<typeof summarizeConflict>[] }[];
+  };
+
+/**
+ * 新增預約（網頁與 LINE 共用）：比對使用者、驗證時間，並在交易中檢查衝突後寫入。
+ * 任一間會議室衝突則整筆不寫入。
+ */
+export async function createBooking(input: NewBookingInput): Promise<CreateBookingResult> {
+  const { title, user, rooms: roomList, participantsNum, editPassword } = input;
+
+  const matchedUser = await findUserStrict(user);
+  if (!matchedUser) {
+    return { ok: false, status: 404, error: `找不到使用者 ID：${user}` };
+  }
+
+  let startTime: Date, endTime: Date;
+  try {
+    ({ startTime, endTime } = validateBookingTimes(input.startTime, input.endTime));
+  } catch (timeError) {
+    return { ok: false, status: 400, error: (timeError as Error).message };
+  }
+
+  const userInfo: UserInfo = {
+    id: matchedUser.id,
+    name: matchedUser.name || "",
+    extension: matchedUser.extension || "",
+    department: matchedUser.department || { code: "", label: "" },
+    group: matchedUser.group || { code: "", label: "" },
+  };
+  const groupId = roomList.length > 1 ? crypto.randomUUID() : undefined;
+  const createdTime = new Date();
+  const documents: BookingDoc[] = roomList.map((r) => ({
+    id: crypto.randomUUID(),
+    ...(groupId ? { groupId } : {}),
+    createdTime,
+    title,
+    user: userInfo,
+    room: r,
+    participantsNum: normalizeParticipants(participantsNum),
+    cancelled: false,
+    startTime,
+    endTime,
+    editPassword,
+    updatedCount: 0,
+    date: taipeiDate(startTime),
+    isMulti: roomList.filter((o) => o !== r),
+  }));
+
+  // 衝突檢查與寫入在同一個交易內，避免兩個請求同時通過檢查後都寫入
+  const allConflicts = await withRoomLocks(roomList, async (session) => {
+    const found: { room: string; conflicts: ReturnType<typeof summarizeConflict>[] }[] = [];
+    for (const r of roomList) {
+      const conflicts = await findRoomConflicts(r, startTime, endTime, [], session);
+      if (conflicts.length > 0) found.push({ room: r, conflicts: conflicts.map(summarizeConflict) });
+    }
+    if (found.length === 0) {
+      await bookings.insertMany(documents, { session });
+    }
+    return found;
+  });
+
+  if (allConflicts.length > 0) {
+    logEvent("warning", "新增預訂失敗，時段衝突", {
+      module: "BookingController",
+      function: "createBooking",
+      details: { rooms: roomList, startTime, endTime, conflicts: allConflicts },
+    });
+    return { ok: false, status: 400, error: "有會議室時間衝突 ❌，整筆預約取消", conflicts: allConflicts };
+  }
+
+  logEvent("info", "新增預訂成功", {
+    module: "BookingController",
+    function: "createBooking",
+    details: { ids: documents.map((d) => d.id), rooms: roomList, startTime, endTime },
+  });
+  return { ok: true, user: userInfo, rooms: roomList, startTime, endTime };
+}
+
 async function addBooking(ctx: Ctx) {
   let body: Record<string, unknown>;
   try {
@@ -139,80 +233,23 @@ async function addBooking(ctx: Ctx) {
   }
 
   try {
-    const matchedUser = await findUserStrict(user);
-    if (!matchedUser) {
-      respond(ctx, { status: 404, body: { error: `找不到使用者 ID：${user}` } });
-      return;
-    }
-
-    let startTime: Date, endTime: Date;
-    try {
-      ({ startTime, endTime } = validateBookingTimes(rawStart, rawEnd));
-    } catch (timeError) {
-      respond(ctx, { status: 400, body: { error: (timeError as Error).message } });
-      return;
-    }
-
-    const userInfo: UserInfo = {
-      id: matchedUser.id,
-      name: matchedUser.name || "",
-      extension: matchedUser.extension || "",
-      department: matchedUser.department || { code: "", label: "" },
-      group: matchedUser.group || { code: "", label: "" },
-    };
-    const groupId = roomList.length > 1 ? crypto.randomUUID() : undefined;
-    const createdTime = new Date();
-    const documents: BookingDoc[] = roomList.map((r) => ({
-      id: crypto.randomUUID(),
-      ...(groupId ? { groupId } : {}),
-      createdTime,
+    const result = await createBooking({
       title: typeof title === "string" ? title : "",
-      user: userInfo,
-      room: r,
-      participantsNum: normalizeParticipants(participantsNum),
-      cancelled: false,
-      startTime,
-      endTime,
+      user,
+      rooms: roomList,
+      startTime: rawStart,
+      endTime: rawEnd,
+      participantsNum,
       editPassword: typeof editPassword === "string" ? editPassword : "",
-      updatedCount: 0,
-      date: taipeiDate(startTime),
-      isMulti: roomList.filter((o) => o !== r),
-    }));
-
-    // 衝突檢查與寫入在同一個交易內，避免兩個請求同時通過檢查後都寫入
-    const allConflicts = await withRoomLocks(roomList, async (session) => {
-      const found: { room: string; conflicts: ReturnType<typeof summarizeConflict>[] }[] = [];
-      for (const r of roomList) {
-        const conflicts = await findRoomConflicts(r, startTime, endTime, [], session);
-        if (conflicts.length > 0) found.push({ room: r, conflicts: conflicts.map(summarizeConflict) });
-      }
-      if (found.length === 0) {
-        await bookings.insertMany(documents, { session });
-      }
-      return found;
     });
-
-    if (allConflicts.length > 0) {
-      respond(ctx, {
-        status: 400,
-        body: { error: "有會議室時間衝突 ❌，整筆預約取消", conflicts: allConflicts },
-      });
-      logEvent("warning", "新增預訂失敗，時段衝突", {
-        module: "BookingController",
-        function: "addBooking",
-        details: { rooms: roomList, startTime, endTime, conflicts: allConflicts },
-      });
+    if (!result.ok) {
+      const { status, error, conflicts } = result;
+      respond(ctx, { status, body: conflicts ? { error, conflicts } : { error } });
       return;
     }
-
     respond(ctx, {
       status: 201,
       body: { success: true, bookedRooms: roomList, message: "全部會議室預約成功 ✅" },
-    });
-    logEvent("info", "新增預訂成功", {
-      module: "BookingController",
-      function: "addBooking",
-      details: { ids: documents.map((d) => d.id), rooms: roomList, startTime, endTime },
     });
   } catch (error) {
     serverError(ctx, "addBooking", error, "插入數據失敗");
