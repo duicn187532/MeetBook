@@ -1,4 +1,4 @@
-// 後端公開的預約者資訊（不含行編與部門／組別代碼）
+// 後端公開的預約者資訊（不含部門／組別代碼；沒有姓名時 name 為行編）
 export interface UserInfo {
   name: string;
   extension: string;

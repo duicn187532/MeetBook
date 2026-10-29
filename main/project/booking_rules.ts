@@ -140,14 +140,15 @@ export function toPublicUser(user: BookingDoc["user"] | undefined): PublicUser {
     return { name: UNNAMED, extension: "", department: { label: "" }, group: { label: "" } };
   }
   return {
-    name: user.name || UNNAMED,
+    // 多數使用者資料沒有姓名，沿用舊版畫面的做法以行編代替
+    name: user.name || user.id || UNNAMED,
     extension: user.extension || "",
     department: { label: user.department?.label || "" },
     group: { label: user.group?.label || "" },
   };
 }
 
-// 只回傳畫面需要的欄位（白名單），避免把行編、密碼等內部資料帶出去
+// 只回傳畫面需要的欄位（白名單），避免把密碼、代碼等內部資料帶出去
 export function toPublicBooking(doc: BookingDoc): PublicBooking {
   return {
     id: doc.id,

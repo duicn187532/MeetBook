@@ -139,6 +139,21 @@ Deno.test("toPublicBooking 不帶出行編、密碼與代碼", () => {
   assert(!("_id" in pub));
 });
 
+Deno.test("toPublicBooking 沒有姓名時以行編代替", () => {
+  const pub = toPublicBooking({
+    id: "b3",
+    user: {
+      id: "001234",
+      name: "",
+      extension: "51164",
+      department: { code: "D1", label: "資訊部" },
+      group: { code: "G1", label: "開發組" },
+    },
+  } as unknown as BookingDoc);
+  assertEquals(pub.user.name, "001234");
+  assert(!JSON.stringify(pub).includes("D1"));
+});
+
 Deno.test("toPublicBooking 處理舊格式的字串 user", () => {
   const pub = toPublicBooking({ id: "b2", user: "王小明 1234 #51164" } as unknown as BookingDoc);
   assertEquals(pub.user.name, "未具名");

@@ -37,7 +37,7 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 | POST | `/api/bookings` | 新增預約，`room` 可為陣列（同步預約多間）；任一間衝突則整筆不寫入 |
 | PATCH | `/api/bookings/:id/:editPassword?` | 修改或取消（body `{ "cancelled": true }`）預約 |
 
-- GET 只回傳畫面需要的欄位：不含行編、編輯密碼、部門／組別代碼。
+- GET 只回傳畫面需要的欄位：不含編輯密碼、`_id`、部門／組別代碼；預約者沒有姓名時 `user.name` 以行編代替（與舊版畫面相同）。
 - PATCH 只接受 `title`、`participantsNum`、`room`、`startTime`、`endTime`、`cancelled`，其他欄位會被忽略。
 - 多會議室預約共用 `groupId`：修改時間／名稱／人數會同步到同組所有會議室並一起檢查衝突；取消只取消該間。
 - 新增與修改的「衝突檢查 + 寫入」在 MongoDB 交易中進行，並對每間相關會議室的 `roomLocks` 文件寫入一次，讓同時操作同一間會議室的請求互斥，避免重複預約。

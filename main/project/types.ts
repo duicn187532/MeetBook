@@ -51,7 +51,7 @@ export interface RoomLockDoc {
   version: number;
 }
 
-// 對外公開的使用者資訊：不含行編（id）與部門／組別代碼
+// 對外公開的使用者資訊：不含部門／組別代碼；沒有姓名時 name 為行編
 export interface PublicUser {
   name: string;
   extension: string;
