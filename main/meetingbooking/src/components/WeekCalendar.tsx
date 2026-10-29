@@ -131,8 +131,7 @@ const WeekCalendar = ({
                         <div
                           className="text-xs text-[#444444] font-normal truncate"
                         >
-                          {/* 沒有姓名時後端回傳行編，週檢視欄位窄，沿用舊版只顯示後 4 碼 */}
-                          {/^\d+$/.test(meeting.user.name) ? meeting.user.name.slice(-4) : meeting.user.name}
+                          {meeting.user.name}
                         </div>
                         {/* <div className="text-xs text-[#444444] font-normal">
                           #{meeting.user.extension}

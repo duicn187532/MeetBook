@@ -139,7 +139,7 @@ Deno.test("toPublicBooking 不帶出行編、密碼與代碼", () => {
   assert(!("_id" in pub));
 });
 
-Deno.test("toPublicBooking 沒有姓名時以行編代替", () => {
+Deno.test("toPublicBooking 沒有姓名時以行編後 4 碼代替", () => {
   const pub = toPublicBooking({
     id: "b3",
     user: {
@@ -150,7 +150,8 @@ Deno.test("toPublicBooking 沒有姓名時以行編代替", () => {
       group: { code: "G1", label: "開發組" },
     },
   } as unknown as BookingDoc);
-  assertEquals(pub.user.name, "001234");
+  assertEquals(pub.user.name, "1234");
+  assert(!JSON.stringify(pub).includes("001234"));
   assert(!JSON.stringify(pub).includes("D1"));
 });
 
