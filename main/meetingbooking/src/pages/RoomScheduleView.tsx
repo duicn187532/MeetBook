@@ -18,6 +18,9 @@ import AlertModal from "../components/AlertModal";
 import MeetingInfoModal from "../components/MeetingInfoModal";
 import EditMeetingModal from "../components/EditMeetingModal";
 import ConfirmationModal from "../components/ConfirmationModal";
+import ChangelogModal from "../components/ChangelogModal";
+import TodayOverview, { TodayHeader } from "../components/TodayOverview";
+import { changelog } from "../config/changelog";
 
 // Types
 import {
@@ -34,6 +37,7 @@ import {
 // 自訂 hook
 import useMeetingData from "../hooks/useMeetingData";
 import useSwipe from "../hooks/useSwipe";
+import useNow from "../hooks/useNow";
 import { readResponseBody } from "../api/meetingApi";
 import {
   Alternatives,
@@ -43,9 +47,17 @@ import {
   findAlternatives,
 } from "../utils/bookingHelpers";
 import { loadPref, savePref } from "../utils/storage";
+import { buildTodayOverview } from "../utils/todayStatus";
 
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
+
+// 還沒看過的更新日誌（記錄的是看過的最新一筆 id）
+function unseenChangelog() {
+  const seen = loadPref("changelogSeen");
+  const index = changelog.findIndex((entry) => entry.id === seen);
+  return index === -1 ? changelog : changelog.slice(0, index);
+}
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -56,6 +68,14 @@ const RoomScheduleView = () => {
   // 會議室、檢視模式與行編會記在瀏覽器，下次開啟沿用
   const [selectedRoom, setSelectedRoom] = useState<RoomKey>(() => loadPref("room", ROOMS) ?? "A101");
   const [selectedView, setSelectedView] = useState<ViewMode>(() => loadPref("view", VIEWS) ?? "Week");
+  // Today 分頁（實驗性功能）
+  const [todayMode, setTodayMode] = useState(() => loadPref("today") === "1");
+  const now = useNow(todayMode);
+  // 更新日誌只給沒看過的人看一次：一顯示就記為看過
+  const [changelogEntries, setChangelogEntries] = useState(unseenChangelog);
+  useEffect(() => {
+    if (changelog.length > 0 && changelogEntries.length > 0) savePref("changelogSeen", changelog[0].id);
+  }, [changelogEntries.length]);
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [viewStartDate, setViewStartDate] = useState(dayjs());
   const [editPassword, setEditPassword] = useState("");
@@ -96,7 +116,7 @@ const RoomScheduleView = () => {
     loading,
     fetching,
     loadedRange,
-    loadError,
+    loadFailures,
     fetchEvents,
     submitBooking,
     cancelMeeting,
@@ -107,6 +127,7 @@ const RoomScheduleView = () => {
 
   useEffect(() => savePref("room", selectedRoom), [selectedRoom]);
   useEffect(() => savePref("view", selectedView), [selectedView]);
+  useEffect(() => savePref("today", todayMode ? "1" : "0"), [todayMode]);
 
   // 按鈕背景色對應
   const buttonBGColors: Record<RoomKey, string> = {
@@ -114,7 +135,7 @@ const RoomScheduleView = () => {
     A102: "bg-[#FF3F3F]",
     A103: "bg-[#17C2B6]",
   };
-  const buttonBGColor = buttonBGColors[selectedRoom];
+  const buttonBGColor = todayMode ? "bg-[#F08B42]" : buttonBGColors[selectedRoom];
 
   // 當選擇房間改變時，同步更新預約表單的房間
   useEffect(() => {
@@ -122,8 +143,10 @@ const RoomScheduleView = () => {
   }, [selectedRoom]);
 
   // 日／週／月檢視都以 currentDate 決定顯示的會議；月檢視一次顯示 3 個月，前後再各留一週緩衝
-  const rangeFrom = currentDate.startOf("month").subtract(7, "day").toISOString();
-  const rangeTo = currentDate.add(2, "month").endOf("month").add(7, "day").toISOString();
+  // Today 分頁一律以今天為準，確保今天的資料在查詢範圍內
+  const rangeBase = todayMode ? dayjs() : currentDate;
+  const rangeFrom = rangeBase.startOf("month").subtract(7, "day").toISOString();
+  const rangeTo = rangeBase.add(2, "month").endOf("month").add(7, "day").toISOString();
   // 新增／修改／刪除後遞增，觸發重新取得資料
   const [refreshKey, setRefreshKey] = useState(0);
   const reloadMeetings = () => setRefreshKey((key) => key + 1);
@@ -134,6 +157,46 @@ const RoomScheduleView = () => {
   }, [rangeFrom, rangeTo, refreshKey]);
   // 畫面上的資料是否已涵蓋目前的區間；還沒涵蓋時以全畫面讀取遮住，避免誤以為沒有預約
   const rangeLoaded = loadedRange?.from === rangeFrom && loadedRange?.to === rangeTo;
+
+  // Today 分頁開著時每 5 分鐘重新取得資料，反映其他人的新預約
+  useEffect(() => {
+    if (!todayMode) return;
+    const timer = setInterval(reloadMeetings, 5 * 60_000);
+    return () => clearInterval(timer);
+  }, [todayMode]);
+
+  const todayDate = dayjs(now).tz("Asia/Taipei").format("YYYY-MM-DD");
+  const todayOverview = todayMode ? buildTodayOverview(meetings, ROOMS, todayDate, now) : null;
+
+  function selectRoom(room: RoomKey) {
+    setTodayMode(false);
+    setSelectedRoom(room);
+  }
+
+  function selectToday() {
+    if (todayMode) return;
+    setTodayMode(true);
+    reloadMeetings();
+  }
+
+  // 從 Today 卡片進入該會議室今天的日檢視
+  function openRoomToday(room: RoomKey) {
+    const today = dayjs();
+    setTodayMode(false);
+    setSelectedRoom(room);
+    setSelectedView("Day");
+    setCurrentDate(today);
+    setViewStartDate(today);
+    updateBookingDate(today);
+  }
+
+  // Today 卡片的「＋」：帶入該會議室、今天與最近的空檔
+  function quickBook(room: RoomKey, times: { startTime: string; endTime: string }) {
+    defaultTimes.current = times;
+    setBookingForm((prev) => ({ ...prev, room: [room], selectedDate: todayDate, ...times }));
+    setErrorMessage("");
+    setShowBookingModal(true);
+  }
 
   // 依目前已載入的預約推算替代方案；預約時間不在已載入的區間內時不提供，避免建議錯誤
   function alternativesFor(
@@ -149,6 +212,7 @@ const RoomScheduleView = () => {
 
   // 左右滑動行事曆：與上方箭頭相同的換頁方式；日檢視一次一天
   const swipeHandlers = useSwipe((direction) => {
+    if (todayMode) return;
     const step = direction === "next" ? 1 : -1;
     if (selectedView === "Month") {
       setCurrentDate(currentDate.add(step, "month"));
@@ -172,6 +236,20 @@ const RoomScheduleView = () => {
       selectedDate: date.format("YYYY-MM-DD"),
     }));
   };
+
+  // 關閉提示視窗後要執行的動作（例如載入失敗時重新載入）
+  const afterAlertClose = useRef<(() => void) | null>(null);
+
+  // 取得預約資料失敗：以既有的 OOPS 提示視窗告知，按確定後重新載入
+  useEffect(() => {
+    if (loadFailures === 0) return;
+    showAlert(
+      "error",
+      "載入失敗",
+      "預約資料載入失敗，畫面可能不完整，請勿依此判斷是否有空。\n按確定重新載入；若持續發生請通知祐晨 #51164",
+    );
+    afterAlertClose.current = reloadMeetings;
+  }, [loadFailures]);
 
   // Alert 函式
   const showAlert = (type: "success" | "error", title: string, message = "") => {
@@ -434,25 +512,30 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
   return (
     <div className="flex flex-col h-screen">
       <TitleDescription />
-      <RoomSelector selectedRoom={selectedRoom} onSelectRoom={setSelectedRoom} />
-      <Equipment selectedRoom={selectedRoom} />
-      <ViewToggle
-        selectedView={selectedView}
-        onChangeView={setSelectedView}
-        currentDate={currentDate}
-        setCurrentDate={setCurrentDate}
-        updateBookingDate={updateBookingDate}
-        viewStartDate={viewStartDate}
-        setViewStartDate={setViewStartDate}
+      <RoomSelector
         selectedRoom={selectedRoom}
+        onSelectRoom={selectRoom}
+        todayMode={todayMode}
+        onSelectToday={selectToday}
       />
-      {loadError && (
-        <div className="flex items-center justify-between gap-2 bg-red-50 text-red-700 text-sm px-3 py-2">
-          <span>預約資料載入失敗，畫面可能不完整，請勿依此判斷是否有空。</span>
-          <button onClick={reloadMeetings} className="shrink-0 bg-red-600 text-white rounded-lg px-3 py-1">
-            重試
-          </button>
+      {todayOverview ? (
+        <div className="mt-2">
+          <TodayHeader overview={todayOverview} now={now} />
         </div>
+      ) : (
+        <>
+          <Equipment selectedRoom={selectedRoom} />
+          <ViewToggle
+            selectedView={selectedView}
+            onChangeView={setSelectedView}
+            currentDate={currentDate}
+            setCurrentDate={setCurrentDate}
+            updateBookingDate={updateBookingDate}
+            viewStartDate={viewStartDate}
+            setViewStartDate={setViewStartDate}
+            selectedRoom={selectedRoom}
+          />
+        </>
       )}
       <div className="flex-1 overflow-y-auto relative" {...swipeHandlers}>
         {fetching && rangeLoaded && (
@@ -460,16 +543,29 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
             <span className="bg-white/90 shadow text-xs text-gray-600 rounded-full px-3 py-1">更新中…</span>
           </div>
         )}
-        <CalendarContent
-          selectedView={selectedView}
-          currentDate={currentDate}
-          meetings={roomMeetings}
-          setSelectedMeeting={setSelectedMeeting}
-          setShowInfoModal={setShowInfoModal}
-          setCurrentDate={setCurrentDate}
-          setViewStartDate={setViewStartDate}
-          onChangeView={setSelectedView}
-        />
+        {todayOverview ? (
+          <TodayOverview
+            overview={todayOverview}
+            now={now}
+            onOpenRoom={openRoomToday}
+            onQuickBook={quickBook}
+            onSelectMeeting={(meeting) => {
+              setSelectedMeeting(meeting);
+              setShowInfoModal(true);
+            }}
+          />
+        ) : (
+          <CalendarContent
+            selectedView={selectedView}
+            currentDate={currentDate}
+            meetings={roomMeetings}
+            setSelectedMeeting={setSelectedMeeting}
+            setShowInfoModal={setShowInfoModal}
+            setCurrentDate={setCurrentDate}
+            setViewStartDate={setViewStartDate}
+            onChangeView={setSelectedView}
+          />
+        )}
       </div>
       <button
         onClick={() => setTimeout(()=>{
@@ -551,8 +647,16 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           type={alertType}
           title={alertTitle}
           message={alertMessage}
-          onClose={() => setShowAlertModal(false)}
+          onClose={() => {
+            setShowAlertModal(false);
+            const next = afterAlertClose.current;
+            afterAlertClose.current = null;
+            next?.();
+          }}
         />
+      )}
+      {changelogEntries.length > 0 && (
+        <ChangelogModal entries={changelogEntries} onClose={() => setChangelogEntries([])} />
       )}
     </div>
   );
