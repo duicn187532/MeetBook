@@ -32,7 +32,7 @@ const BookingModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
 
-      <div className="relative bg-white w-full max-w-sm rounded-2xl shadow-lg p-4 m-4" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-white w-full max-w-sm rounded-2xl shadow-lg p-4 m-4 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center my-1">
           <button className="bg-[#F08B42] w-12 h-12 rounded-2xl flex items-center justify-center">
             <span className="text-white text-4xl leading-none">+</span>

@@ -20,7 +20,7 @@ import EditMeetingModal from "../components/EditMeetingModal";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ChangelogModal from "../components/ChangelogModal";
 import TodayOverview, { TodayHeader } from "../components/TodayOverview";
-import { changelog } from "../config/changelog";
+import { changelog, isAnnouncing } from "../config/changelog";
 
 // Types
 import {
@@ -58,10 +58,12 @@ function anchorRange(base: dayjs.Dayjs) {
   return { from: base.startOf("month").subtract(1, "month"), to: base.add(3, "month").endOf("month") };
 }
 
+// 沒看過、且還在公告期間內（改版日起 7 天，台北時間）的更新日誌
 function unseenChangelog() {
   const seen = loadPref("changelogSeen");
   const index = changelog.findIndex((entry) => entry.id === seen);
-  return index === -1 ? changelog : changelog.slice(0, index);
+  const unseen = index === -1 ? changelog : changelog.slice(0, index);
+  return unseen.filter((entry) => isAnnouncing(entry.date, Date.now()));
 }
 
 dayjs.extend(utc);
@@ -534,8 +536,10 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
   }
 
   // 以下為組合各個元件與 UI
+  // 高度用 dvh，避免手機瀏覽器（含 LINE 內建瀏覽器）的工具列蓋住下方；
+  // 畫面很矮時（手機橫放）改成整頁捲動，否則上方標題與切換列會把行事曆擠到只剩一條
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen supports-[height:100dvh]:h-[100dvh] [@media(max-height:500px)]:h-auto">
       <TitleDescription />
       <RoomSelector
         selectedRoom={selectedRoom}
@@ -562,7 +566,11 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           />
         </>
       )}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden relative" style={{ touchAction: "pan-y" }} {...swipe.handlers}>
+      <div
+        className="flex-1 overflow-y-auto overflow-x-hidden relative [@media(max-height:500px)]:flex-none [@media(max-height:500px)]:overflow-y-visible"
+        style={{ touchAction: "pan-y" }}
+        {...swipe.handlers}
+      >
         {fetching && rangeLoaded && (
           <div className="sticky top-1 z-10 flex justify-center pointer-events-none h-0">
             <span className="bg-white/90 shadow text-xs text-gray-600 rounded-full px-3 py-1">更新中…</span>
@@ -598,7 +606,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
         onClick={() => setTimeout(()=>{
           openBookingModal();
         }, 250)}
-        className={`absolute bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
+        className={`fixed bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
       >
         <span className="text-3xl">+</span>
       </button>

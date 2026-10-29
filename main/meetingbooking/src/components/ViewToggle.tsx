@@ -33,14 +33,16 @@ const MonthViewHeader = ({
     <div className="flex justify-between items-center mt-5">
       <button
         onClick={() => setCurrentDate(currentDate.subtract(1, "month"))}
-        className="p-1 rounded-full bg-black"
+        aria-label="上個月"
+        className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']"
       >
         <ChevronLeft className="w-3 h-3 text-white" />
       </button>
       <div className="text-2xl font-semibold p-3">{currentDate.format("MMMM YYYY")}</div>
       <button
         onClick={() => setCurrentDate(currentDate.add(1, "month"))}
-        className="p-1 rounded-full bg-black"
+        aria-label="下個月"
+        className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']"
       >
         <ChevronRight className="w-3 h-3 text-white" />
       </button>
@@ -106,7 +108,7 @@ const ViewToggle = ({
           <button
             key={view}
             onClick={() => onChangeView(view as ViewMode)}
-            className={`px-3 py-0.5 rounded-full text-sm font-medium transition-all duration-200 ${
+            className={`relative before:absolute before:-inset-y-2 before:inset-x-0 before:content-[''] px-3 py-0.5 rounded-full text-sm font-medium transition-all duration-200 ${
               selectedView === view 
                 ? `${datesBackgroundColor} text-white shadow-inner transform scale-60` 
                 : 'text-gray-700 hover:bg-gray-50 active:scale-95'
@@ -123,10 +125,10 @@ const ViewToggle = ({
         <div className="pt-2 text-2xl font-normal ">{currentDate.format("MMMM YYYY")}</div>
 
         <div className="flex w-full justify-between items-center">
-          <button onClick={handlePrevDaysOnDay} className="p-1 rounded-full bg-black">
+          <button onClick={handlePrevDaysOnDay} aria-label="前幾天" className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']">
             <ChevronLeft className=" text-white w-3 h-3" />
           </button>
-          <div className="flex w-full mx-3 justify-between space-x-3">
+          <div className="flex w-full min-w-0 mx-2 min-[360px]:mx-3 justify-between">
             {displayedDates.map((date) => (
               <button
                 key={date.format("YYYY-MM-DD")}
@@ -134,7 +136,7 @@ const ViewToggle = ({
                   setCurrentDate(date);
                   updateBookingDate(date);
                 }}
-                className={`text-xl text-center px-2 py-1 rounded ${
+                className={`text-xl text-center px-1 min-[360px]:px-2 py-1 rounded ${
                   date.isSame(currentDate, "day")
                     ? "bg-white text-red-500 rounded-lg"
                     : "text-gray-700"
@@ -149,7 +151,7 @@ const ViewToggle = ({
               </button>
             ))}
           </div>
-          <button onClick={handleNextDaysOnDay} className="p-1 rounded-full bg-black">
+          <button onClick={handleNextDaysOnDay} aria-label="後幾天" className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']">
             <ChevronRight className="w-3 h-3 text-white" />
           </button>
         </div>
@@ -163,12 +165,13 @@ const ViewToggle = ({
 
           <div className="flex w-full justify-between items-center mb-2">
             <button 
-              onClick={handlePrevDaysOnWeek} 
-              className="p-1 rounded-full bg-black"
+              onClick={handlePrevDaysOnWeek}
+              aria-label="上一週"
+              className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']"
             >
               <ChevronLeft className="text-white w-3 h-3" />
             </button>
-            <div className="flex justify-between items-center h-full space-x-3 bg-white w-full mx-3 rounded-lg">
+            <div className="flex justify-between items-center h-full bg-white w-full min-w-0 mx-2 min-[360px]:mx-3 rounded-lg">
               {displayedWeekDates.map((date) => (
                 <button
                   key={date.format("YYYY-MM-DD")}
@@ -176,7 +179,7 @@ const ViewToggle = ({
                     setCurrentDate(date);
                     updateBookingDate(date);
                   }}
-                  className={`text-center px-2 py-1 rounded ${
+                  className={`text-center px-1 min-[360px]:px-2 py-1 rounded ${
                     date.isSame(currentDate, "day")
                       ? "text-red-500 rounded-lg"
                       : "text-gray-700"
@@ -192,8 +195,9 @@ const ViewToggle = ({
               ))}
             </div>
             <button 
-              onClick={handleNextDaysOnWeek} 
-              className="p-1 rounded-full bg-black"
+              onClick={handleNextDaysOnWeek}
+              aria-label="下一週"
+              className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']"
             >
               <ChevronRight className="w-3 h-3 text-white" />
             </button>

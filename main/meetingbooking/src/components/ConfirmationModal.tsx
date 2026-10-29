@@ -32,7 +32,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={onCancel}></div>
 
       {/* 修正：確保 modal 在 overlay 之上，並調整大小 */}
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm m-8 p-5 z-50 relative">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm m-8 p-5 z-50 relative max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
         
         {/* 修正：確保 HelpCircle 圖示顯示正確 */}
         <HelpCircle className={`p-3 w-12 h-12 ${iconColor} text-white mx-auto mb-4 rounded-xl`} />

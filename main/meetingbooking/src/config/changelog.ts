@@ -5,6 +5,16 @@
 // - 次版號：新增功能或一批體驗改善
 // - 修訂號：只有錯誤修正
 // 發佈時同步更新 package.json 的 version
+//
+// 公告期間：date（改版日，台北時間）當天起 7 天內開啟網站才會跳出；發佈前請把 date 改成實際上線日
+export const ANNOUNCE_DAYS = 7;
+
+export function isAnnouncing(date: string, now: number): boolean {
+  const start = Date.parse(`${date.split("/").join("-")}T00:00:00+08:00`);
+  if (isNaN(start)) return false;
+  return now >= start && now < start + ANNOUNCE_DAYS * 24 * 60 * 60 * 1000;
+}
+
 export interface ChangelogItem {
   text: string;
   experimental?: boolean; // 顯示「實驗性功能」標籤
@@ -13,7 +23,7 @@ export interface ChangelogItem {
 export interface ChangelogEntry {
   id: string; // 唯一代號，使用版號
   version: string;
-  date: string;
+  date: string; // 改版日 YYYY/MM/DD，公告期間由此起算
   sections: { title: string; items: ChangelogItem[] }[];
 }
 
@@ -50,6 +60,7 @@ export const changelog: ChangelogEntry[] = [
           { text: "手機可在行事曆上左右滑動切換日、週、月，畫面會跟著手指滑動。" },
           { text: "同時預約多間會議室時，預約資訊會顯示同組的會議室；刪除前會提醒只取消該間。" },
           { text: "月檢視一天超過 4 場時以「+N」表示。" },
+          { text: "小尺寸手機的日期列不再超出畫面；手機橫放時可整頁捲動；畫面較矮時預約視窗可捲動，「預定」按鈕不會被切掉。" },
           { text: "預約資料載入失敗時會跳出提示，避免誤以為沒有人預約。" },
         ],
       },
