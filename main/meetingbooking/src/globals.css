@@ -131,3 +131,13 @@ button:active {
   transform: scale(0.96);
   filter: brightness(0.96);
 }
+
+/* 行事曆左右滑動換頁：新的一頁從另一側滑入（hooks/useSwipe.ts） */
+@keyframes swipe-in-next {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes swipe-in-prev {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}

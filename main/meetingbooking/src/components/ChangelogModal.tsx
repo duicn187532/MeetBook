@@ -28,7 +28,10 @@ const ChangelogModal = ({ entries, onClose }: ChangelogModalProps) => (
       <div className="mt-3 overflow-y-auto overscroll-contain flex-1 min-h-0 pr-1 space-y-4">
         {entries.map((entry) => (
           <div key={entry.id}>
-            <div className="text-xs text-gray-500 mb-2">{entry.date}</div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-bold text-[#C2410C]">{entry.version}</span>
+              <span className="text-xs text-gray-500">{entry.date}</span>
+            </div>
             {entry.sections.map((section) => (
               <div key={section.title} className="mb-3">
                 <div className="font-semibold text-gray-700 text-sm mb-1.5">{section.title}</div>

@@ -18,8 +18,9 @@ const roomStyle: Record<RoomKey, { chip: string; dot: string; bar: string; block
 // 與設備說明相同的座位數
 const seats: Record<RoomKey, number> = { A101: 10, A102: 15, A103: 20 };
 
+// Today 的主題色為淺橘：使用中用最深的橘，即將開始用淺橘
 const statusStyle: Record<RoomStatusKind, string> = {
-  busy: "bg-[#3F3F3F] text-white",
+  busy: "bg-[#F08B42] text-white",
   soon: "bg-[#FDEBDC] text-[#9A4A12]",
   free: "bg-[#E4F3DA] text-[#2F6B18]",
   done: "bg-gray-100 text-gray-600",
@@ -46,7 +47,7 @@ export const TodayHeader = ({ overview, now }: TodayHeaderProps) => {
       ? `今天已結束 · 今天共 ${total} 場會議`
       : `現在 ${taipeiHHmm(now)}`;
   return (
-    <div className="p-4 flex flex-col items-center gap-2.5 bg-[#F2F2F2] rounded-t-2xl">
+    <div className="p-4 flex flex-col items-center gap-2.5 bg-[#FFF3E8] rounded-t-2xl">
       <div className="text-2xl font-normal">{dayjs(now).tz("Asia/Taipei").format("dddd, MMMM D")}</div>
       <div className="flex flex-wrap justify-center items-center gap-2 text-[13px]">
         <span className="inline-flex items-center gap-1.5 bg-white rounded-full px-3 py-1 shadow-md">
@@ -84,11 +85,11 @@ const RoomCard = ({
   const nowPos = position(now, overview.date);
   const showNow = overview.phase === "open";
   return (
-    <div className="flex items-stretch bg-white border border-gray-200 rounded-2xl shadow-md">
+    <div className="flex items-stretch bg-white border border-[#FDDCC0] rounded-2xl shadow-md">
       <button
         type="button"
         onClick={() => onOpenRoom(room.room)}
-        aria-label={`查看 ${roomNames[room.room]} 今天的日檢視`}
+        aria-label={`查看 ${roomNames[room.room]} 本週的週檢視`}
         className="flex-1 min-w-0 text-left p-3.5 flex flex-col gap-2.5"
       >
         <span className="flex items-center gap-2 w-full">
@@ -107,12 +108,12 @@ const RoomCard = ({
             <span className="text-[17px] font-semibold truncate">{room.headline}</span>
             {room.detail && <span className="text-[13px] text-gray-500">{room.detail}</span>}
           </span>
-          <span className="bg-black rounded-full p-1 shrink-0" aria-hidden="true">
+          <span className="bg-[#F08B42] rounded-full p-1 shrink-0" aria-hidden="true">
             <ChevronRight className="w-3 h-3 text-white" />
           </span>
         </span>
         <span className="block w-full">
-          <span className="block relative h-2 rounded-full bg-[#EEEEEE] overflow-hidden">
+          <span className="block relative h-2 rounded-full bg-[#FFF3E8] overflow-hidden">
             {room.slots.map((slot) => {
               const left = position(slot.start, overview.date);
               const right = position(slot.end, overview.date);
@@ -203,7 +204,7 @@ const Timetable = ({ overview, now, onSelectMeeting }: Pick<TodayOverviewProps, 
                     type="button"
                     onClick={() => onSelectMeeting(slot.meeting)}
                     aria-label={`${roomNames[r.room]} ${slot.meeting.title} ${taipeiHHmm(slot.start)} 到 ${taipeiHHmm(slot.end)}`}
-                    className={`absolute left-[3px] right-[3px] rounded-md px-1.5 py-0.5 text-left flex flex-col overflow-hidden shadow-sm ${roomStyle[r.room].block} ${isCurrent ? "ring-2 ring-[#3F3F3F] ring-inset" : ""}`}
+                    className={`absolute left-[3px] right-[3px] rounded-md px-1.5 py-0.5 text-left flex flex-col overflow-hidden shadow-sm ${roomStyle[r.room].block} ${isCurrent ? "ring-2 ring-[#F08B42] ring-inset" : ""}`}
                     style={{ top, height, opacity: slot.end <= now ? 0.5 : 1 }}
                   >
                     <span className={`font-bold truncate ${isShort ? "text-[10px] leading-tight" : "text-[11px]"}`}>

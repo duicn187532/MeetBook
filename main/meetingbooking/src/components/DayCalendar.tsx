@@ -82,7 +82,6 @@ const DayCalendar = ({
         const durationMinutes = eventEnd.diff(eventStart, "minute");
         const topPercent = (startMinutes / TIMELINE_DURATION_MIN) * 100;
         const heightPercent = (durationMinutes / TIMELINE_DURATION_MIN) * 100;
-        const isShort = durationMinutes < 45;
 
         return (
           <div
@@ -94,20 +93,13 @@ const DayCalendar = ({
               setShowInfoModal(true);
             }}
           >
-            {isShort ? (
-              <div className="pl-2 min-w-0 truncate text-sm">
-                <span className="font-medium">{meeting.title}</span>
-                <span className="text-gray-600">・{meeting.user.name}</span>
-              </div>
-            ) : (
-              <div className="pl-2">
-                <h3 className="text-xl font-medium">{meeting.title}</h3>
-                <p className="text-xl text-gray-600">預約者：{meeting.user.name}</p>
-              </div>
-            )}
+            <div className="pl-2">
+              <h3 className="text-xl font-medium">{meeting.title}</h3>
+              <p className="text-xl text-gray-600">預約者：{meeting.user.name}</p>
+            </div>
 
             {/* 組別標籤 */}
-            {!isShort && meeting.user.group?.label && (
+            {meeting.user.group?.label && (
               <div
                 className="absolute top-1 right-10 text-xs font-semibold px-2 py-0.5 rounded"
                 style={{
@@ -120,7 +112,7 @@ const DayCalendar = ({
               </div>
             )}
 
-            <button className="bg-black rounded-full p-1 mr-2 shrink-0">
+            <button className="bg-black rounded-full p-1 mr-2">
               <ChevronRight className="w-3 h-3 text-white" />
             </button>
           </div>

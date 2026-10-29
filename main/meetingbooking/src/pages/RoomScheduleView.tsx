@@ -53,6 +53,11 @@ const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
 
 // 還沒看過的更新日誌（記錄的是看過的最新一筆 id）
+// 以某天為準的查詢範圍：前 1 個月初 ~ 後 3 個月底（約 5 個月，前後都留有好幾週的空檔）
+function anchorRange(base: dayjs.Dayjs) {
+  return { from: base.startOf("month").subtract(1, "month"), to: base.add(3, "month").endOf("month") };
+}
+
 function unseenChangelog() {
   const seen = loadPref("changelogSeen");
   const index = changelog.findIndex((entry) => entry.id === seen);
@@ -142,11 +147,28 @@ const RoomScheduleView = () => {
     setBookingForm((prev) => ({ ...prev, room: [selectedRoom] }));
   }, [selectedRoom]);
 
-  // 日／週／月檢視都以 currentDate 決定顯示的會議；月檢視一次顯示 3 個月，前後再各留一週緩衝
+  // 查詢範圍：目前畫面需要的區間（月檢視 3 個月、日／週檢視前後 3 週）還在已查詢的範圍內就不重查；
+  // 超出時才以目前日期重新取「前 1 個月 ~ 後 3 個月」，換週、換月不會每次都重新讀取
   // Today 分頁一律以今天為準，確保今天的資料在查詢範圍內
   const rangeBase = todayMode ? dayjs() : currentDate;
-  const rangeFrom = rangeBase.startOf("month").subtract(7, "day").toISOString();
-  const rangeTo = rangeBase.add(2, "month").endOf("month").add(7, "day").toISOString();
+  const needFrom = selectedView === "Month" && !todayMode
+    ? rangeBase.startOf("month").subtract(7, "day")
+    : (todayMode || rangeBase.isBefore(viewStartDate) ? rangeBase : viewStartDate).subtract(21, "day");
+  const needTo = selectedView === "Month" && !todayMode
+    ? rangeBase.add(2, "month").endOf("month").add(7, "day")
+    : (todayMode || rangeBase.isAfter(viewStartDate.add(6, "day")) ? rangeBase : viewStartDate.add(6, "day")).add(21, "day");
+  const [fetchRange, setFetchRange] = useState(() => anchorRange(rangeBase));
+  if (needFrom.isBefore(fetchRange.from) || needTo.isAfter(fetchRange.to)) {
+    // 依目前畫面推算的衍生狀態，在 render 中更新（React 會立即以新值重新 render）
+    const next = anchorRange(rangeBase);
+    // 保證涵蓋需要的區間（週起始日與目前日期相差很遠時），避免重複更新
+    setFetchRange({
+      from: needFrom.isBefore(next.from) ? needFrom : next.from,
+      to: needTo.isAfter(next.to) ? needTo : next.to,
+    });
+  }
+  const rangeFrom = fetchRange.from.toISOString();
+  const rangeTo = fetchRange.to.toISOString();
   // 新增／修改／刪除後遞增，觸發重新取得資料
   const [refreshKey, setRefreshKey] = useState(0);
   const reloadMeetings = () => setRefreshKey((key) => key + 1);
@@ -179,12 +201,12 @@ const RoomScheduleView = () => {
     reloadMeetings();
   }
 
-  // 從 Today 卡片進入該會議室今天的日檢視
+  // 從 Today 卡片進入該會議室本週的週檢視
   function openRoomToday(room: RoomKey) {
     const today = dayjs();
     setTodayMode(false);
     setSelectedRoom(room);
-    setSelectedView("Day");
+    setSelectedView("Week");
     setCurrentDate(today);
     setViewStartDate(today);
     updateBookingDate(today);
@@ -210,9 +232,8 @@ const RoomScheduleView = () => {
     return findAlternatives(meetings, { rooms, date, start, end, excludeIds, now: Date.now() }, ROOMS);
   }
 
-  // 左右滑動行事曆：與上方箭頭相同的換頁方式；日檢視一次一天
-  const swipeHandlers = useSwipe((direction) => {
-    if (todayMode) return;
+  // 左右滑動行事曆：與上方箭頭相同的換頁方式；日檢視一次一天。畫面跟著手指移動，放開後滑出、新的一頁滑入
+  const swipe = useSwipe(!todayMode, (direction) => {
     const step = direction === "next" ? 1 : -1;
     if (selectedView === "Month") {
       setCurrentDate(currentDate.add(step, "month"));
@@ -537,7 +558,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           />
         </>
       )}
-      <div className="flex-1 overflow-y-auto relative" {...swipeHandlers}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden relative" style={{ touchAction: "pan-y" }} {...swipe.handlers}>
         {fetching && rangeLoaded && (
           <div className="sticky top-1 z-10 flex justify-center pointer-events-none h-0">
             <span className="bg-white/90 shadow text-xs text-gray-600 rounded-full px-3 py-1">更新中…</span>
@@ -555,16 +576,18 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
             }}
           />
         ) : (
-          <CalendarContent
-            selectedView={selectedView}
-            currentDate={currentDate}
-            meetings={roomMeetings}
-            setSelectedMeeting={setSelectedMeeting}
-            setShowInfoModal={setShowInfoModal}
-            setCurrentDate={setCurrentDate}
-            setViewStartDate={setViewStartDate}
-            onChangeView={setSelectedView}
-          />
+          <div className="min-h-full" style={swipe.style}>
+            <CalendarContent
+              selectedView={selectedView}
+              currentDate={currentDate}
+              meetings={roomMeetings}
+              setSelectedMeeting={setSelectedMeeting}
+              setShowInfoModal={setShowInfoModal}
+              setCurrentDate={setCurrentDate}
+              setViewStartDate={setViewStartDate}
+              onChangeView={setSelectedView}
+            />
+          </div>
         )}
       </div>
       <button
