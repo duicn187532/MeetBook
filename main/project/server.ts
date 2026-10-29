@@ -4,6 +4,7 @@ import { oakCors } from "cors";
 import { addBooking, getActiveBooked, updateBooking } from "./controller.ts";
 import { dbConfigured, ensureConnected, ensureIndexes, pingDb } from "./db.ts";
 import { logEvent } from "./logger.ts";
+import { lineWebhook } from "./line_webhook.ts";
 
 const app = new Application();
 const router = new Router();
@@ -68,6 +69,9 @@ router.get("/healthz", async (ctx) => {
 router.get("/api/bookings/:room?", getActiveBooked);
 router.post("/api/bookings", addBooking);
 router.patch("/api/bookings/:id/:editPassword?", updateBooking);
+
+// LINE 官方帳號 webhook（在 LINE Developers 設定為 https://<網域>/line/webhook）
+router.post("/line/webhook", lineWebhook);
 
 app.use(router.routes());
 app.use(router.allowedMethods());
