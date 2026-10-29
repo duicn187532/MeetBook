@@ -30,3 +30,6 @@ main/project/node_modules
 
 # 範例環境變數檔要進版控
 !**/.env*.example
+
+# 時間轉換腳本的備份檔（含預約 id 與原始時間）
+main/project/migration-backup-*.json

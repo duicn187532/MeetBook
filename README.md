@@ -52,6 +52,18 @@ deno task check   # 型別檢查
 deno lint && deno fmt --check
 ```
 
+### 資料整理：字串時間轉回 Date
+
+舊版修改預約時會把 `startTime` / `endTime` 存成 ISO 字串，造成衝突檢查漏掉這些預約（目前程式已能同時比對兩種型別）。`scripts/migrate_string_times.ts` 會把它們轉回 Date：
+
+```bash
+cd main/project
+deno task migrate:times           # 預覽：列出會轉換幾筆，不寫入
+deno task migrate:times --apply   # 實際寫入；寫入前會產生 migration-backup-*.json（已被 .gitignore 排除）
+```
+
+連線設定同後端：`ENV=production` 時讀取 `MONGODB_URI`、`DB_NAME` 環境變數，否則讀取 `.env.development`。可重複執行；無法解析的值會列出並略過。
+
 ### 部署到 Deno Deploy
 
 App：`duicn187532/meetingbooking`（https://meetingbooking.duicn187532.deno.net）
