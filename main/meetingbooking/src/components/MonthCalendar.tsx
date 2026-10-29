@@ -15,6 +15,9 @@ const colors: { [key: string]: string } = {
     A102: "bg-[#FF3F3F]",
     A103: "bg-[#17C2B6]",
   };
+
+// 每天最多顯示幾個圓點，其餘以 +N 表示
+const MAX_DOTS = 4;
   
 
 const MonthCalendar = ({
@@ -85,12 +88,17 @@ const MonthCalendar = ({
                     </div>
                     {dayMeetings.length > 0 && (
                       <div className="flex gap-1 mt-1 justify-center flex-wrap">
-                        {dayMeetings.map((meeting) => (
+                        {dayMeetings.slice(0, MAX_DOTS).map((meeting) => (
                           <div
                             key={meeting.id}
                             className={`w-1.5 h-1.5 rounded-full ${colors[meeting.room]}`}
                           />
                         ))}
+                        {dayMeetings.length > MAX_DOTS && (
+                          <span className="text-[10px] leading-none text-gray-500">
+                            +{dayMeetings.length - MAX_DOTS}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

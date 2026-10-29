@@ -11,25 +11,32 @@ import { fetchEventsApi, submitBookingApi, cancelMeetingApi, editMeetingApi } fr
 
 export default function useMeetingData() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  // loading：新增／修改／刪除進行中（顯示全畫面讀取，避免重複送出）
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  // 快速切換會議室或月份時，只採用最後一次請求的結果
+  // fetching：取得預約資料中；loadedRange：目前 meetings 涵蓋的區間
+  const [fetching, setFetching] = useState(false);
+  const [loadedRange, setLoadedRange] = useState<DateRange | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  // 快速切換月份時，只採用最後一次請求的結果
   const latestRequest = useRef(0);
 
-  async function fetchEvents(room: string, range: DateRange) {
+  // 一次取得所有會議室的資料，切換會議室時不必重新讀取
+  async function fetchEvents(range: DateRange) {
     const requestId = ++latestRequest.current;
-    setLoading(true);
+    setFetching(true);
     try {
-      const events = await fetchEventsApi(room, range);
-      if (requestId === latestRequest.current) setMeetings(events);
+      const events = await fetchEventsApi(range);
+      if (requestId === latestRequest.current) {
+        setMeetings(events);
+        setLoadedRange(range);
+        setLoadError(false);
+      }
     } catch (err) {
       console.error("取得會議資料失敗:", err);
-      if (requestId === latestRequest.current) {
-        setError("取得會議資料失敗");
-        setMeetings([]);
-      }
+      // 失敗時保留原本的資料，由畫面提示可能不完整
+      if (requestId === latestRequest.current) setLoadError(true);
     } finally {
-      if (requestId === latestRequest.current) setLoading(false);
+      if (requestId === latestRequest.current) setFetching(false);
     }
   }
 
@@ -74,7 +81,9 @@ export default function useMeetingData() {
   return {
     meetings,
     loading,
-    error,
+    fetching,
+    loadedRange,
+    loadError,
     fetchEvents,
     submitBooking,
     cancelMeeting,

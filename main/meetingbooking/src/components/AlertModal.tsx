@@ -44,7 +44,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ type, title, message, onClose }
         <h2 className={`text-xl font-semibold mt-3 ${styles[type].text}`}>{title}</h2>
 
         {/* 訊息 */}
-        {message && <p className="text-gray-500 text-sm mt-1">{message}</p>}
+        {message && <p className="text-gray-500 text-sm mt-1 whitespace-pre-line">{message}</p>}
 
         {/* 按鈕 */}
         <button

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -26,18 +26,7 @@ const BookingModal = ({
   onSubmit,
   onClose,
 }: BookingModalProps) => {
-  const defaultStart = dayjs();
-  const defaultEnd = defaultStart.add(1, "hour");
   const [showMultiRoom, setShowMultiRoom] = useState(false);
-
-  useEffect(() => {
-    setBookingForm((prev) => ({
-      ...prev,
-      room: Array.isArray(prev.room) ? prev.room : [],
-      startTime: defaultStart.format("HH:mm"),
-      endTime: defaultEnd.format("HH:mm"),
-    }));
-  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -224,7 +213,7 @@ const BookingModal = ({
               minTime={dayjs().hour(8).minute(45)}
               maxTime={dayjs().hour(18).minute(15)}
               desktopModeMediaQuery="(max-width: 9999px)"
-              timeSteps={{ hours: 1, minutes: 1 }}
+              timeSteps={{ hours: 1, minutes: 5 }}
             // slotProps={{
             //   paper: {
             //     sx: {
@@ -252,7 +241,7 @@ const BookingModal = ({
               minTime={dayjs().hour(8).minute(45)}
               maxTime={dayjs().hour(18).minute(15)}
               desktopModeMediaQuery="(max-width: 9999px)"
-              timeSteps={{ hours: 1, minutes: 1 }}
+              timeSteps={{ hours: 1, minutes: 5 }}
             // slotProps={{
             //   paper: {
             //     sx: {

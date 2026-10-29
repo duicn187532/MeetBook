@@ -1,7 +1,7 @@
 // views/RoomScheduleView.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -27,11 +27,25 @@ import {
   ConfirmModalConfig,
   Meeting,
   RoomKey,
+  roomNames,
   ViewMode,
 } from "../types/common";
 
 // 自訂 hook
 import useMeetingData from "../hooks/useMeetingData";
+import useSwipe from "../hooks/useSwipe";
+import { readResponseBody } from "../api/meetingApi";
+import {
+  Alternatives,
+  conflictMessage,
+  defaultBookingTimes,
+  describeConflicts,
+  findAlternatives,
+} from "../utils/bookingHelpers";
+import { loadPref, savePref } from "../utils/storage";
+
+const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
+const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -39,22 +53,25 @@ dayjs.tz.setDefault("Asia/Taipei");
 
 const RoomScheduleView = () => {
   // UI 狀態管理
-  const [selectedRoom, setSelectedRoom] = useState<RoomKey>("A101");
-  const [selectedView, setSelectedView] = useState<ViewMode>("Week");
+  // 會議室、檢視模式與行編會記在瀏覽器，下次開啟沿用
+  const [selectedRoom, setSelectedRoom] = useState<RoomKey>(() => loadPref("room", ROOMS) ?? "A101");
+  const [selectedView, setSelectedView] = useState<ViewMode>(() => loadPref("view", VIEWS) ?? "Week");
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [viewStartDate, setViewStartDate] = useState(dayjs());
   const [editPassword, setEditPassword] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-  const [bookingForm, setBookingForm] = useState<BookingForm>({
+  // 最近一次自動帶入的預設時間；使用者沒改過時，開啟預約視窗會換成最新的預設值
+  const defaultTimes = useRef(defaultBookingTimes(new Date()));
+  const [bookingForm, setBookingForm] = useState<BookingForm>(() => ({
     title: "",
-    user: "",
+    user: loadPref("userId") ?? "",
     room: [selectedRoom],
     participantsNum: 0,
     selectedDate: currentDate.format("YYYY-MM-DD"),
-    startTime: dayjs().format("HH:mm"),
-    endTime: dayjs().add(1, "hour").format("HH:mm"),
+    ...defaultTimes.current,
     editPassword: "",
-  });
+  }));
+  const [editError, setEditError] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -74,7 +91,22 @@ const RoomScheduleView = () => {
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   // 自訂 hook 提供的 API 與狀態
-  const { meetings, loading, fetchEvents, submitBooking, cancelMeeting, editMeeting } = useMeetingData();
+  const {
+    meetings,
+    loading,
+    fetching,
+    loadedRange,
+    loadError,
+    fetchEvents,
+    submitBooking,
+    cancelMeeting,
+    editMeeting,
+  } = useMeetingData();
+  // 資料包含所有會議室，畫面只顯示目前選擇的會議室
+  const roomMeetings = meetings.filter((m) => m.room === selectedRoom);
+
+  useEffect(() => savePref("room", selectedRoom), [selectedRoom]);
+  useEffect(() => savePref("view", selectedView), [selectedView]);
 
   // 按鈕背景色對應
   const buttonBGColors: Record<RoomKey, string> = {
@@ -96,10 +128,43 @@ const RoomScheduleView = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const reloadMeetings = () => setRefreshKey((key) => key + 1);
 
-  // 房間、查詢範圍改變或資料異動時取得會議資料
+  // 查詢範圍改變或資料異動時取得會議資料（切換會議室不需重新讀取）
   useEffect(() => {
-    fetchEvents(selectedRoom, { from: rangeFrom, to: rangeTo });
-  }, [selectedRoom, rangeFrom, rangeTo, refreshKey]);
+    fetchEvents({ from: rangeFrom, to: rangeTo });
+  }, [rangeFrom, rangeTo, refreshKey]);
+  // 畫面上的資料是否已涵蓋目前的區間；還沒涵蓋時以全畫面讀取遮住，避免誤以為沒有預約
+  const rangeLoaded = loadedRange?.from === rangeFrom && loadedRange?.to === rangeTo;
+
+  // 依目前已載入的預約推算替代方案；預約時間不在已載入的區間內時不提供，避免建議錯誤
+  function alternativesFor(
+    rooms: string[],
+    date: string,
+    start: number,
+    end: number,
+    excludeIds: string[] = [],
+  ): Alternatives | null {
+    if (!loadedRange || start < Date.parse(loadedRange.from) || end > Date.parse(loadedRange.to)) return null;
+    return findAlternatives(meetings, { rooms, date, start, end, excludeIds, now: Date.now() }, ROOMS);
+  }
+
+  // 左右滑動行事曆：與上方箭頭相同的換頁方式；日檢視一次一天
+  const swipeHandlers = useSwipe((direction) => {
+    const step = direction === "next" ? 1 : -1;
+    if (selectedView === "Month") {
+      setCurrentDate(currentDate.add(step, "month"));
+    } else if (selectedView === "Week") {
+      const newStart = viewStartDate.add(7 * step, "day");
+      setViewStartDate(newStart);
+      setCurrentDate(currentDate.add(7 * step, "day"));
+      updateBookingDate(newStart);
+    } else {
+      const next = currentDate.add(step, "day");
+      setCurrentDate(next);
+      updateBookingDate(next);
+      if (next.isBefore(viewStartDate, "day")) setViewStartDate(viewStartDate.subtract(6, "day"));
+      else if (next.isAfter(viewStartDate.add(5, "day"), "day")) setViewStartDate(viewStartDate.add(6, "day"));
+    }
+  });
 
   const updateBookingDate = (date: dayjs.Dayjs) => {
     setBookingForm((prev) => ({
@@ -109,6 +174,13 @@ const RoomScheduleView = () => {
   };
 
   // Alert 函式
+  const showAlert = (type: "success" | "error", title: string, message = "") => {
+    setAlertType(type);
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setShowAlertModal(true);
+  };
+
   const showSuccessAlert = () => {
     setAlertType("success");
     setAlertTitle("預約成功");
@@ -130,19 +202,7 @@ const RoomScheduleView = () => {
     setShowAlertModal(true);
   };
 
-  const showUpdatedFailedAlert = () => {
-    setAlertType("error");
-    setAlertTitle("儲存失敗");
-    setAlertMessage("更新資料失敗,請再重新輸入");
-    setShowAlertModal(true);
-  };
 
-  const showTimeConflictAlert = () => {
-    setAlertType("error");
-    setAlertTitle("時段重複");
-    setAlertMessage("已經有人預約囉,請重新選擇時間");
-    setShowAlertModal(true);
-  };
   const showUserNotFoundAlert = () => {
     setAlertType("error");
     setAlertTitle("無此使用者");
@@ -200,10 +260,17 @@ async function handleSubmitBooking() {
     
     // 處理不同的回應狀態
     switch (response.status) {
-      case 400:
-        showTimeConflictAlert();
+      case 400: {
         // 時間衝突時不重置表單，讓使用者可以調整時間
+        if (!Array.isArray(response.body.conflicts)) {
+          setErrorMessage(response.body.error || "資料有誤，請檢查後再試");
+          break;
+        }
+        const alternatives = alternativesFor(room, selectedDate, start.valueOf(), end.valueOf());
+        showAlert("error", "時段重複", conflictMessage(describeConflicts(response.body.conflicts), alternatives));
+        reloadMeetings();
         break;
+      }
         
       case 404:
         showUserNotFoundAlert();
@@ -227,20 +294,32 @@ async function handleSubmitBooking() {
 
 // 重置表單但保留使用者資訊（僅在成功預約後使用）
 function resetFormExceptUser() {
+  defaultTimes.current = defaultBookingTimes(new Date());
   setBookingForm(prev => ({
     title: "",
     user: prev.user, // 保留使用者不變
     room: [selectedRoom],
     participantsNum: 0,
     selectedDate: currentDate.format("YYYY-MM-DD"),
-    startTime: prev.startTime,
-    endTime: prev.endTime,
+    ...defaultTimes.current,
     editPassword: "",
   }));
 }
 
+// 開啟預約視窗；時間沒被使用者改過時，換成以現在時間計算的預設值
+function openBookingModal() {
+  const fresh = defaultBookingTimes(new Date());
+  const previous = defaultTimes.current;
+  defaultTimes.current = fresh;
+  setBookingForm((prev) =>
+    prev.startTime === previous.startTime && prev.endTime === previous.endTime ? { ...prev, ...fresh } : prev
+  );
+  setShowBookingModal(true);
+}
+
 // 處理成功預約後的操作
 function handleSuccessfulBooking(bookingData: BookingPayload) {
+  savePref("userId", bookingData.user);
   showSuccessAlert();
   reloadMeetings();
   setCurrentDate(dayjs(bookingData.date));
@@ -250,53 +329,85 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
   resetFormExceptUser();
 }
 
+  // 關閉預約資訊／修改視窗並清除暫存的密碼
+  function closeMeetingModals() {
+    setShowInfoModal(false);
+    setShowEditModal(false);
+    setSelectedMeeting(null);
+    setEditPassword("");
+    setEditError("");
+  }
+
   // 取消會議
   async function handleCancel() {
     if (!selectedMeeting || !selectedMeeting.id) return;
+    let res: Response;
     try {
-      const res = await cancelMeeting(selectedMeeting.id, editPassword);
-      if (!res.ok) {
-        if (res.status === 403) {
-          showPasswordErrorAlert();
-          setEditPassword("");
-        }
-        throw new Error(`伺服器回應錯誤: ${res.status}`);
-      }
-      await res.json();
-      reloadMeetings();
-      setSelectedMeeting(null);
-      showDeleteAlert();
+      res = await cancelMeeting(selectedMeeting.id, editPassword);
     } catch (error) {
+      // 網路錯誤或 5xx 已由 apiFetch 提示
       console.error("取消會議錯誤:", error);
+      return;
+    }
+    if (res.ok) {
+      reloadMeetings();
+      closeMeetingModals();
+      showDeleteAlert();
+    } else if (res.status === 403) {
+      // 預約資訊視窗保留，清空密碼讓使用者重新輸入
+      showPasswordErrorAlert();
+      setEditPassword("");
+    } else if (res.status === 404) {
+      reloadMeetings();
+      closeMeetingModals();
+      showAlert("error", "刪除失敗", "這筆預約已不存在，畫面已重新整理");
+    } else {
+      const body = await readResponseBody(res);
+      showAlert("error", "刪除失敗", body.error || "請稍後再試");
     }
   }
 
-  // 修改會議
-  async function handleEdit(editData: BookingUpdatePayload, meetingId: string, password: string) {
-    if (!meetingId) return;
+  // 修改會議；失敗時修改視窗保留，錯誤顯示在視窗內，使用者不必重新填寫
+  async function handleEdit(editData: BookingUpdatePayload, meeting: Meeting, password: string) {
+    setEditError("");
+    let res: Response;
     try {
-      const res = await editMeeting(meetingId, password, editData);
-      if (!res.ok) {
-        if (res.status === 403) {
-          showPasswordErrorAlert();
-          setEditPassword("");
-        } else if (res.status === 404) {
-          showUpdatedFailedAlert();
-        } else if (res.status === 400) {
-          showTimeConflictAlert();
-        }
-        throw new Error(`伺服器回應錯誤: ${res.status}`);
-      }
-      await res.json();
+      res = await editMeeting(meeting.id, password, editData);
+    } catch (error) {
+      console.error("修改會議錯誤:", error);
+      setEditError("連線失敗，請稍後再試");
+      return;
+    }
+    if (res.ok) {
       reloadMeetings();
-      setEditPassword("");
+      closeMeetingModals();
       setCurrentDate(dayjs(editData.date));
       setViewStartDate(dayjs(editData.date));
       setSelectedRoom(editData.room as RoomKey);
       showUpdatedSuccessAlert();
-      setSelectedMeeting(null);
-    } catch (error) {
-      console.error("修改會議錯誤:", error);
+      return;
+    }
+    const body = await readResponseBody(res);
+    if (res.status === 403) {
+      setEditError("編輯密碼錯誤，請確認後重新輸入");
+    } else if (res.status === 404) {
+      reloadMeetings();
+      setEditError("找不到這筆預約，可能已被取消，請關閉後重新整理");
+    } else if (res.status === 400 && Array.isArray(body.conflicts)) {
+      // 同組（同時預約）的會議會一起移動，推算空檔時排除自己與同組
+      const rooms = [editData.room, ...meeting.isMulti];
+      const groupIds = meetings
+        .filter((m) =>
+          meeting.isMulti.includes(m.room) && m.startTime === meeting.startTime && m.endTime === meeting.endTime
+        )
+        .map((m) => m.id);
+      const start = Date.parse(editData.startTime);
+      const end = Date.parse(editData.endTime);
+      const alternatives = alternativesFor(rooms, editData.date, start, end, [meeting.id, ...groupIds]);
+      setEditError(conflictMessage(describeConflicts(body.conflicts), alternatives));
+      reloadMeetings();
+    } else {
+      setEditError(body.error || "儲存失敗，請稍後再試");
     }
   }
 
@@ -310,6 +421,14 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
 
   const [confirmAction, setConfirmAction] = useState<() => void>(() => () => { });
 
+
+  // 同時預約多間時，提醒刪除只影響這一間
+  function deleteConfirmMessage(meeting: Meeting | null) {
+    const others = (meeting?.isMulti ?? []).map((r) => roomNames[r as RoomKey] ?? r);
+    if (!meeting || others.length === 0) return "刪除後無法恢復。";
+    const room = roomNames[meeting.room as RoomKey] ?? meeting.room;
+    return `只會取消 ${room} 這一間，同時預約的 ${others.join("、")} 會保留。刪除後無法恢復。`;
+  }
 
   // 以下為組合各個元件與 UI
   return (
@@ -327,11 +446,24 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
         setViewStartDate={setViewStartDate}
         selectedRoom={selectedRoom}
       />
-      <div className="flex-1 overflow-y-auto">
+      {loadError && (
+        <div className="flex items-center justify-between gap-2 bg-red-50 text-red-700 text-sm px-3 py-2">
+          <span>預約資料載入失敗，畫面可能不完整，請勿依此判斷是否有空。</span>
+          <button onClick={reloadMeetings} className="shrink-0 bg-red-600 text-white rounded-lg px-3 py-1">
+            重試
+          </button>
+        </div>
+      )}
+      <div className="flex-1 overflow-y-auto relative" {...swipeHandlers}>
+        {fetching && rangeLoaded && (
+          <div className="sticky top-1 z-10 flex justify-center pointer-events-none h-0">
+            <span className="bg-white/90 shadow text-xs text-gray-600 rounded-full px-3 py-1">更新中…</span>
+          </div>
+        )}
         <CalendarContent
           selectedView={selectedView}
           currentDate={currentDate}
-          meetings={meetings}
+          meetings={roomMeetings}
           setSelectedMeeting={setSelectedMeeting}
           setShowInfoModal={setShowInfoModal}
           setCurrentDate={setCurrentDate}
@@ -341,7 +473,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
       </div>
       <button
         onClick={() => setTimeout(()=>{
-          setShowBookingModal(true);
+          openBookingModal();
         }, 250)}
         className={`absolute bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
       >
@@ -359,15 +491,13 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
       {showInfoModal && (
         <MeetingInfoModal
           show={showInfoModal}
-          onClose={() => {
-            setSelectedMeeting(null);
-            setShowInfoModal(false);
-          }}
+          onClose={closeMeetingModals}
           meetingInfo={selectedMeeting}
+          editPassword={editPassword}
           onCancel={() =>
             handleConfirmAction(handleCancel, {
               title: "確定刪除嗎？",
-              message: "刪除後無法恢復。",
+              message: deleteConfirmMessage(selectedMeeting),
               confirmLabel: "確定",
               cancelLabel: "取消",
               confirmColor: "bg-red-500",
@@ -384,10 +514,12 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
       )}
       {showEditModal && selectedMeeting && (
         <EditMeetingModal
-          onClose={() => setShowEditModal(false)}
+          onClose={closeMeetingModals}
           MeetingInfo={selectedMeeting}
-          onSubmit={(editData, id, pw) =>
-            handleConfirmAction(() => handleEdit(editData, id, pw), {
+          initialPassword={editPassword}
+          errorMessage={editError}
+          onSubmit={(editData, pw) =>
+            handleConfirmAction(() => handleEdit(editData, selectedMeeting, pw), {
               title: "確定修改嗎？",
               message: "請確認修改內容。",
               confirmLabel: "確定",
@@ -401,6 +533,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
       <ConfirmationModal
         show={showConfirmModal}
         title={modalProps.title}
+        message={modalProps.message}
         confirmLabel={modalProps.confirmLabel}
         cancelLabel={modalProps.cancelLabel}
         confirmColor={modalProps.confirmColor}
@@ -412,7 +545,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
         }}
         onCancel={() => setShowConfirmModal(false)}
       />
-      {loading && <LoadingOverlay />}
+      {(loading || (fetching && !rangeLoaded)) && <LoadingOverlay />}
       {showAlertModal && (
         <AlertModal
           type={alertType}
