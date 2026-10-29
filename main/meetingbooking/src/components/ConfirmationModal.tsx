@@ -4,7 +4,7 @@ import { HelpCircle } from "lucide-react";
 interface ConfirmationModalProps {
   show: boolean;
   title: string;
-  // message: string;
+  message?: string;
   confirmLabel?: string;
   cancelLabel?: string;
   confirmColor?: string;
@@ -16,7 +16,7 @@ interface ConfirmationModalProps {
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   show,
   title,
-  // message,
+  message,
   confirmLabel = "確定",
   cancelLabel = "取消",
   confirmColor = "bg-red-500",
@@ -41,7 +41,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <h2 className="text-lg font-semibold text-center mb-4">{title}</h2>
 
         {/* 訊息 */}
-        {/* <p className="text-gray-600 text-center">{message}</p> */}
+        {message && <p className="text-gray-600 text-sm text-center">{message}</p>}
 
         {/* 按鈕 */}
         <div className="flex justify-around mt-4">

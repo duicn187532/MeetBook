@@ -165,5 +165,5 @@ export function toPublicBooking(doc: BookingDoc): PublicBooking {
 }
 
 export function summarizeConflict(doc: BookingDoc) {
-  return { id: doc.id, title: doc.title, startTime: doc.startTime, endTime: doc.endTime };
+  return { id: doc.id, room: doc.room, title: doc.title, startTime: doc.startTime, endTime: doc.endTime };
 }

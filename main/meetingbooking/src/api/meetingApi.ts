@@ -30,9 +30,10 @@ async function apiFetch(endpoint: string, options?: RequestInit): Promise<Respon
   }
 }
 
-export async function fetchEventsApi(room: string, range: DateRange): Promise<Meeting[]> {
+// 不指定會議室：取得區間內所有會議室的預約
+export async function fetchEventsApi(range: DateRange): Promise<Meeting[]> {
   const query = new URLSearchParams({ from: range.from, to: range.to });
-  const res = await apiFetch(`${room}?${query}`);
+  const res = await apiFetch(`?${query}`);
   if (!res.ok) throw new Error(`API 回應錯誤: ${res.status}`);
   const data: { data: ApiBooking[] } = await res.json();
   // 轉換後端資料
@@ -95,4 +96,14 @@ export async function editMeetingApi(
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(editData),
   });
+}
+
+// 讀取修改／刪除回應的內容；格式不正確時回傳空物件
+export async function readResponseBody(res: Response): Promise<BookingResponseBody> {
+  try {
+    const body = await res.json();
+    return body && typeof body === "object" ? body : {};
+  } catch {
+    return {};
+  }
 }

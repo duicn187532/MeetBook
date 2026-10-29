@@ -12,6 +12,7 @@ interface MeetingInfoModalProps {
   meetingInfo: Meeting | null;  // 傳入要顯示的會議資料
   onCancel: () => void;         // 點擊「刪除」時執行的回呼函式
   onOpenEditModal: (info: Meeting) => void;
+  editPassword: string;
   onEditPassword: (value: string) => void;
 }
 
@@ -21,6 +22,7 @@ const MeetingInfoModal = ({
   meetingInfo,
   onCancel,
   onOpenEditModal,
+  editPassword,
   onEditPassword,
 }: MeetingInfoModalProps) => {
   const [showMore, setShowMore] = useState(false);
@@ -86,6 +88,11 @@ const MeetingInfoModal = ({
             <div className="flex-1">
               <label className="block font-semibold text-gray-600 mb-1">會議室</label>
               <div className="w-full font-normal border rounded px-2 py-1 text-sm" >{roomNames[meetingInfo.room as RoomKey]}</div>
+              {meetingInfo.isMulti.length > 0 && (
+                <div className="text-xs text-gray-500 mt-1">
+                  同時預約：{meetingInfo.isMulti.map((r) => roomNames[r as RoomKey] ?? r).join("、")}
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <label className="block font-semibold text-gray-600 mb-1">與會人數</label>
@@ -105,8 +112,9 @@ const MeetingInfoModal = ({
             <label className="block font-semibold text-gray-600 mb-1">編輯密碼</label>
             <input
               className="w-full border font-normal rounded px-2 py-1 text-sm"
-              placeholder="刪除請輸入您設定的編輯密碼"
-              onChange={(e) => onEditPassword(e.target.value ? e.target.value : "")} />
+              placeholder="修改或刪除請輸入您設定的編輯密碼"
+              value={editPassword}
+              onChange={(e) => onEditPassword(e.target.value)} />
           </div>
 
         </div>

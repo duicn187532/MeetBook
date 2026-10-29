@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { TimePicker, DatePicker } from "@mui/x-date-pickers";
-import { BookingUpdatePayload, Meeting } from "../types/common";
+import { BookingUpdatePayload, Meeting, RoomKey, roomNames } from "../types/common";
 import { RefreshCw } from "lucide-react";
 
 // 初始化插件與設定預設台北時區
@@ -15,13 +15,17 @@ dayjs.tz.setDefault("Asia/Taipei");
 interface EditMeetingModalProps {
   onClose: () => void;
   MeetingInfo: Meeting;
-  onSubmit: (updatedInfo: BookingUpdatePayload, id: string, pw: string) => void;
+  initialPassword: string; // 預約資訊視窗已輸入的密碼，免得再打一次
+  errorMessage: string; // 送出失敗的原因；視窗保留讓使用者修正後重送
+  onSubmit: (updatedInfo: BookingUpdatePayload, pw: string) => void;
 }
 
 // 只在有選取會議時渲染（由父元件判斷），因此所有 hooks 都能無條件呼叫
 const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   onClose,
   MeetingInfo,
+  initialPassword,
+  errorMessage,
   onSubmit,
 }) => {
   // 取出並初始化各欄位的 state
@@ -32,7 +36,8 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   const [date, setDate] = useState(MeetingInfo.date);
   const [startTime, setStartTime] = useState(dayjs(MeetingInfo.startTime).tz("Asia/Taipei"));
   const [endTime, setEndTime] = useState(dayjs(MeetingInfo.endTime).tz("Asia/Taipei"));
-  const [editPassword, setEditPassword] = useState("");
+  const [editPassword, setEditPassword] = useState(initialPassword);
+  const [validationError, setValidationError] = useState("");
 
   // 當 MeetingInfo 變更時，確保狀態同步更新
   useEffect(() => {
@@ -65,6 +70,15 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   };
 
   const handleSubmit = () => {
+    if (!startTime.isValid() || !endTime.isValid()) {
+      setValidationError("無效的時間格式，請重新選擇！");
+      return;
+    }
+    if (!startTime.isBefore(endTime)) {
+      setValidationError("結束時間必須晚於開始時間！");
+      return;
+    }
+    setValidationError("");
     const updatedInfo: BookingUpdatePayload = {
       title,
       participantsNum,
@@ -73,9 +87,10 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
       startTime: startTime.toISOString(), // 確保是 ISO 格式
       endTime: endTime.toISOString(),
     };
-    onSubmit(updatedInfo, MeetingInfo.id, editPassword);
-    onClose();
+    onSubmit(updatedInfo, editPassword);
   };
+  const shownError = validationError || errorMessage;
+  const otherRooms = MeetingInfo.isMulti.map((r) => roomNames[r as RoomKey] ?? r);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -174,7 +189,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
               minTime={dayjs().hour(8).minute(45)}
               maxTime={dayjs().hour(18).minute(15)}
               desktopModeMediaQuery="(max-width: 9999px)"
-              timeSteps={{ hours: 1, minutes: 1 }}
+              timeSteps={{ hours: 1, minutes: 5 }}
             />
           </div>
           <div className="flex-1">
@@ -190,7 +205,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
               minTime={dayjs().hour(8).minute(45)}
               maxTime={dayjs().hour(18).minute(15)}
               desktopModeMediaQuery="(max-width: 9999px)"
-              timeSteps={{ hours: 1, minutes: 1 }}
+              timeSteps={{ hours: 1, minutes: 5 }}
             />
           </div>
         </div>
@@ -206,6 +221,13 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
             placeholder="請輸入編輯密碼"
           />
         </div>
+
+        {otherRooms.length > 0 && (
+          <p className="text-xs text-gray-500 mb-2">
+            時間、名稱、人數的修改會同步到同時預約的 {otherRooms.join("、")}。
+          </p>
+        )}
+        {shownError && <p className="text-sm text-red-500 whitespace-pre-line mt-2">{shownError}</p>}
 
         {/* 底部按鈕 */}
         <div className="flex justify-between mt-4">
