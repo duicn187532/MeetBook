@@ -15,7 +15,7 @@ interface ViewToggleProps {
 }
 type RoomKey = "A101" | "A102" | "A103";
 
-const roomBackgroundColors: Record<RoomKey, any> = {
+const roomBackgroundColors: Record<RoomKey, { bg: string; dates: string }> = {
   A101: {bg:"bg-[#D1E7FF]", dates: "bg-[#60AAFF]"}, // 浅蓝色
   A102: {bg: "bg-[#FFE6E6]", dates: "bg-[#FF3F3F]"}, // 浅红色
   A103: {bg: "bg-[#D7F3F1]", dates: "bg-[#17C2B6]"}, // 浅绿色

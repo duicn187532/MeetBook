@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -7,7 +7,7 @@ import { BookingForm } from "../types/common";
 
 interface BookingModalProps {
   bookingForm: BookingForm
-  setBookingForm: (form: any) => void;
+  setBookingForm: Dispatch<SetStateAction<BookingForm>>;
   errorMessage: string;
   onSubmit: () => void;
   onClose: () => void;
@@ -31,7 +31,7 @@ const BookingModal = ({
   const [showMultiRoom, setShowMultiRoom] = useState(false);
 
   useEffect(() => {
-    setBookingForm((prev: any) => ({
+    setBookingForm((prev) => ({
       ...prev,
       room: Array.isArray(prev.room) ? prev.room : [],
       startTime: defaultStart.format("HH:mm"),
@@ -58,7 +58,7 @@ const BookingModal = ({
           <input
             type="text"
             value={bookingForm.user}
-            onChange={(e) => setBookingForm((prev: any) => ({ ...prev, user: e.target.value }))}
+            onChange={(e) => setBookingForm((prev) => ({ ...prev, user: e.target.value }))}
             placeholder="請輸入您的不含檢查碼行編"
             className="border border-gray-300 rounded w-full px-3 py-2 text-sm focus:outline-none"
           />
@@ -76,7 +76,7 @@ const BookingModal = ({
                 //   ? bookingForm.room
                 //   : [];
                 const newRooms = [newMain];
-                setBookingForm((prev: any) => ({ ...prev, room: newRooms }));
+                setBookingForm((prev) => ({ ...prev, room: newRooms }));
               }}
               className="border border-gray-300 rounded w-full px-3 py-2 text-sm focus:outline-none"
             >
@@ -91,7 +91,7 @@ const BookingModal = ({
               className="text-red-600 text-sm mt-1"
               onClick={() => {
                 setShowMultiRoom((prev) => !prev);
-                setBookingForm((prev: any) => {
+                setBookingForm((prev) => {
                   const currentRooms = Array.isArray(prev.room) ? prev.room : [];
                   const mainRoom = currentRooms[0];
                   const newRooms = [mainRoom]; // 若想在取消時清掉複選就這樣寫
@@ -110,7 +110,7 @@ const BookingModal = ({
               type="number"
               value={bookingForm.participantsNum}
               onChange={(e) =>
-                setBookingForm((prev: any) => ({
+                setBookingForm((prev) => ({
                   ...prev,
                   participantsNum: e.target.valueAsNumber,
                 })
@@ -142,12 +142,12 @@ const BookingModal = ({
                     type="button"
                     disabled={isMain}
                     onClick={() =>
-                      setBookingForm((prev: any) => {
+                      setBookingForm((prev) => {
                         const currentRooms = Array.isArray(prev.room)
                           ? prev.room
                           : [];
                         const newRooms = isSelected
-                          ? currentRooms.filter((r: any) => r !== value)
+                          ? currentRooms.filter((r) => r !== value)
                           : [...currentRooms, value];
                         return { ...prev, room: newRooms };
                       })
@@ -174,7 +174,7 @@ const BookingModal = ({
             type="text"
             value={bookingForm.title}
             onChange={(e) =>
-              setBookingForm((prev: any) => ({ ...prev, title: e.target.value }))
+              setBookingForm((prev) => ({ ...prev, title: e.target.value }))
             }
             placeholder="請輸入會議主題"
             className="border border-gray-300 rounded w-full px-3 py-2 text-sm focus:outline-none"
@@ -188,7 +188,7 @@ const BookingModal = ({
             value={dayjs(bookingForm.selectedDate)}
             onChange={(newDate) => {
               if (newDate) {
-                setBookingForm((prev: any) => ({
+                setBookingForm((prev) => ({
                   ...prev,
                   selectedDate: newDate.format("YYYY-MM-DD"),
                 }));
@@ -214,7 +214,7 @@ const BookingModal = ({
               value={dayjs.tz(`1970-01-01T${bookingForm.startTime}`, "Asia/Taipei")}
               onChange={(newTime) => {
                 if (newTime) {
-                  setBookingForm((prev: any) => ({
+                  setBookingForm((prev) => ({
                     ...prev,
                     startTime: newTime.format("HH:mm"),
                   }));
@@ -242,7 +242,7 @@ const BookingModal = ({
               value={dayjs.tz(`1970-01-01T${bookingForm.endTime}`, "Asia/Taipei")}
               onChange={(newTime) => {
                 if (newTime) {
-                  setBookingForm((prev: any) => ({
+                  setBookingForm((prev) => ({
                     ...prev,
                     endTime: newTime.format("HH:mm"),
                   }));
@@ -271,7 +271,7 @@ const BookingModal = ({
             type="text"
             value={bookingForm.editPassword || ""}
             onChange={(e) =>
-              setBookingForm((prev: any) => ({
+              setBookingForm((prev) => ({
                 ...prev,
                 editPassword: e.target.value,
               }))

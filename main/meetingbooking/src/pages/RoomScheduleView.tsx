@@ -20,7 +20,15 @@ import EditMeetingModal from "../components/EditMeetingModal";
 import ConfirmationModal from "../components/ConfirmationModal";
 
 // Types
-import { Meeting, ViewMode, RoomKey } from "../types/common";
+import {
+  BookingForm,
+  BookingPayload,
+  BookingUpdatePayload,
+  ConfirmModalConfig,
+  Meeting,
+  RoomKey,
+  ViewMode,
+} from "../types/common";
 
 // 自訂 hook
 import useMeetingData from "../hooks/useMeetingData";
@@ -37,7 +45,7 @@ const RoomScheduleView = () => {
   const [viewStartDate, setViewStartDate] = useState(dayjs());
   const [editPassword, setEditPassword] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-  const [bookingForm, setBookingForm] = useState({
+  const [bookingForm, setBookingForm] = useState<BookingForm>({
     title: "",
     user: "",
     room: [selectedRoom],
@@ -53,7 +61,7 @@ const RoomScheduleView = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [modalProps, setModalProps] = useState({
+  const [modalProps, setModalProps] = useState<ConfirmModalConfig>({
     title: "",
     message: "",
     confirmLabel: "確定",
@@ -81,10 +89,17 @@ const RoomScheduleView = () => {
     setBookingForm((prev) => ({ ...prev, room: [selectedRoom] }));
   }, [selectedRoom]);
 
-  // 初始與房間切換時取得會議資料
+  // 日／週／月檢視都以 currentDate 決定顯示的會議；月檢視一次顯示 3 個月，前後再各留一週緩衝
+  const rangeFrom = currentDate.startOf("month").subtract(7, "day").toISOString();
+  const rangeTo = currentDate.add(2, "month").endOf("month").add(7, "day").toISOString();
+  // 新增／修改／刪除後遞增，觸發重新取得資料
+  const [refreshKey, setRefreshKey] = useState(0);
+  const reloadMeetings = () => setRefreshKey((key) => key + 1);
+
+  // 房間、查詢範圍改變或資料異動時取得會議資料
   useEffect(() => {
-    fetchEvents(selectedRoom);
-  }, [selectedRoom]);
+    fetchEvents(selectedRoom, { from: rangeFrom, to: rangeTo });
+  }, [selectedRoom, rangeFrom, rangeTo, refreshKey]);
 
   const updateBookingDate = (date: dayjs.Dayjs) => {
     setBookingForm((prev) => ({
@@ -169,7 +184,7 @@ async function handleSubmitBooking() {
   setErrorMessage("");
 
   // 準備預約資料
-  const bookingData = {
+  const bookingData: BookingPayload = {
     title,
     user,
     room,
@@ -225,12 +240,12 @@ function resetFormExceptUser() {
 }
 
 // 處理成功預約後的操作
-function handleSuccessfulBooking(bookingData:any) {
+function handleSuccessfulBooking(bookingData: BookingPayload) {
   showSuccessAlert();
-  fetchEvents(bookingData.room[0]);
+  reloadMeetings();
   setCurrentDate(dayjs(bookingData.date));
   setViewStartDate(dayjs(bookingData.date));
-  setSelectedRoom(bookingData.room[0]);
+  setSelectedRoom(bookingData.room[0] as RoomKey);
   setShowBookingModal(false);
   resetFormExceptUser();
 }
@@ -248,7 +263,7 @@ function handleSuccessfulBooking(bookingData:any) {
         throw new Error(`伺服器回應錯誤: ${res.status}`);
       }
       await res.json();
-      fetchEvents(selectedMeeting.room);
+      reloadMeetings();
       setSelectedMeeting(null);
       showDeleteAlert();
     } catch (error) {
@@ -257,7 +272,7 @@ function handleSuccessfulBooking(bookingData:any) {
   }
 
   // 修改會議
-  async function handleEdit(editData: any, meetingId: string, password: string) {
+  async function handleEdit(editData: BookingUpdatePayload, meetingId: string, password: string) {
     if (!meetingId) return;
     try {
       const res = await editMeeting(meetingId, password, editData);
@@ -273,11 +288,11 @@ function handleSuccessfulBooking(bookingData:any) {
         throw new Error(`伺服器回應錯誤: ${res.status}`);
       }
       await res.json();
-      fetchEvents(selectedMeeting!.room);
+      reloadMeetings();
       setEditPassword("");
       setCurrentDate(dayjs(editData.date));
       setViewStartDate(dayjs(editData.date));
-      setSelectedRoom(editData.room)
+      setSelectedRoom(editData.room as RoomKey);
       showUpdatedSuccessAlert();
       setSelectedMeeting(null);
     } catch (error) {
@@ -286,7 +301,7 @@ function handleSuccessfulBooking(bookingData:any) {
   }
 
   // 彈窗確認操作（例如刪除、修改前確認）
-  const handleConfirmAction = (action: () => void, modalConfig: any) => {
+  const handleConfirmAction = (action: () => void, modalConfig: ConfirmModalConfig) => {
     setModalProps(modalConfig);
     // 使用 confirmAction 來處理確認後動作
     setConfirmAction(() => action);
@@ -367,12 +382,11 @@ function handleSuccessfulBooking(bookingData:any) {
           onEditPassword={setEditPassword}
         />
       )}
-      {showEditModal && (
+      {showEditModal && selectedMeeting && (
         <EditMeetingModal
-          show={showEditModal}
           onClose={() => setShowEditModal(false)}
           MeetingInfo={selectedMeeting}
-          onSubmit={(editData: any, id: string, pw: string) =>
+          onSubmit={(editData, id, pw) =>
             handleConfirmAction(() => handleEdit(editData, id, pw), {
               title: "確定修改嗎？",
               message: "請確認修改內容。",

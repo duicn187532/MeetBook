@@ -95,11 +95,11 @@ const DayCalendar = ({
           >
             <div className="pl-2">
               <h3 className="text-xl font-medium">{meeting.title}</h3>
-              <p className="text-xl text-gray-600">預約者：{meeting.user.name || meeting.user.id}</p>
+              <p className="text-xl text-gray-600">預約者：{meeting.user.name}</p>
             </div>
 
             {/* 組別標籤 */}
-            {typeof meeting.user !== "string" && meeting.user.group?.label && (
+            {meeting.user.group?.label && (
               <div
                 className="absolute top-1 right-10 text-xs font-semibold px-2 py-0.5 rounded"
                 style={{

@@ -27,3 +27,6 @@ main/project/node_modules
 # 2. 編輯器或 IDE 設定檔
 # .vscode/
 # .idea/
+
+# 範例環境變數檔要進版控
+!**/.env*.example
