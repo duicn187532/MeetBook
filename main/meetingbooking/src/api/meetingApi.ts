@@ -18,14 +18,14 @@ dayjs.tz.setDefault("Asia/Taipei");
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// 網路錯誤或 5xx 時提示使用者；4xx 交給呼叫端處理
-async function apiFetch(endpoint: string, options?: RequestInit): Promise<Response> {
+// 網路錯誤或 5xx 時提示使用者（notify 為 false 時由呼叫端自行提示）；4xx 交給呼叫端處理
+async function apiFetch(endpoint: string, options?: RequestInit, notify = true): Promise<Response> {
   try {
     const res = await fetch(API_URL + endpoint, options);
     if (res.status >= 500) throw new Error(`API server error: ${res.status}`);
     return res;
   } catch (err) {
-    alert("伺服器掛了！請通知祐晨 #51164");
+    if (notify) alert("伺服器掛了！請通知祐晨 #51164");
     throw err;
   }
 }
@@ -33,7 +33,8 @@ async function apiFetch(endpoint: string, options?: RequestInit): Promise<Respon
 // 不指定會議室：取得區間內所有會議室的預約
 export async function fetchEventsApi(range: DateRange): Promise<Meeting[]> {
   const query = new URLSearchParams({ from: range.from, to: range.to });
-  const res = await apiFetch(`?${query}`);
+  // 失敗時由畫面以提示視窗告知
+  const res = await apiFetch(`?${query}`, undefined, false);
   if (!res.ok) throw new Error(`API 回應錯誤: ${res.status}`);
   const data: { data: ApiBooking[] } = await res.json();
   // 轉換後端資料

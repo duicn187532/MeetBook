@@ -16,7 +16,8 @@ export default function useMeetingData() {
   // fetching：取得預約資料中；loadedRange：目前 meetings 涵蓋的區間
   const [fetching, setFetching] = useState(false);
   const [loadedRange, setLoadedRange] = useState<DateRange | null>(null);
-  const [loadError, setLoadError] = useState(false);
+  // 載入失敗的次數；每次失敗遞增，畫面據此跳出提示
+  const [loadFailures, setLoadFailures] = useState(0);
   // 快速切換月份時，只採用最後一次請求的結果
   const latestRequest = useRef(0);
 
@@ -29,12 +30,11 @@ export default function useMeetingData() {
       if (requestId === latestRequest.current) {
         setMeetings(events);
         setLoadedRange(range);
-        setLoadError(false);
       }
     } catch (err) {
       console.error("取得會議資料失敗:", err);
       // 失敗時保留原本的資料，由畫面提示可能不完整
-      if (requestId === latestRequest.current) setLoadError(true);
+      if (requestId === latestRequest.current) setLoadFailures((n) => n + 1);
     } finally {
       if (requestId === latestRequest.current) setFetching(false);
     }
@@ -83,7 +83,7 @@ export default function useMeetingData() {
     loading,
     fetching,
     loadedRange,
-    loadError,
+    loadFailures,
     fetchEvents,
     submitBooking,
     cancelMeeting,
