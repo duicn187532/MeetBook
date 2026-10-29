@@ -21,6 +21,27 @@ jobs:
       - run: deno task check
       - run: deno task test
 
+  backend-integration:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main/project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      # 交易需要 replica set，因此以單節點 replica set 啟動 MongoDB
+      - name: Start MongoDB replica set
+        run: |
+          docker run -d --name mongo -p 27017:27017 mongo:7 --replSet rs0 --bind_ip_all
+          for i in $(seq 1 30); do docker exec mongo mongosh --quiet --eval "db.adminCommand('ping')" && break; sleep 1; done
+          docker exec mongo mongosh --quiet --eval "rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]})"
+          for i in $(seq 1 30); do docker exec mongo mongosh --quiet --eval "db.hello().isWritablePrimary" | grep -q true && break; sleep 1; done
+      - run: deno task test:integration
+        env:
+          MONGODB_TEST_URI: mongodb://localhost:27017/?replicaSet=rs0
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
