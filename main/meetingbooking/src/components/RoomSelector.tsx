@@ -36,7 +36,7 @@ const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: 
     <button
       onClick={() => setTimeout(onSelectToday, 200)}
       aria-current={todayMode ? "page" : undefined}
-      className={`w-20 ml-2 py-2 text-center rounded-t-xl ${todayMode ? "bg-[#3F3F3F] text-white" : "bg-gray-100 text-gray-700"}`}
+      className={`w-20 ml-2 py-2 text-center rounded-t-xl ${todayMode ? "bg-[#FDDCC0] text-[#C2410C] font-semibold" : "bg-gray-100 text-gray-700"}`}
     >
       Today
     </button>

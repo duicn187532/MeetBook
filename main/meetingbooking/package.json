@@ -1,7 +1,7 @@
 {
   "name": "meetingbooking",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.1.0",
   "type": "module",
   "homepage": "https://duicn187532.github.io/MeetBook",
   "scripts": {

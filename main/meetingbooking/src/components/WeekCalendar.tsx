@@ -106,7 +106,6 @@ const WeekCalendar = ({
                   const durationMinutes = eventEnd.diff(eventStart, "minute");
                   const topPercent = (startMinutes / TIMELINE_DURATION_MIN) * 100;
                   const heightPercent = (durationMinutes / TIMELINE_DURATION_MIN) * 100;
-                  const isShort = durationMinutes < 45;
                   return (
                     <div
                       key={meeting.id}
@@ -125,17 +124,15 @@ const WeekCalendar = ({
                         }, 400);
                       }}
                     >
-                      <div className={isShort ? "px-1 overflow-hidden h-full" : "p-1"}>
-                        <div className={`font-bold truncate ${isShort ? "text-[10px] leading-tight" : "text-xs"}`}>
+                      <div className="p-1">
+                        <div className="text-xs font-bold truncate">
                           {meeting.title}
                         </div>
-                        {!isShort && (
-                          <div
-                            className="text-xs text-[#444444] font-normal truncate"
-                          >
-                            {meeting.user.name}
-                          </div>
-                        )}
+                        <div
+                          className="text-xs text-[#444444] font-normal truncate"
+                        >
+                          {meeting.user.name}
+                        </div>
                         {/* <div className="text-xs text-[#444444] font-normal">
                           #{meeting.user.extension}
                         </div> */}
