@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { TimePicker, DatePicker } from "@mui/x-date-pickers";
-import { MeetingInfo } from "../types/common";
+import { BookingUpdatePayload, Meeting } from "../types/common";
 import { RefreshCw } from "lucide-react";
 
 // 初始化插件與設定預設台北時區
@@ -13,23 +13,18 @@ dayjs.tz.setDefault("Asia/Taipei");
 
 
 interface EditMeetingModalProps {
-  show: boolean;
   onClose: () => void;
-  MeetingInfo: MeetingInfo | null;
-  onSubmit: (updatedInfo: MeetingInfo, id: string, pw: string) => void;
+  MeetingInfo: Meeting;
+  onSubmit: (updatedInfo: BookingUpdatePayload, id: string, pw: string) => void;
 }
 
+// 只在有選取會議時渲染（由父元件判斷），因此所有 hooks 都能無條件呼叫
 const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
-  show,
   onClose,
   MeetingInfo,
   onSubmit,
-  // EditPassword,
 }) => {
-  if (!show || !MeetingInfo) return null;
-
   // 取出並初始化各欄位的 state
-  const id = MeetingInfo.id;
   const [user, setUser] = useState(MeetingInfo.user);
   const [room, setRoom] = useState(MeetingInfo.room);
   const [title, setTitle] = useState(MeetingInfo.title);
@@ -41,14 +36,12 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
 
   // 當 MeetingInfo 變更時，確保狀態同步更新
   useEffect(() => {
-    if (MeetingInfo) {
-      setUser(MeetingInfo.user);
-      setRoom(MeetingInfo.room);
-      setTitle(MeetingInfo.title);
-      setDate(MeetingInfo.date);
-      setStartTime(dayjs(MeetingInfo.startTime).tz("Asia/Taipei"));
-      setEndTime(dayjs(MeetingInfo.endTime).tz("Asia/Taipei"));
-    }
+    setUser(MeetingInfo.user);
+    setRoom(MeetingInfo.room);
+    setTitle(MeetingInfo.title);
+    setDate(MeetingInfo.date);
+    setStartTime(dayjs(MeetingInfo.startTime).tz("Asia/Taipei"));
+    setEndTime(dayjs(MeetingInfo.endTime).tz("Asia/Taipei"));
   }, [MeetingInfo]);
 
   useEffect(() => {
@@ -72,9 +65,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
   };
 
   const handleSubmit = () => {
-    const updatedInfo = {
-      id,
-      user,
+    const updatedInfo: BookingUpdatePayload = {
       title,
       participantsNum,
       room,
@@ -106,7 +97,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
           <label className="block font-semibold text-gray-600 mb-1">預約者</label>
           <input
             className="w-full border rounded px-2 py-1 text-sm"
-            value={user.name || user.id}
+            value={user.name}
             placeholder="請輸入您的姓名與分機"
             readOnly
           />

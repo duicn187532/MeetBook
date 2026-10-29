@@ -1,29 +1,39 @@
 // hooks/useMeetingData.ts
-import { useState } from "react";
-import { Meeting, BookingApiResponse } from "../types/common";
+import { useRef, useState } from "react";
+import {
+  BookingApiResponse,
+  BookingPayload,
+  BookingUpdatePayload,
+  DateRange,
+  Meeting,
+} from "../types/common";
 import { fetchEventsApi, submitBookingApi, cancelMeetingApi, editMeetingApi } from "../api/meetingApi";
 
 export default function useMeetingData() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // 快速切換會議室或月份時，只採用最後一次請求的結果
+  const latestRequest = useRef(0);
 
-  async function fetchEvents(room: string) {
+  async function fetchEvents(room: string, range: DateRange) {
+    const requestId = ++latestRequest.current;
     setLoading(true);
     try {
-      const events = await fetchEventsApi(room);
-      setMeetings(events);
+      const events = await fetchEventsApi(room, range);
+      if (requestId === latestRequest.current) setMeetings(events);
     } catch (err) {
       console.error("取得會議資料失敗:", err);
-      setError("取得會議資料失敗");
-      setMeetings([]);
+      if (requestId === latestRequest.current) {
+        setError("取得會議資料失敗");
+        setMeetings([]);
+      }
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
   }
 
-  
-  async function submitBooking(bookingData: any): Promise<BookingApiResponse> {
+  async function submitBooking(bookingData: BookingPayload): Promise<BookingApiResponse> {
     setLoading(true);
     try {
       const response = await submitBookingApi(bookingData);
@@ -48,7 +58,7 @@ export default function useMeetingData() {
     }
   }
 
-  async function editMeeting(meetingId: string, editPassword: string, editData: any): Promise<Response> {
+  async function editMeeting(meetingId: string, editPassword: string, editData: BookingUpdatePayload): Promise<Response> {
     setLoading(true);
     try {
       const response = await editMeetingApi(meetingId, editPassword, editData);

@@ -5,7 +5,7 @@ interface RoomSelectorProps {
   onSelectRoom: (room: RoomKey) => void;
 }
 
-const roomStyle: Record<RoomKey, any> = {
+const roomStyle: Record<RoomKey, string> = {
   A101: "bg-[#60AAFF] text-white",
   A102: "bg-[#FF3F3F] text-white",
   A103: "bg-[#17C2B6] text-white",

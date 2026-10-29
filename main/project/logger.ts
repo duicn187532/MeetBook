@@ -1,71 +1,49 @@
-let sourceToken = "";
-let api_key = "";
-
-// 使用 Logflare 作為 logger
-const env = Deno.env.get("ENV") || "development";
-
-if (env === "production") {
-  // 直接使用部署環境中的 Secrets
-  sourceToken = Deno.env.get("LOGFLARE_SOURCE_TOKEN") || "";
-  api_key = Deno.env.get("LOGFLARE_API_KEY") || "";
-} else {
-  // 本地開發時載入 .env 檔案
-  const { load } = await import("https://deno.land/std@0.177.0/dotenv/mod.ts");
-  const envVars = await load({ envPath: ".env.development" });
-  sourceToken = envVars.LOGFLARE_SOURCE_TOKEN || "";
-  api_key = envVars.LOGFLARE_API_KEY || "";
-}
-
-if (!sourceToken) {
-  console.error("LOGFLARE_SOURCE_TOKEN is not set");
-  Deno.exit(1);
-}
-if (!api_key) {
-  console.error("LOGFLARE_API_KEY is not set")
-}
-const logflareUrl = `https://api.logflare.app/logs/json?api_key=${api_key}&source=${sourceToken}`;
+// 結構化 log：輸出 JSON 到 stdout / stderr，Deno Deploy 會自動收集並可在 Logs 頁面查詢
 
 // 定義可用的 log 等級
 export type LogLevel = "debug" | "info" | "warning" | "error";
 
-// 定義 log 的資料結構
-export interface LogEntry {
-  timestamp: Date;
-  level: LogLevel;
-  message: string;
-  service: string;
-  requestId?: string;
-  userId?: string;
-  context?: Record<string, any>;
-  errorStack?: string;
+const LEVEL_ORDER: Record<LogLevel, number> = {
+  debug: 10,
+  info: 20,
+  warning: 30,
+  error: 40,
+};
+
+// 以 LOG_LEVEL 環境變數控制最低輸出等級，預設 info（不輸出 debug）
+const envLevel = Deno.env.get("LOG_LEVEL") as LogLevel | undefined;
+const minLevel: LogLevel = envLevel && envLevel in LEVEL_ORDER ? envLevel : "info";
+
+// 這些欄位不論出現在哪一層都會被遮蔽，避免密碼進入 log
+const SENSITIVE_KEYS = new Set(["editPassword", "password"]);
+
+export function redact(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(redact);
+  if (value && typeof value === "object" && !(value instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, v]) => [key, SENSITIVE_KEYS.has(key) ? "***" : redact(v)]),
+    );
+  }
+  return value;
 }
 
-// 共用的 log 寫入函式
-export async function logEvent(
+// 共用的 log 寫入函式（同步、不會丟出例外）
+export function logEvent(
   level: LogLevel,
   message: string,
-  context?: Record<string, any>
-): Promise<void> {
-  const logEntry: LogEntry = {
-    timestamp: new Date(),
+  context?: Record<string, unknown>,
+): void {
+  if (LEVEL_ORDER[level] < LEVEL_ORDER[minLevel]) return;
+
+  const line = JSON.stringify({
+    timestamp: new Date().toISOString(),
     level,
     message,
     service: "BookingService",
-    context,
-  };
+    ...(context ? { context: redact(context) } : {}),
+  });
 
-  try {
-    const response = await fetch(logflareUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ logs: [logEntry] }),
-    });
-
-    if (!response.ok) {
-      console.error("Failed to send log:", await response.text());
-    } 
-  }catch (error) {
-    // log 寫入失敗不阻斷主要流程，只印出錯誤訊息
-    console.error("Failed to write log:", error);
-  }
+  if (level === "error") console.error(line);
+  else if (level === "warning") console.warn(line);
+  else console.log(line);
 }

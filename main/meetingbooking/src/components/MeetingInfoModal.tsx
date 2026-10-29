@@ -2,16 +2,16 @@ import { Info } from "lucide-react";
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import { MeetingInfo, roomNames, RoomKey } from "../types/common";
+import { Meeting, roomNames, RoomKey } from "../types/common";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 
 interface MeetingInfoModalProps {
   show: boolean;                // 控制此 Modal 是否顯示
   onClose: () => void;          // 點擊背景或取消按鈕後關閉
-  meetingInfo: MeetingInfo | null;  // 傳入要顯示的會議資料
+  meetingInfo: Meeting | null;  // 傳入要顯示的會議資料
   onCancel: () => void;         // 點擊「刪除」時執行的回呼函式
-  onOpenEditModal: (info: any) => void; // <--- 新增這個 callback
+  onOpenEditModal: (info: Meeting) => void;
   onEditPassword: (value: string) => void;
 }
 
@@ -62,7 +62,7 @@ const MeetingInfoModal = ({
                 className="w-full text-left rounded px-3 py-2 text-sm font-normal relative flex justify-between items-center"
               >
                 <div className="flex gap-2 items-center">
-                  <div>{meetingInfo.user.name || meetingInfo.user.id}</div>
+                  <div>{meetingInfo.user.name}</div>
                   <div className="text-gray-500 text-sm">#{meetingInfo.user.extension || "無"}</div>
                 </div>
                 <div className="text-gray-500">
