@@ -1,5 +1,9 @@
 // src/components/Equipment.tsx
 import { Users, Monitor, Square, Tv } from "lucide-react";
+// 以 ?inline 打包進主程式：進入網站時就一起載好，切換會議室或分頁都不會再重新下載
+import a101 from "../assets/rooms/a101.jpeg?inline";
+import a102 from "../assets/rooms/a102.jpeg?inline";
+import a103 from "../assets/rooms/a103.jpeg?inline";
 
 interface EquipmentProps {
   selectedRoom: string;
@@ -10,9 +14,9 @@ interface EquipmentProps {
 const equipmentMapping: { 
   [room: string]: { seats: number; hasProjector: boolean; hasWhiteboard: boolean; hasTv:boolean; imageUrl: string } 
 } = {
-  A101: { seats: 10, hasProjector: true, hasWhiteboard: true, hasTv: false, imageUrl: "a101.jpeg" },
-  A102: { seats: 15, hasProjector: true, hasWhiteboard: true, hasTv: false,imageUrl: "a102.jpeg" },
-  A103: { seats: 20, hasProjector: false, hasWhiteboard: true, hasTv: true,imageUrl: "a103.jpeg" },
+  A101: { seats: 10, hasProjector: true, hasWhiteboard: true, hasTv: false, imageUrl: a101 },
+  A102: { seats: 15, hasProjector: true, hasWhiteboard: true, hasTv: false,imageUrl: a102 },
+  A103: { seats: 20, hasProjector: false, hasWhiteboard: true, hasTv: true,imageUrl: a103 },
 };
 
 const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
@@ -21,7 +25,7 @@ const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
     seats: 20, 
     hasProjector: false, 
     hasWhiteboard: false, 
-    hashTv: false,
+    hasTv: false,
     imageUrl: "" 
   };
 
@@ -35,7 +39,10 @@ const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {
         <div className="w-20 h-20 mr-4 flex-shrink-0">
           <img 
             src={imageUrlToUse} 
-            alt="Room Image" 
+            alt="會議室照片"
+            width={80}
+            height={80}
+            decoding="async"
             className="w-full h-full object-cover rounded-xl"
           />
         </div>

@@ -118,8 +118,9 @@ cd main/meetingbooking
 cp .env.example .env     # 設定 VITE_API_URL（結尾要有 /）
 npm ci
 npm run dev
-npm run deploy           # build 後發佈到 gh-pages 分支
 ```
+
+**部署**：合併到 `main` 後，GitHub Actions（`.github/workflows/deploy-frontend.yml`）會自動建置並發佈到 gh-pages，不需要在電腦上執行任何指令；也可以在 GitHub 的 Actions 頁面手動執行「Deploy frontend」。後端網址預設為正式環境，要換網址時到 repo 的 Settings → Secrets and variables → Actions → Variables 設定 `VITE_API_URL`。需要時仍可在本機用 `npm run deploy` 手動發佈。
 
 前端一次取得所有會議室約 5 個月（前 1 個月 ~ 後 3 個月）的預約，切換會議室不需重新讀取；只有目前畫面需要的區間（月檢視 3 個月、日／週檢視前後再加 3 週）超出已讀取的範圍時，才以目前日期重新讀取。再點一次目前的會議室分頁（或 Today）會手動重新讀取。手機左右滑動換頁時畫面會跟著手指移動（`src/hooks/useSwipe.ts`）。衝突時的替代建議（其他有空的會議室、當天最近的空檔）以已載入的資料推算，僅供參考，實際仍以後端檢查為準。
 
