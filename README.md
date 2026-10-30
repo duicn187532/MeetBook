@@ -64,6 +64,15 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 3. LINE Developers → Messaging API → Webhook URL 設為 `https://meetingbooking.duicn187532.deno.net/line/webhook`，按 Verify，並開啟 Use webhook。舊伺服器的 webhook 會被取代。
 4. LINE Official Account Manager → 關閉「自動回應訊息」（否則會多一則預設回覆）；圖文選單的按鈕設為傳送文字 `快速查詢`／`快速預約`。
 
+### 管理後台（/admin）
+
+只給管理員用的手機網頁，入口是 `https://<後端網域>/admin`，前端網站上沒有任何連結。
+
+- **啟用方式**：在 Deno Deploy 的環境變數加上 `ADMIN_PASSWORD`（至少 8 個字元）。沒設定或太短時，所有 `/admin` 路徑一律回 404，一般使用者完全看不到。
+- **使用統計**：預約數、使用時數、整體使用率、取消率、各會議室使用率、平日熱門時段、各部門使用時數、預約最多的人。使用率只計算平日 08:45–18:15 的可預約時段（未扣除國定假日）。
+- **使用者名單**：搜尋、新增、修改姓名／分機／部門／組別、停用或重新啟用。停用的人無法再從網站或 LINE 預約，過去的預約紀錄保留；修改資料不會改動舊預約上記錄的姓名與部門。
+- **安全性**：登入後以 HttpOnly + SameSite=Strict cookie 維持 8 小時；同一來源 15 分鐘內失敗 5 次即暫停，全部來源合計 30 次也會暫停；修改資料的請求需帶 `X-Admin` 標頭；更換 `ADMIN_PASSWORD` 會讓所有已登入的裝置立即登出。
+
 ### 測試
 
 ```bash

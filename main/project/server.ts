@@ -5,6 +5,7 @@ import { addBooking, getActiveBooked, updateBooking } from "./controller.ts";
 import { dbConfigured, ensureConnected, ensureIndexes, pingDb } from "./db.ts";
 import { logEvent } from "./logger.ts";
 import { lineWebhook } from "./line_webhook.ts";
+import { adminGuard, adminRouter } from "./admin.ts";
 
 const app = new Application();
 const router = new Router();
@@ -72,6 +73,10 @@ router.patch("/api/bookings/:id/:editPassword?", updateBooking);
 
 // LINE 官方帳號 webhook（在 LINE Developers 設定為 https://<網域>/line/webhook）
 router.post("/line/webhook", lineWebhook);
+
+// 管理後台：未設定 ADMIN_PASSWORD 時 /admin 一律 404
+app.use(adminGuard);
+app.use(adminRouter.routes());
 
 app.use(router.routes());
 app.use(router.allowedMethods());

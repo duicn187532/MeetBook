@@ -412,7 +412,10 @@ export { addBooking, getActiveBooked, updateBooking };
 
 // ===== 輔助函式 =====
 
-// 使用者驗證函式（保持不變）
+// 管理後台停用的使用者不能再預約
+const ACTIVE_USER = { disabled: { $ne: true } } as const;
+
+// 使用者驗證函式
 async function findUserStrict(userIdRaw: string): Promise<UserDoc | null> {
   const numberMatches = userIdRaw.match(/\d{4,6}/g);
   const checked = new Set<string>();
@@ -424,7 +427,7 @@ async function findUserStrict(userIdRaw: string): Promise<UserDoc | null> {
   for (const num of numberMatches) {
     const padded = num.padStart(6, "0");
     if (!checked.has(padded)) {
-      matchedUser = await users.findOne({ id: padded });
+      matchedUser = await users.findOne({ id: padded, ...ACTIVE_USER });
       if (matchedUser) return matchedUser;
       checked.add(padded);
     }
@@ -432,7 +435,7 @@ async function findUserStrict(userIdRaw: string): Promise<UserDoc | null> {
     if (num.length === 5) {
       const trimmed = num.slice(0, 4).padStart(6, "0");
       if (!checked.has(trimmed)) {
-        matchedUser = await users.findOne({ id: trimmed });
+        matchedUser = await users.findOne({ id: trimmed, ...ACTIVE_USER });
         if (matchedUser) return matchedUser;
         checked.add(trimmed);
       }
@@ -441,7 +444,7 @@ async function findUserStrict(userIdRaw: string): Promise<UserDoc | null> {
 
   for (const num of numberMatches) {
     if (!checked.has(num)) {
-      matchedUser = await users.findOne({ extension: num });
+      matchedUser = await users.findOne({ extension: num, ...ACTIVE_USER });
       if (matchedUser) return matchedUser;
       checked.add(num);
     }
