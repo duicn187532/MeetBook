@@ -21,7 +21,12 @@ export interface UserDoc {
   extension?: string;
   department?: LabelCode;
   group?: LabelCode;
-  // 管理後台停用的使用者無法再預約（舊資料沒有此欄位，視為啟用）
+  email?: string | null;
+  lineId?: string | null;
+  role?: LabelCode;
+  // false 代表停用，無法預約；舊資料沒有此欄位，視為啟用
+  status?: boolean | null;
+  // 管理後台早期版本寫入的停用標記，讀取時一併視為停用，修改時會改寫成 status
   disabled?: boolean;
   createdTime?: Date;
   updatedTime?: Date;

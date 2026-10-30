@@ -17,6 +17,16 @@ export const MAX_STATS_DAYS = 400;
 
 // ===== 使用者 =====
 
+// 停用：status 為 false（既有欄位），或早期管理後台寫入的 disabled: true
+export function isUserDisabled(u: { status?: boolean | null; disabled?: boolean }): boolean {
+  return u.status === false || u.disabled === true;
+}
+
+// MongoDB 查詢條件：只找啟用中的使用者
+export const ACTIVE_USER_FILTER = { status: { $ne: false }, disabled: { $ne: true } } as const;
+
+export const DEFAULT_ROLE = { code: "user", label: "使用者" };
+
 export interface UserInput {
   id?: unknown;
   name?: unknown;
