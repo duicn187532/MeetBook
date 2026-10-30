@@ -116,7 +116,7 @@ export function availabilityText(slots: TodaySlot[], date: string, now: number):
 
   const parts = usable.slice(0, 3).map((w) => {
     if (w.start === from && w.end === dayEnd) return "全天";
-    if (w.start === from) return `${taipeiHHmm(w.end)} 前`;
+    if (w.start === from) return `${taipeiHHmm(w.end)}前`;
     if (w.end === dayEnd) return `${taipeiHHmm(w.start)} 後`;
     return `${taipeiHHmm(w.start)}–${taipeiHHmm(w.end)}`;
   });

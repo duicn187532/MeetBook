@@ -15,26 +15,27 @@ const roomStyle: Record<RoomKey, string> = {
 
 const rooms: RoomKey[] = ["A101", "A102", "A103"];
 
+// 四個分頁等寬、滿版，下緣一條灰線
 const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: RoomSelectorProps) => (
-  <div className="font-live flex gap-1 bg-white mt-2 px-4 border-b border-[#EFE9D2]">
+  <div className="font-live flex gap-px bg-white mt-3 border-b border-[#B3B3B3]">
     {/* LIVE：一次查看三間會議室某一天的狀況 */}
     <button
       onClick={() => setTimeout(onSelectToday, 200)}
       aria-current={todayMode ? "page" : undefined}
-      className={`flex-1 py-2.5 rounded-t-xl inline-flex items-center justify-center gap-1.5 text-[15px] font-bold tracking-wider ${
-        todayMode ? "bg-[#F5D46B] text-white [text-shadow:0_1px_1px_rgba(150,110,0,0.25)]" : "bg-gray-100 text-gray-700"
+      className={`flex-1 h-[43px] rounded-t-[12px] inline-flex items-center justify-center gap-2 text-[15px] font-bold tracking-wide ${
+        todayMode ? "bg-[#FFC31D] text-white" : "bg-[#EAEAEA] text-[#222222]"
       }`}
     >
       <span className="w-1.5 h-1.5 rounded-full live-dot" aria-hidden="true" />
       LIVE
     </button>
     {rooms.map((room) => {
-      const selectedClasses = !todayMode && selectedRoom === room ? roomStyle[room] : "bg-gray-100 text-gray-700";
+      const selectedClasses = !todayMode && selectedRoom === room ? roomStyle[room] : "bg-[#EAEAEA] text-[#222222]";
       return (
         <button
           key={room}
           onClick={() => setTimeout(() => onSelectRoom(room), 200)}
-          className={`flex-1 py-2.5 text-center text-[15px] font-medium rounded-t-xl ${selectedClasses}`}
+          className={`flex-1 h-[43px] text-center text-[15px] rounded-t-[12px] ${selectedClasses}`}
         >
           {roomNames[room]}
         </button>
