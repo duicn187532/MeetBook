@@ -19,3 +19,6 @@ export const LINE_CHANNEL_SECRET = Deno.env.get("LINE_CHANNEL_SECRET") || "";
 export const LINE_CHANNEL_ACCESS_TOKEN = Deno.env.get("LINE_CHANNEL_ACCESS_TOKEN") || "";
 // 只在本地測試時改成假的 LINE API
 export const LINE_API_BASE = Deno.env.get("LINE_API_BASE") || "https://api.line.me";
+
+// 管理後台（/admin）登入密碼；未設定或少於 12 個字元時後台不啟用，/admin 一律回 404
+export const ADMIN_PASSWORD = Deno.env.get("ADMIN_PASSWORD") || "";

@@ -2,7 +2,7 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --allow-net --allow-read --allow-env --allow-sys server.ts",
-    "check": "deno check server.ts booking_rules_test.ts line_bot_test.ts logger_test.ts conflict_integration_test.ts scripts/migrate_string_times.ts scripts/migrate_string_times_test.ts",
+    "check": "deno check server.ts admin_rules_test.ts admin_auth_test.ts booking_rules_test.ts line_bot_test.ts logger_test.ts conflict_integration_test.ts scripts/migrate_string_times.ts scripts/migrate_string_times_test.ts",
     "test": "deno test --allow-env --ignore=conflict_integration_test.ts",
     "test:integration": "deno test --allow-env --allow-net --allow-read --allow-sys conflict_integration_test.ts",
     "migrate:times": "deno run --allow-net --allow-read --allow-env --allow-sys --allow-write=. scripts/migrate_string_times.ts"

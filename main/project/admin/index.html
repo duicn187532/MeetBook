@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f6f6f4">
+<title>MeetBook 管理後台</title>
+<style nonce="__NONCE__">
+:root {
+  color-scheme: light;
+  --bg: #f6f6f4;
+  --surface: #ffffff;
+  --surface-2: #f0efec;
+  --line: #e4e3df;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #7a7974;
+  --accent: #2a78d6;
+  --accent-ink: #ffffff;
+  --accent-soft: #e6f0fc;
+  --danger: #d03b3b;
+  --danger-soft: #fbeaea;
+  --good: #0a7d0a;
+  --heat-0: #f0efec;
+  --heat-1: #cde2fb;
+  --heat-2: #9ec5f4;
+  --heat-3: #6da7ec;
+  --heat-4: #3987e5;
+  --heat-5: #256abf;
+  --heat-6: #184f95;
+  --heat-7: #0d366b;
+  --shadow: 0 1px 2px rgb(0 0 0 / 6%), 0 4px 16px rgb(0 0 0 / 6%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211;
+    --surface: #1a1a19;
+    --surface-2: #26261f;
+    --line: #33332e;
+    --text: #f0efec;
+    --text-2: #c3c2b7;
+    --text-3: #93928a;
+    --accent: #3987e5;
+    --accent-soft: #1b2a3d;
+    --danger: #e66767;
+    --danger-soft: #3a1f1f;
+    --good: #3fbf3f;
+    --heat-0: #26261f;
+    --heat-1: #0d366b;
+    --heat-2: #104281;
+    --heat-3: #184f95;
+    --heat-4: #256abf;
+    --heat-5: #3987e5;
+    --heat-6: #6da7ec;
+    --heat-7: #b7d3f6;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ===== 登入 ===== */
+.login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 28px 20px 24px;
+  box-shadow: var(--shadow);
+}
+.login-card h1 { font-size: 20px; margin: 0 0 4px; }
+.login-card p { margin: 0 0 20px; color: var(--text-2); font-size: 14px; }
+
+/* ===== 版面 ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 { font-size: 17px; margin: 0; }
+.topbar small { display: block; color: var(--text-3); font-size: 12px; font-weight: 400; }
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px 16px calc(96px + env(safe-area-inset-bottom));
+}
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tabbar button {
+  border: 0;
+  background: none;
+  padding: 10px 0 12px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.tabbar button svg { width: 24px; height: 24px; }
+.tabbar button[aria-selected="true"] { color: var(--accent); font-weight: 600; }
+
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card h2 { font-size: 15px; margin: 0 0 2px; }
+.card .sub { color: var(--text-3); font-size: 12px; margin: 0 0 14px; }
+
+/* ===== 控制項 ===== */
+.field { display: grid; gap: 6px; margin-bottom: 14px; align-content: start; }
+.field label { font-size: 13px; color: var(--text-2); font-weight: 600; }
+.field .hint { font-size: 12px; color: var(--text-3); }
+.input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 16px; /* 16px 以上 iOS 才不會自動放大 */
+  outline: none;
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input[readonly] { background: var(--surface-2); color: var(--text-2); }
+.btn {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-weight: 600;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-danger { color: var(--danger); }
+.btn-block { width: 100%; }
+.btn:disabled { opacity: .55; }
+.btn-ghost { border: 0; background: none; color: var(--text-2); min-height: 40px; padding: 0 8px; font-weight: 500; }
+
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -16px 12px;
+  padding: 2px 16px;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text-2);
+}
+.chip[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg); font-weight: 600; }
+.custom-range { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-bottom: 12px; }
+.custom-range span { color: var(--text-3); }
+
+/* ===== 統計 ===== */
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.kpi { background: var(--surface); border-radius: 16px; padding: 14px; box-shadow: var(--shadow); }
+.kpi .label { font-size: 12px; color: var(--text-2); }
+.kpi .value { font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; margin-top: 2px; }
+.kpi .value small { font-size: 14px; font-weight: 600; color: var(--text-2); margin-left: 2px; }
+.kpi .note { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--text-2); margin: -2px 2px 14px; }
+.facts b { color: var(--text); }
+
+.bars { display: grid; gap: 12px; }
+.bar-row { display: grid; gap: 5px; }
+.bar-head { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.bar-head .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-head .val { color: var(--text-2); white-space: nowrap; }
+.bar-head .val b { color: var(--text); }
+.track { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.fill { height: 100%; background: var(--accent); border-radius: 0 5px 5px 0; min-width: 2px; }
+
+.heat { display: grid; grid-template-columns: 22px repeat(11, 1fr); gap: 3px; }
+.heat .h-col { font-size: 10px; color: var(--text-3); text-align: center; }
+.heat .h-row { font-size: 12px; color: var(--text-2); display: grid; place-items: center; }
+.heat button.cell {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 5px;
+  padding: 0;
+  background: var(--heat-0);
+}
+.heat button.cell[aria-pressed="true"] { outline: 2px solid var(--text); outline-offset: 1px; }
+.heat-info {
+  min-height: 40px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.heat-info b { color: var(--text); }
+.legend { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--text-3); }
+.legend .ramp { display: flex; gap: 2px; }
+.legend .ramp i { width: 16px; height: 10px; border-radius: 2px; display: block; }
+
+.rank { list-style: none; margin: 0; padding: 0; }
+.rank li { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.rank li:first-child { border-top: 0; }
+.rank .pos { color: var(--text-3); font-size: 13px; text-align: center; }
+.rank .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .amt { color: var(--text-2); font-size: 13px; text-align: right; }
+.rank .amt b { color: var(--text); }
+.empty { text-align: center; color: var(--text-3); padding: 28px 8px; font-size: 14px; }
+
+/* ===== 使用者 ===== */
+.search { position: relative; margin-bottom: 10px; }
+.search svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 18px; height: 18px; color: var(--text-3); }
+.search .input { padding-left: 38px; }
+.list-meta { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-3); margin: 0 2px 8px; }
+.users { display: grid; gap: 8px; }
+.user {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+.user .top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.user .nm { font-weight: 600; font-size: 16px; }
+.user .ids { font-size: 13px; color: var(--text-2); }
+.user .org { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+.user.off .nm, .user.off .ids, .user.off .org { color: var(--text-3); }
+.badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--danger-soft); color: var(--danger); }
+.chev { width: 18px; height: 18px; color: var(--text-3); }
+.fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 11;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 6px 20px rgb(42 120 214 / 35%);
+  display: grid;
+  place-items: center;
+}
+.fab svg { width: 26px; height: 26px; }
+
+/* ===== 底部表單 ===== */
+.sheet-backdrop { position: fixed; inset: 0; z-index: 20; background: rgb(0 0 0 / 40%); }
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
+  max-width: 640px;
+  margin: 0 auto;
+}
+.sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 4px auto 12px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.sheet-head h2 { font-size: 18px; margin: 0; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  margin-bottom: 16px;
+}
+.switch-row .t { font-weight: 600; font-size: 15px; }
+.switch-row .d { font-size: 12px; color: var(--text-3); }
+.switch { position: relative; width: 52px; height: 32px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 16px; background: var(--line); transition: background .15s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 25%); transition: transform .15s; }
+.switch input:checked + span { background: var(--danger); }
+.switch input:checked + span::after { transform: translateX(20px); }
+.switch input:focus-visible + span { box-shadow: 0 0 0 3px var(--accent-soft); }
+.form-error { color: var(--danger); font-size: 14px; margin: -4px 0 12px; min-height: 0; }
+.actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  translate: -50% 0;
+  z-index: 30;
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  box-shadow: var(--shadow);
+}
+.toast.err { background: var(--danger); color: #fff; }
+.loading { text-align: center; color: var(--text-3); padding: 40px 0; font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- 登入 -->
+<section class="login" id="login" hidden>
+  <form class="login-card" id="login-form" novalidate>
+    <h1>MeetBook 管理後台</h1>
+    <p>請輸入管理密碼</p>
+    <div class="field">
+      <label for="pw">管理密碼</label>
+      <input class="input" id="pw" type="password" autocomplete="current-password" required>
+    </div>
+    <p class="form-error" id="login-error" role="alert"></p>
+    <button class="btn btn-primary btn-block" type="submit" id="login-btn">登入</button>
+  </form>
+</section>
+
+<!-- 主畫面 -->
+<div id="app" hidden>
+  <header class="topbar">
+    <h1 id="page-title">使用統計<small id="page-sub"></small></h1>
+    <button class="btn-ghost" id="logout" type="button">登出</button>
+  </header>
+
+  <main>
+    <!-- 統計 -->
+    <section id="view-stats">
+      <div class="chips" role="group" aria-label="統計區間" id="periods"></div>
+      <div class="custom-range" id="custom-range" hidden>
+        <input class="input" type="date" id="from" aria-label="開始日期">
+        <span>至</span>
+        <input class="input" type="date" id="to" aria-label="結束日期">
+      </div>
+      <div id="stats-body"><div class="loading">載入中…</div></div>
+    </section>
+
+    <!-- 使用者 -->
+    <section id="view-users" hidden>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="input" id="q" type="search" placeholder="搜尋姓名、行編、分機、部門" autocomplete="off" enterkeyhint="search">
+      </div>
+      <div class="chips" role="group" aria-label="狀態篩選" id="user-filters"></div>
+      <div class="list-meta"><span id="user-count"></span></div>
+      <div class="users" id="users"><div class="loading">載入中…</div></div>
+    </section>
+  </main>
+
+  <button class="fab" id="add-user" type="button" aria-label="新增使用者" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <nav class="tabbar" role="tablist">
+    <button type="button" role="tab" data-tab="stats" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
+      使用統計
+    </button>
+    <button type="button" role="tab" data-tab="users" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.7.8 2.8 2.6 3 5.2"/></svg>
+      使用者名單
+    </button>
+  </nav>
+</div>
+
+<!-- 使用者表單 -->
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" novalidate hidden>
+  <div class="grab"></div>
+  <div class="sheet-head">
+    <h2 id="sheet-title">編輯使用者</h2>
+    <button class="btn-ghost" type="button" id="sheet-close">取消</button>
+  </div>
+  <div class="field">
+    <label for="f-name">姓名</label>
+    <input class="input" id="f-name" maxlength="30" autocomplete="off" required>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="f-id">行編</label>
+      <input class="input num" id="f-id" inputmode="numeric" maxlength="6" autocomplete="off">
+      <span class="hint" id="f-id-hint">不含檢查碼</span>
+    </div>
+    <div class="field">
+      <label for="f-ext">分機</label>
+      <input class="input num" id="f-ext" inputmode="numeric" maxlength="6" autocomplete="off">
+    </div>
+  </div>
+  <div class="field">
+    <label for="f-dept">部門</label>
+    <input class="input" id="f-dept" list="dept-list" maxlength="30" autocomplete="off">
+    <datalist id="dept-list"></datalist>
+  </div>
+  <div class="field">
+    <label for="f-group">組別</label>
+    <input class="input" id="f-group" list="group-list" maxlength="30" autocomplete="off">
+    <datalist id="group-list"></datalist>
+  </div>
+  <div class="switch-row">
+    <div>
+      <div class="t">停用</div>
+      <div class="d">停用後無法再預約，過去的預約紀錄保留</div>
+    </div>
+    <label class="switch"><input type="checkbox" id="f-disabled" aria-label="停用這位使用者"><span></span></label>
+  </div>
+  <p class="form-error" id="form-error" role="alert"></p>
+  <div class="actions">
+    <button class="btn" type="button" id="sheet-cancel">取消</button>
+    <button class="btn btn-primary" type="submit" id="sheet-save">儲存</button>
+  </div>
+</form>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script nonce="__NONCE__">
+"use strict";
+const $ = (id) => document.getElementById(id);
+
+// 建立元素；只用 textContent 放文字，不用 innerHTML
+function h(tag, props, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of children.flat()) if (c !== null && c !== undefined && c !== false) el.append(c);
+  return el;
+}
+
+// ===== API =====
+async function api(path, options = {}) {
+  const res = await fetch(`/admin/api/${path}`, {
+    ...options,
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", "X-Admin": "1", ...(options.headers || {}) },
+  });
+  let body = {};
+  try { body = await res.json(); } catch { /* 空回應 */ }
+  if (res.status === 401 && path !== "login") {
+    showLogin();
+    throw new Error(body.error || "請重新登入");
+  }
+  if (!res.ok) throw new Error(body.error || `伺服器錯誤（${res.status}）`);
+  return body;
+}
+
+let toastTimer;
+function toast(message, isError = false) {
+  const el = $("toast");
+  el.textContent = message;
+  el.className = isError ? "toast err" : "toast";
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (el.hidden = true), 2800);
+}
+
+// ===== 登入 =====
+function showLogin() {
+  $("app").hidden = true;
+  closeSheet();
+  $("login").hidden = false;
+  $("pw").value = "";
+  setTimeout(() => $("pw").focus(), 50);
+}
+
+function showApp() {
+  $("login").hidden = true;
+  $("app").hidden = false;
+  selectTab(currentTab);
+}
+
+$("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("login-btn");
+  $("login-error").textContent = "";
+  btn.disabled = true;
+  btn.textContent = "登入中…";
+  try {
+    await api("login", { method: "POST", body: JSON.stringify({ password: $("pw").value }) });
+    loaded.stats = loaded.users = false;
+    showApp();
+  } catch (err) {
+    $("login-error").textContent = err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "登入";
+  }
+});
+
+$("logout").addEventListener("click", async () => {
+  try { await api("logout", { method: "POST" }); } catch { /* 忽略 */ }
+  showLogin();
+});
+
+// ===== 分頁 =====
+let currentTab = "stats";
+const loaded = { stats: false, users: false };
+const TITLES = { stats: "使用統計", users: "使用者名單" };
+
+function selectTab(tab) {
+  currentTab = tab;
+  for (const b of document.querySelectorAll(".tabbar button")) {
+    b.setAttribute("aria-selected", String(b.dataset.tab === tab));
+  }
+  $("view-stats").hidden = tab !== "stats";
+  $("view-users").hidden = tab !== "users";
+  $("add-user").hidden = tab !== "users";
+  $("page-title").firstChild.textContent = TITLES[tab];
+  if (tab === "stats" && !loaded.stats) loadStats();
+  if (tab === "users" && !loaded.users) loadUsers();
+  if (tab === "users") updateUserSub(); else $("page-sub").textContent = periodLabel();
+  window.scrollTo({ top: 0 });
+}
+for (const b of document.querySelectorAll(".tabbar button")) {
+  b.addEventListener("click", () => selectTab(b.dataset.tab));
+}
+
+// ===== 統計 =====
+const pad = (n) => String(n).padStart(2, "0");
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function taipeiToday() {
+  const s = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+function parseDay(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(NaN);
+}
+function periodRange(key) {
+  const t = taipeiToday();
+  const y = t.getFullYear(), m = t.getMonth();
+  switch (key) {
+    case "month": return [new Date(y, m, 1), t];
+    case "last": return [new Date(y, m - 1, 1), new Date(y, m, 0)];
+    case "3m": return [new Date(y, m - 2, 1), t];
+    case "year": return [new Date(y, 0, 1), t];
+    default: return [parseDay($("from").value), parseDay($("to").value)];
+  }
+}
+const PERIODS = [["month", "本月"], ["last", "上月"], ["3m", "近 3 個月"], ["year", "今年"], ["custom", "自訂"]];
+let period = "month";
+
+function periodLabel() {
+  if (period === "custom") return $("from").value && $("to").value ? `${$("from").value} – ${$("to").value}` : "";
+  const [f, t] = periodRange(period);
+  return `${ymd(f)} – ${ymd(t)}`;
+}
+
+function renderPeriods() {
+  const box = $("periods");
+  box.replaceChildren(...PERIODS.map(([key, label]) =>
+    h("button", {
+      class: "chip", type: "button", "aria-pressed": String(key === period), text: label,
+      onclick: () => {
+        period = key;
+        renderPeriods();
+        $("custom-range").hidden = key !== "custom";
+        if (key === "custom") {
+          const [f, t] = periodRange("month");
+          if (!$("from").value) $("from").value = ymd(f);
+          if (!$("to").value) $("to").value = ymd(t);
+        }
+        loadStats();
+      },
+    })
+  ));
+}
+$("from").addEventListener("change", () => loadStats());
+$("to").addEventListener("change", () => loadStats());
+
+let statsSeq = 0;
+async function loadStats() {
+  const [f, t] = periodRange(period);
+  if (isNaN(f) || isNaN(t)) return;
+  $("page-sub").textContent = periodLabel();
+  const seq = ++statsSeq;
+  $("stats-body").replaceChildren(h("div", { class: "loading", text: "載入中…" }));
+  try {
+    const data = await api(`stats?from=${ymd(f)}&to=${ymd(t)}`);
+    if (seq !== statsSeq) return;
+    loaded.stats = true;
+    renderStats(data);
+  } catch (err) {
+    if (seq !== statsSeq) return;
+    $("stats-body").replaceChildren(h("div", { class: "empty", text: err.message }));
+  }
+}
+
+const pct = (v) => `${Math.round(v * 1000) / 10}%`;
+const fmtHours = (v) => (v >= 100 ? Math.round(v).toLocaleString() : String(v));
+
+function kpi(label, value, unit, note) {
+  return h("div", { class: "kpi" },
+    h("div", { class: "label", text: label }),
+    h("div", { class: "value num" }, value, unit ? h("small", { text: unit }) : null),
+    note ? h("div", { class: "note", text: note }) : null,
+  );
+}
+
+function bar(name, ratio, valueNodes) {
+  const fill = h("div", { class: "fill" });
+  fill.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
+  return h("div", { class: "bar-row" },
+    h("div", { class: "bar-head" }, h("span", { class: "name", text: name }), h("span", { class: "val num" }, ...valueNodes)),
+    h("div", { class: "track", role: "presentation" }, fill),
+  );
+}
+
+const DAYS = ["一", "二", "三", "四", "五"];
+const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+function heatLevel(v) {
+  if (v <= 0) return 0;
+  return Math.min(7, Math.ceil(v * 7));
+}
+function slotText(hour) {
+  const start = hour === 8 ? "08:45" : `${pad(hour)}:00`;
+  const end = hour === 18 ? "18:15" : `${pad(hour + 1)}:00`;
+  return `${start}–${end}`;
+}
+
+function renderHeatmap(heatmap) {
+  const info = h("div", { class: "heat-info", text: "點一下格子查看該時段的佔用率" });
+  const grid = h("div", { class: "heat", role: "grid", "aria-label": "平日各時段會議室佔用率" });
+  grid.append(h("span"));
+  for (const hr of HOURS) grid.append(h("span", { class: "h-col num", text: String(hr) }));
+  let selected = null;
+  DAYS.forEach((d, di) => {
+    grid.append(h("span", { class: "h-row", text: d }));
+    HOURS.forEach((hr, hi) => {
+      const v = heatmap[di]?.[hi] ?? 0;
+      const label = `週${d} ${slotText(hr)}：佔用 ${pct(v)}`;
+      const cell = h("button", {
+        class: "cell", type: "button", "aria-label": label, "aria-pressed": "false",
+        onclick: () => {
+          if (selected) selected.setAttribute("aria-pressed", "false");
+          selected = cell;
+          cell.setAttribute("aria-pressed", "true");
+          info.replaceChildren(`週${d} ${slotText(hr)}　`, h("b", { class: "num", text: `佔用 ${pct(v)}` }));
+        },
+      });
+      cell.style.background = `var(--heat-${heatLevel(v)})`;
+      grid.append(cell);
+    });
+  });
+  const ramp = h("span", { class: "ramp" });
+  for (let i = 0; i <= 7; i++) {
+    const sw = h("i");
+    sw.style.background = `var(--heat-${i})`;
+    ramp.append(sw);
+  }
+  return [grid, h("div", { class: "legend" }, h("span", { text: "0%" }), ramp, h("span", { text: "100%" })), info];
+}
+
+function renderStats(s) {
+  const t = s.totals;
+  const body = $("stats-body");
+  if (t.bookings === 0 && t.cancelled === 0) {
+    body.replaceChildren(h("div", { class: "card" }, h("div", { class: "empty", text: "這段期間沒有預約紀錄" })));
+    return;
+  }
+
+  const kpis = h("div", { class: "kpis" },
+    kpi("預約數", t.bookings.toLocaleString(), "筆", `${t.bookers} 人預約`),
+    kpi("使用時數", fmtHours(t.hours), "小時", `平均每筆 ${t.avgMinutes} 分鐘`),
+    kpi("整體使用率", pct(t.utilization), "", `${s.workdays} 個工作天`),
+    kpi("取消率", pct(t.cancelRate), "", `取消 ${t.cancelled} 筆`),
+  );
+  const facts = h("div", { class: "facts" },
+    h("span", {}, "平均與會 ", h("b", { class: "num", text: `${t.avgParticipants || "–"}` }), " 人"),
+  );
+
+  const roomCard = h("div", { class: "card" },
+    h("h2", { text: "各會議室使用率" }),
+    h("p", { class: "sub", text: "平日 08:45–18:15 的可預約時段中，有被預約的比例" }),
+    h("div", { class: "bars" },
+      s.rooms.map((r) => bar(r.name, r.utilization, [h("b", { text: pct(r.utilization) }), ` · ${r.count} 筆 · ${fmtHours(r.hours)} 小時`])),
+    ),
+  );
+
+  const heatCard = h("div", { class: "card" },
+    h("h2", { text: "熱門時段" }),
+    h("p", { class: "sub", text: "平日各時段、所有會議室合計的佔用率；顏色越深越滿" }),
+    ...renderHeatmap(s.heatmap),
+  );
+
+  const depts = s.departments.slice(0, 8);
+  const rest = s.departments.slice(8);
+  if (rest.length) {
+    depts.push({ name: `其他 ${rest.length} 個部門`, hours: Math.round(rest.reduce((a, d) => a + d.hours, 0) * 10) / 10, count: rest.reduce((a, d) => a + d.count, 0) });
+  }
+  const maxDept = Math.max(...depts.map((d) => d.hours), 0.1);
+  const deptCard = h("div", { class: "card" },
+    h("h2", { text: "各部門使用時數" }),
+    h("p", { class: "sub", text: "依預約當時的部門統計" }),
+    depts.length
+      ? h("div", { class: "bars" }, depts.map((d) => bar(d.name, d.hours / maxDept, [h("b", { text: `${fmtHours(d.hours)} 小時` }), ` · ${d.count} 筆`])))
+      : h("div", { class: "empty", text: "沒有資料" }),
+  );
+
+  const topCard = h("div", { class: "card" },
+    h("h2", { text: "預約最多的人" }),
+    h("p", { class: "sub", text: "依使用時數排序，前 10 名" }),
+    s.topBookers.length
+      ? h("ol", { class: "rank" }, s.topBookers.map((b, i) =>
+          h("li", {},
+            h("span", { class: "pos num", text: String(i + 1) }),
+            h("span", { class: "who", text: b.name }),
+            h("span", { class: "amt num" }, h("b", { text: `${fmtHours(b.hours)} 小時` }), ` · ${b.count} 筆`),
+          )
+        ))
+      : h("div", { class: "empty", text: "沒有資料" }),
+  );
+
+  body.replaceChildren(kpis, facts, roomCard, heatCard, deptCard, topCard);
+}
+
+// ===== 使用者 =====
+let users = [];
+let departments = [];
+let groups = [];
+let userFilter = "active";
+const USER_FILTERS = [["active", "啟用中"], ["disabled", "已停用"], ["all", "全部"]];
+
+function renderUserFilters() {
+  $("user-filters").replaceChildren(...USER_FILTERS.map(([key, label]) =>
+    h("button", {
+      class: "chip", type: "button", "aria-pressed": String(key === userFilter), text: label,
+      onclick: () => { userFilter = key; renderUserFilters(); renderUsers(); },
+    })
+  ));
+}
+
+function updateUserSub() {
+  const active = users.filter((u) => !u.disabled).length;
+  $("page-sub").textContent = loaded.users ? `啟用 ${active} 人 · 停用 ${users.length - active} 人` : "";
+}
+
+async function loadUsers() {
+  try {
+    const res = await api("users");
+    users = res.data;
+    departments = res.departments;
+    groups = res.groups;
+    loaded.users = true;
+    $("dept-list").replaceChildren(...departments.map((d) => h("option", { value: d })));
+    $("group-list").replaceChildren(...groups.map((g) => h("option", { value: g })));
+    renderUsers();
+    updateUserSub();
+  } catch (err) {
+    $("users").replaceChildren(h("div", { class: "empty", text: err.message }));
+  }
+}
+
+const norm = (s) => String(s || "").toLowerCase();
+function renderUsers() {
+  const q = norm($("q").value.trim());
+  const list = users.filter((u) =>
+    (userFilter === "all" || (userFilter === "disabled") === u.disabled) &&
+    (!q || [u.name, u.id, u.id.replace(/^0+/, ""), u.extension, u.department, u.group].some((v) => norm(v).includes(q)))
+  );
+  $("user-count").textContent = `${list.length} 人`;
+  if (!list.length) {
+    $("users").replaceChildren(h("div", { class: "empty", text: q ? "找不到符合的使用者" : "沒有使用者" }));
+    return;
+  }
+  $("users").replaceChildren(...list.map((u) =>
+    h("button", { class: u.disabled ? "user off" : "user", type: "button", onclick: () => openSheet(u) },
+      h("div", {},
+        h("div", { class: "top" },
+          h("span", { class: "nm", text: u.name || "（未填姓名）" }),
+          h("span", { class: "ids num", text: `${u.id.replace(/^0+(?=\d{4})/, "")}${u.extension ? ` · #${u.extension}` : ""}` }),
+          u.disabled ? h("span", { class: "badge", text: "已停用" }) : null,
+        ),
+        h("div", { class: "org", text: [u.department, u.group].filter(Boolean).join(" · ") || "未設定部門" }),
+      ),
+      chevron(),
+    )
+  ));
+}
+function chevron() {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("class", "chev");
+  svg.setAttribute("aria-hidden", "true");
+  const p = document.createElementNS(ns, "path");
+  p.setAttribute("d", "m9 6 6 6-6 6");
+  p.setAttribute("fill", "none");
+  p.setAttribute("stroke", "currentColor");
+  p.setAttribute("stroke-width", "2");
+  p.setAttribute("stroke-linecap", "round");
+  svg.append(p);
+  return svg;
+}
+$("q").addEventListener("input", renderUsers);
+
+// ===== 使用者表單 =====
+let editing = null; // null = 新增
+
+function openSheet(user) {
+  editing = user || null;
+  $("sheet-title").textContent = user ? "編輯使用者" : "新增使用者";
+  $("f-name").value = user?.name || "";
+  $("f-id").value = user ? user.id : "";
+  $("f-id").readOnly = !!user;
+  $("f-id-hint").textContent = user ? "行編建立後不能修改" : "不含檢查碼，例如 5977";
+  $("f-ext").value = user?.extension || "";
+  $("f-dept").value = user?.department || "";
+  $("f-group").value = user?.group || "";
+  $("f-disabled").checked = !!user?.disabled;
+  $("form-error").textContent = "";
+  $("sheet-backdrop").hidden = false;
+  $("sheet").hidden = false;
+  document.body.style.overflow = "hidden";
+  if (!user) setTimeout(() => $("f-name").focus(), 50);
+}
+function closeSheet() {
+  $("sheet-backdrop").hidden = true;
+  $("sheet").hidden = true;
+  document.body.style.overflow = "";
+}
+$("sheet-close").addEventListener("click", closeSheet);
+$("sheet-cancel").addEventListener("click", closeSheet);
+$("sheet-backdrop").addEventListener("click", closeSheet);
+$("add-user").addEventListener("click", () => openSheet(null));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+
+$("sheet").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const payload = {
+    name: $("f-name").value.trim(),
+    extension: $("f-ext").value.trim(),
+    department: { label: $("f-dept").value.trim() },
+    group: { label: $("f-group").value.trim() },
+    disabled: $("f-disabled").checked,
+  };
+  if (!payload.name) return void ($("form-error").textContent = "請填寫姓名");
+  if (!editing) {
+    payload.id = $("f-id").value.trim();
+    if (!payload.id) return void ($("form-error").textContent = "請填寫行編");
+  }
+  const btn = $("sheet-save");
+  btn.disabled = true;
+  $("form-error").textContent = "";
+  try {
+    if (editing) {
+      const changed = {};
+      for (const k of ["name", "extension", "disabled"]) if (payload[k] !== editing[k]) changed[k] = payload[k];
+      if (payload.department.label !== editing.department) changed.department = payload.department;
+      if (payload.group.label !== editing.group) changed.group = payload.group;
+      if (!Object.keys(changed).length) { closeSheet(); return; }
+      await api(`users/${encodeURIComponent(editing.id)}`, { method: "PATCH", body: JSON.stringify(changed) });
+      toast(changed.disabled === true ? `已停用 ${payload.name}` : changed.disabled === false ? `已重新啟用 ${payload.name}` : "已儲存");
+    } else {
+      await api("users", { method: "POST", body: JSON.stringify(payload) });
+      toast(`已新增 ${payload.name}`);
+    }
+    closeSheet();
+    await loadUsers();
+  } catch (err) {
+    $("form-error").textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ===== 啟動 =====
+renderPeriods();
+renderUserFilters();
+api("session").then((r) => (r.loggedIn ? showApp() : showLogin())).catch(() => showLogin());
+</script>
+</body>
+</html>

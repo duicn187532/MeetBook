@@ -21,6 +21,10 @@ export interface UserDoc {
   extension?: string;
   department?: LabelCode;
   group?: LabelCode;
+  // 管理後台停用的使用者無法再預約（舊資料沒有此欄位，視為啟用）
+  disabled?: boolean;
+  createdTime?: Date;
+  updatedTime?: Date;
 }
 
 export interface BookingDoc {
