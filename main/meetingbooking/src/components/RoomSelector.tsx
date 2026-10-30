@@ -16,18 +16,18 @@ const roomStyle: Record<RoomKey, string> = {
 const rooms: RoomKey[] = ["A101", "A102", "A103"];
 
 const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: RoomSelectorProps) => (
-  <div className="flex gap-1 bg-white mt-1 px-4 border-b">
+  <div className="font-live flex gap-1 bg-white mt-2 px-4 border-b border-[#EFE9D2]">
     {/* LIVE：一次查看三間會議室某一天的狀況 */}
     <button
       onClick={() => setTimeout(onSelectToday, 200)}
       aria-current={todayMode ? "page" : undefined}
-      className={`flex-1 py-2 rounded-t-xl inline-flex items-center justify-center gap-1.5 font-semibold tracking-wide ${
-        todayMode ? "bg-[#E3B436] text-white" : "bg-gray-100 text-gray-700"
+      className={`flex-1 py-2.5 rounded-t-xl inline-flex items-center justify-center gap-1.5 text-[15px] font-bold tracking-wider ${
+        todayMode ? "bg-[#F5D46B] text-white [text-shadow:0_1px_1px_rgba(150,110,0,0.25)]" : "bg-gray-100 text-gray-700"
       }`}
     >
       <span className="relative flex w-2 h-2" aria-hidden="true">
-        {todayMode && <span className="absolute inset-0 rounded-full bg-[#4ADE80] opacity-60 animate-ping" />}
-        <span className="relative w-2 h-2 rounded-full bg-[#4ADE80]" />
+        {todayMode && <span className="absolute inset-0 rounded-full bg-[#3BFF7A] opacity-70 animate-ping" />}
+        <span className="relative w-2 h-2 rounded-full live-dot" />
       </span>
       LIVE
     </button>
@@ -37,7 +37,7 @@ const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: 
         <button
           key={room}
           onClick={() => setTimeout(() => onSelectRoom(room), 200)}
-          className={`flex-1 py-2 text-center rounded-t-xl ${selectedClasses}`}
+          className={`flex-1 py-2.5 text-center text-[15px] font-medium rounded-t-xl ${selectedClasses}`}
         >
           {roomNames[room]}
         </button>

@@ -51,21 +51,21 @@ export const TodayHeader = ({ overview, offset, updatedAt, onChangeDay }: LiveHe
     if (overview.phase === "open" && busy > 0) parts.push(`${busy} 間使用中`);
   }
   return (
-    <div className="px-4 pt-4 pb-1 flex flex-col items-center gap-3 bg-[#FBF6E1]">
-      <div className="flex items-center justify-between w-full max-w-sm">
+    <div className="font-live px-5 pt-4 pb-1 flex flex-col items-center gap-3 bg-[#FDF9EC]">
+      <div className="flex items-center justify-between w-full max-w-[300px]">
         <button
           type="button"
           onClick={() => onChangeDay(-1)}
           aria-label="前一天"
-          className="w-8 h-8 rounded-full bg-[#2B2B2B] text-white flex items-center justify-center active:scale-95"
+          className="w-6 h-6 rounded-full bg-[#2B2B2B] text-white flex items-center justify-center active:scale-95 before:absolute before:-inset-2.5 before:content-[''] relative"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-3.5 h-3.5" strokeWidth={2.5} />
         </button>
-        <div className="flex items-baseline gap-3">
-          <span className="text-[22px] tabular-nums tracking-wide">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-[19px] font-medium text-[#2B2B2B] tabular-nums">
             {d.format("YYYY.MM.DD")} ({WEEK[d.day()]})
           </span>
-          <span className={`text-sm ${offset === 0 ? "text-gray-700" : "text-[#B7791F] font-semibold"}`}>
+          <span className={`text-[13px] ${offset === 0 ? "text-gray-600" : "text-[#B7791F] font-bold"}`}>
             {relativeDay(offset)}
           </span>
         </div>
@@ -73,12 +73,12 @@ export const TodayHeader = ({ overview, offset, updatedAt, onChangeDay }: LiveHe
           type="button"
           onClick={() => onChangeDay(1)}
           aria-label="後一天"
-          className="w-8 h-8 rounded-full bg-[#2B2B2B] text-white flex items-center justify-center active:scale-95"
+          className="w-6 h-6 rounded-full bg-[#2B2B2B] text-white flex items-center justify-center active:scale-95 before:absolute before:-inset-2.5 before:content-[''] relative"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" strokeWidth={2.5} />
         </button>
       </div>
-      <div className="rounded-full bg-[#EBDA6A] px-6 py-1.5 text-[15px] text-[#3D3A1F] tabular-nums">
+      <div className="rounded-full bg-[#F6EBA4] px-5 py-1 text-[13px] font-medium text-[#4A4423] tabular-nums tracking-wide">
         {parts.join(" · ")}
       </div>
     </div>
@@ -97,44 +97,44 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
   const showNow = overview.phase === "open";
   const nowPos = position(now, overview.date);
   return (
-    <div className="relative bg-white rounded-3xl shadow-[0_2px_10px_rgba(120,100,40,0.10)] p-4">
+    <div className="relative bg-white rounded-[22px] shadow-[0_2px_12px_rgba(140,120,50,0.08)] px-4 pt-4 pb-3">
       {/* 整張卡片可點，進入該會議室的週檢視；立即預約按鈕疊在上面 */}
       <button
         type="button"
         onClick={() => onOpenRoom(room.room)}
         aria-label={`查看 ${roomNames[room.room]} 的週檢視`}
-        className="absolute inset-0 rounded-3xl"
+        className="absolute inset-0 rounded-[22px]"
       />
       <div className="flex items-center gap-3.5 pointer-events-none">
         <img
           src={roomPhotos[room.room]}
           alt=""
-          width={72}
-          height={72}
+          width={68}
+          height={68}
           decoding="async"
-          className="w-[72px] h-[72px] rounded-2xl object-cover shrink-0"
+          className="w-[68px] h-[68px] rounded-[14px] object-cover shrink-0"
         />
-        <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <div className="flex-1 min-w-0 flex flex-col gap-2.5">
           <div className="flex items-center gap-3">
-            <span className={`px-3.5 py-0.5 rounded-full text-[15px] font-semibold ${style.chip}`}>
+            <span className={`px-3 py-[3px] rounded-full text-[13px] font-bold leading-none ${style.chip}`}>
               {roomNames[room.room]}
             </span>
-            <span className="inline-flex items-center gap-1 text-[15px] text-gray-700">
-              <Users className="w-4 h-4" aria-hidden="true" />
+            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-gray-600">
+              <Users className="w-3.5 h-3.5" aria-hidden="true" />
               <span className="tabular-nums">{roomSeats[room.room]}</span>
               <span className="sr-only">人</span>
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="flex-1 min-w-0 text-[14px] text-gray-800 tabular-nums leading-snug">{room.availability}</span>
+            <span className="flex-1 min-w-0 text-[13px] text-gray-800 tabular-nums leading-snug">{room.availability}</span>
             {room.quickBook && (
               <button
                 type="button"
                 onClick={() => onQuickBook(room.room, room.quickBook!)}
                 aria-label={`立即預約 ${roomNames[room.room]}（${room.quickBook.startTime}–${room.quickBook.endTime}）`}
-                className="pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 rounded-full bg-[#E3893A] text-white text-[13px] font-medium pl-2.5 pr-3 py-1.5 shadow-[0_2px_6px_rgba(227,137,58,0.35)] active:scale-95"
+                className="pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 rounded-full bg-[#E8913F] text-white text-[12px] font-medium pl-2.5 pr-3 py-[5px] shadow-[0_2px_6px_rgba(232,145,63,0.35)] active:scale-95"
               >
-                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                <Plus className="w-3 h-3" strokeWidth={2.75} aria-hidden="true" />
                 立即預約
               </button>
             )}
@@ -142,8 +142,8 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
         </div>
       </div>
       {/* 時間軸：08:45 ~ 18:15 */}
-      <div className="mt-3.5 pointer-events-none" aria-hidden="true">
-        <div className="relative h-2 rounded-full bg-[#F6F3EA]">
+      <div className="mt-3 pointer-events-none" aria-hidden="true">
+        <div className="relative h-[7px] rounded-full bg-[#F4F1E8]">
           {room.slots.map((slot) => {
             const left = position(slot.start, overview.date);
             const right = position(slot.end, overview.date);
@@ -164,7 +164,7 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
             <span className="absolute -top-1 -bottom-1 w-0.5 rounded-full bg-[#2B2B2B]/60" style={{ left: `${nowPos * 100}%` }} />
           )}
         </div>
-        <div className="relative h-4 mt-1.5 text-[12px] text-gray-500 tabular-nums">
+        <div className="relative h-4 mt-1 text-[11px] text-gray-400 tabular-nums">
           {[9, 12, 15, 18].map((h) => (
             <span
               key={h}
@@ -181,7 +181,7 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
 };
 
 const TodayOverview = ({ overview, now, onOpenRoom, onQuickBook }: TodayOverviewProps) => (
-  <div className="min-h-full bg-[#FBF6E1] px-4 pt-3 pb-8 flex flex-col gap-4">
+  <div className="font-live min-h-full bg-[#FDF9EC] px-4 pt-3 pb-8 flex flex-col gap-3.5">
     {overview.rooms.map((room) => (
       <RoomCard key={room.room} room={room} overview={overview} now={now} onOpenRoom={onOpenRoom} onQuickBook={onQuickBook} />
     ))}

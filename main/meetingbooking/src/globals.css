@@ -21,6 +21,17 @@ body {
   animation: loading-progress 2s linear infinite;
 }
 
+/* LIVE 設計稿字型：英數字用 DM Sans，中文用各平台的系統字型 */
+.font-live {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  font-feature-settings: "tnum" 0;
+}
+/* LIVE 綠燈：亮綠色並帶一點光暈 */
+.live-dot {
+  background: #3BFF7A;
+  box-shadow: 0 0 0 2px rgb(59 255 122 / 0.25), 0 0 8px 1px rgb(59 255 122 / 0.85);
+}
+
 /* 背景更新的細進度線：延遲 0.4 秒才淡入，避免短暫更新時閃一下 */
 .refresh-bar {
   position: absolute;
