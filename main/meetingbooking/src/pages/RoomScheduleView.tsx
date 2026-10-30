@@ -566,16 +566,20 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           />
         </>
       )}
+      {/* 背景更新時在行事曆上緣顯示一條細進度線；0.4 秒內完成就不會出現 */}
+      <div className="relative h-0 z-20" role="status" aria-live="polite">
+        {fetching && rangeLoaded && (
+          <>
+            <div className="refresh-bar" aria-hidden="true" />
+            <span className="sr-only">更新中</span>
+          </>
+        )}
+      </div>
       <div
         className="flex-1 overflow-y-auto overflow-x-hidden relative [@media(max-height:500px)]:flex-none [@media(max-height:500px)]:overflow-y-visible"
         style={{ touchAction: "pan-y" }}
         {...swipe.handlers}
       >
-        {fetching && rangeLoaded && (
-          <div className="sticky top-1 z-10 flex justify-center pointer-events-none h-0">
-            <span className="bg-white/90 shadow text-xs text-gray-600 rounded-full px-3 py-1">更新中…</span>
-          </div>
-        )}
         {todayOverview ? (
           <TodayOverview
             overview={todayOverview}
