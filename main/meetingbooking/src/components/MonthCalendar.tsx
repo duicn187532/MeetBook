@@ -1,6 +1,7 @@
 // src/components/Calendar/MonthCalendar.tsx
 import dayjs from "dayjs";
 import { Meeting } from "../types/common";
+import { rollToWorkday } from "../utils/workdays";
 
 interface MonthCalendarProps {
   currentDate: dayjs.Dayjs;
@@ -68,8 +69,10 @@ const MonthCalendar = ({
                     className={`p-2 min-h-[80px] relative ${isCurrentMonth ? "" : "opacity-50"}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentDate(dayjs(date));
-                      setViewStartDate(dayjs(date));
+                      // 點到週末時改到下一個工作日（日檢視只顯示週一到週五）
+                      const target = rollToWorkday(dayjs(date));
+                      setCurrentDate(target);
+                      setViewStartDate(target);
                       onChangeView("Day");
                     }}
                   >

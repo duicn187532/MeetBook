@@ -26,10 +26,18 @@ function position(ms: number, date: string) {
   return Math.min(1, Math.max(0, ratio));
 }
 
-function relativeDay(offset: number) {
+// 今天／明天／昨天；其他日子顯示「週三」「下週一」「上週五」（一週從週一開始）
+function relativeDay(date: dayjs.Dayjs, offset: number) {
   if (offset === 0) return "今天";
   if (offset === 1) return "明天";
   if (offset === -1) return "昨天";
+  const monday = (d: dayjs.Dayjs) => d.subtract((d.day() + 6) % 7, "day").startOf("day");
+  const today = date.subtract(offset, "day");
+  const weeks = Math.round(monday(date).diff(monday(today), "day") / 7);
+  const name = `週${WEEK[date.day()]}`;
+  if (weeks === 0) return name;
+  if (weeks === 1) return `下${name}`;
+  if (weeks === -1) return `上${name}`;
   return offset > 0 ? `${offset} 天後` : `${-offset} 天前`;
 }
 
@@ -80,7 +88,7 @@ export const TodayHeader = ({ overview, offset, updatedAt, onChangeDay }: LiveHe
             {d.format("YYYY.MM.DD")} ({WEEK[d.day()]})
           </span>
           <span className={`text-[13px] ${offset === 0 ? "" : "text-[#C77700] font-semibold"}`}>
-            {relativeDay(offset)}
+            {relativeDay(d, offset)}
           </span>
         </div>
         <ArrowButton dir="next" onClick={() => onChangeDay(1)} />

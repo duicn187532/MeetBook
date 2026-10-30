@@ -48,6 +48,7 @@ import {
 } from "../utils/bookingHelpers";
 import { loadPref, savePref } from "../utils/storage";
 import { buildTodayOverview } from "../utils/todayStatus";
+import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../utils/workdays";
 
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
@@ -70,6 +71,12 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Taipei");
 
+// LIVE 只顯示工作日：今天是週末時從下週一開始，左右切換跳過週六、週日
+const daysFromToday = (d: dayjs.Dayjs) => d.startOf("day").diff(dayjs().startOf("day"), "day");
+const firstLiveOffset = () => daysFromToday(rollToWorkday(dayjs()));
+const liveOffsetAfter = (offset: number, delta: number) =>
+  daysFromToday(addWorkdays(dayjs().add(offset, "day"), delta));
+
 const RoomScheduleView = () => {
   // UI 狀態管理
   // 會議室、檢視模式與行編會記在瀏覽器，下次開啟沿用
@@ -78,15 +85,16 @@ const RoomScheduleView = () => {
   // Today 分頁（實驗性功能）
   const [todayMode, setTodayMode] = useState(() => loadPref("today") === "1");
   const now = useNow(todayMode);
-  // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天）
-  const [liveOffset, setLiveOffset] = useState(0);
+  // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天；週末時為下週一）
+  const [liveOffset, setLiveOffset] = useState(firstLiveOffset);
   // 更新日誌只給沒看過的人看一次：一顯示就記為看過
   const [changelogEntries, setChangelogEntries] = useState(unseenChangelog);
   useEffect(() => {
     if (changelog.length > 0 && changelogEntries.length > 0) savePref("changelogSeen", changelog[0].id);
   }, [changelogEntries.length]);
-  const [currentDate, setCurrentDate] = useState(dayjs());
-  const [viewStartDate, setViewStartDate] = useState(dayjs());
+  // 週末開啟時從下一個工作日開始（週六、週日不上班）
+  const [currentDate, setCurrentDate] = useState(() => rollToWorkday(dayjs()));
+  const [viewStartDate, setViewStartDate] = useState(() => rollToWorkday(dayjs()));
   const [editPassword, setEditPassword] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   // 最近一次自動帶入的預設時間；使用者沒改過時，開啟預約視窗會換成最新的預設值
@@ -214,13 +222,13 @@ const RoomScheduleView = () => {
 
   function selectToday() {
     if (!todayMode) setTodayMode(true);
-    setLiveOffset(0);
+    setLiveOffset(firstLiveOffset());
     reloadMeetings();
   }
 
   // 從 Today 卡片進入該會議室本週的週檢視
   function openRoomToday(room: RoomKey) {
-    const today = dayjs().add(liveOffset, "day");
+    const today = rollToWorkday(dayjs().add(liveOffset, "day"));
     setTodayMode(false);
     setSelectedRoom(room);
     setSelectedView("Week");
@@ -260,11 +268,13 @@ const RoomScheduleView = () => {
       setCurrentDate(currentDate.add(7 * step, "day"));
       updateBookingDate(newStart);
     } else {
-      const next = currentDate.add(step, "day");
+      // 日檢視一次一個工作日，超出上方日期列時整列換頁
+      const next = addWorkdays(currentDate, step);
       setCurrentDate(next);
       updateBookingDate(next);
-      if (next.isBefore(viewStartDate, "day")) setViewStartDate(viewStartDate.subtract(6, "day"));
-      else if (next.isAfter(viewStartDate.add(5, "day"), "day")) setViewStartDate(viewStartDate.add(6, "day"));
+      const strip = workdaysFrom(viewStartDate, WORKDAYS_PER_WEEK);
+      if (next.isBefore(strip[0], "day")) setViewStartDate(addWorkdays(strip[0], -WORKDAYS_PER_WEEK));
+      else if (next.isAfter(strip[strip.length - 1], "day")) setViewStartDate(addWorkdays(strip[0], WORKDAYS_PER_WEEK));
     }
   });
 
@@ -564,7 +574,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
             overview={todayOverview}
             offset={liveOffset}
             updatedAt={updatedAt}
-            onChangeDay={(delta) => setLiveOffset((o) => o + delta)}
+            onChangeDay={(delta) => setLiveOffset((o) => liveOffsetAfter(o, delta))}
           />
         </div>
       ) : (

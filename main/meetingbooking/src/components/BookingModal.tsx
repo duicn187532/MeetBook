@@ -4,6 +4,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { TimePicker, DatePicker } from "@mui/x-date-pickers";
 import { BookingForm } from "../types/common";
+import { disableWeekend } from "../utils/workdays";
 
 interface BookingModalProps {
   bookingForm: BookingForm
@@ -184,6 +185,7 @@ const BookingModal = ({
               }
             }}
             format="YYYY-MM-DD"
+            shouldDisableDate={disableWeekend}
             slotProps={{
               textField: {
                 size: "small",

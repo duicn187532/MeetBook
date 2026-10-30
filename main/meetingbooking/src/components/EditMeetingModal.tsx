@@ -5,6 +5,7 @@ import timezone from "dayjs/plugin/timezone";
 import { TimePicker, DatePicker } from "@mui/x-date-pickers";
 import { BookingUpdatePayload, Meeting, RoomKey, roomNames } from "../types/common";
 import { RefreshCw } from "lucide-react";
+import { disableWeekend } from "../utils/workdays";
 
 // 初始化插件與設定預設台北時區
 dayjs.extend(utc);
@@ -164,6 +165,7 @@ const EditMeetingModal: React.FC<EditMeetingModalProps> = ({
               }
             }}
             format="YYYY-MM-DD"
+            shouldDisableDate={disableWeekend}
             slotProps={{
               textField: {
                 size: "small",
