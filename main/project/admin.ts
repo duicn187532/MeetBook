@@ -175,11 +175,17 @@ async function listUsers(ctx: Ctx) {
   json(ctx, 200, { data: list.map(toAdminUser), org: ORG });
 }
 
-async function extensionTaken(extension: string, exceptId: string | null): Promise<boolean> {
-  if (!extension) return false;
-  const filter = { extension, ...ACTIVE_USER_FILTER } as Filter<UserDoc>;
-  if (exceptId) filter.id = { $ne: exceptId };
-  return (await users.findOne(filter)) !== null;
+// 同一支分機的其他啟用中使用者（分機可以重複，只提醒不阻擋）
+async function extensionHolders(extension: string, exceptId: string): Promise<UserDoc[]> {
+  if (!extension) return [];
+  const filter = { extension, id: { $ne: exceptId }, ...ACTIVE_USER_FILTER } as Filter<UserDoc>;
+  return await users.find(filter, { projection: { _id: 0, id: 1, name: 1 } }).toArray();
+}
+
+function extensionWarning(extension: string, holders: UserDoc[]): string | undefined {
+  if (holders.length === 0) return undefined;
+  const who = holders.map((u) => `${u.name || "未填姓名"}（${u.id.replace(/^0+(?=\d{4})/, "")}）`).join("、");
+  return `分機 ${extension} 也登記給 ${who}；用分機預約時只會對應到其中一人，建議改用行編預約`;
 }
 
 async function createUser(ctx: Ctx) {
@@ -188,9 +194,6 @@ async function createUser(ctx: Ctx) {
     input = await ctx.request.body.json();
     const user = normalizeUserInput(input, false);
     if (await users.findOne({ id: user.id! })) return json(ctx, 409, { error: `行編 ${user.id} 已存在` });
-    if (await extensionTaken(user.extension!, null)) {
-      return json(ctx, 409, { error: `分機 ${user.extension} 已有其他人使用` });
-    }
     const doc: UserDoc = {
       id: user.id!,
       // 沒填姓名時與既有資料一樣存 null
@@ -207,7 +210,8 @@ async function createUser(ctx: Ctx) {
     };
     await users.insertOne(doc);
     logEvent("info", "管理後台新增使用者", { module: "Admin", details: { id: doc.id } });
-    json(ctx, 201, { data: toAdminUser(doc) });
+    const holders = doc.status ? await extensionHolders(doc.extension ?? "", doc.id) : [];
+    json(ctx, 201, { data: toAdminUser(doc), warning: extensionWarning(doc.extension ?? "", holders) });
   } catch (error) {
     json(ctx, 400, { error: (error as Error).message });
   }
@@ -221,9 +225,6 @@ async function updateUser(ctx: Ctx) {
     const update = normalizeUserInput(await ctx.request.body.json(), true, existing);
     const willBeActive = update.disabled === undefined ? !isUserDisabled(existing) : !update.disabled;
     const extension = update.extension ?? existing.extension ?? "";
-    if (willBeActive && await extensionTaken(extension, id)) {
-      return json(ctx, 409, { error: `分機 ${extension} 已有其他人使用` });
-    }
     // 停用狀態寫入既有的 status 欄位，並移除早期版本寫入的 disabled
     const { disabled, ...fields } = update;
     const set: Partial<UserDoc> = { ...fields, updatedTime: new Date() };
@@ -235,7 +236,10 @@ async function updateUser(ctx: Ctx) {
     );
     logEvent("info", "管理後台修改使用者", { module: "Admin", details: { id, fields: Object.keys(update) } });
     const { disabled: _old, ...rest } = existing;
-    json(ctx, 200, { data: toAdminUser({ ...rest, ...set }) });
+    // 有改分機或重新啟用時才提醒
+    const touched = update.extension !== undefined || update.disabled === false;
+    const holders = willBeActive && touched ? await extensionHolders(extension, id) : [];
+    json(ctx, 200, { data: toAdminUser({ ...rest, ...set }), warning: extensionWarning(extension, holders) });
   } catch (error) {
     json(ctx, 400, { error: (error as Error).message });
   }
