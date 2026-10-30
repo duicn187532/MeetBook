@@ -4,7 +4,7 @@ const encoder = new TextEncoder();
 export const SESSION_COOKIE = "mb_admin";
 export const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 // 密碼太短時不啟用後台，避免被暴力猜中
-export const MIN_PASSWORD_LENGTH = 12;
+export const MIN_PASSWORD_LENGTH = 8;
 
 export async function deriveKey(adminPassword: string): Promise<CryptoKey> {
   return await crypto.subtle.importKey(
