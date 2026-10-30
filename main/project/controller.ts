@@ -4,6 +4,7 @@ import { bookings, users, withRoomLocks } from "./db.ts";
 import { logEvent } from "./logger.ts";
 import {
   type BookingUpdate,
+  ensureWorkday,
   normalizeParticipants,
   normalizeRooms,
   overlapFilter,
@@ -151,6 +152,7 @@ export async function createBooking(input: NewBookingInput): Promise<CreateBooki
   let startTime: Date, endTime: Date;
   try {
     ({ startTime, endTime } = validateBookingTimes(input.startTime, input.endTime));
+    ensureWorkday(startTime);
   } catch (timeError) {
     return { ok: false, status: 400, error: (timeError as Error).message };
   }
@@ -339,6 +341,11 @@ async function editBooking(booking: BookingDoc, update: BookingUpdate): Promise<
       update.startTime ?? booking.startTime,
       update.endTime ?? booking.endTime,
     ));
+    // 只有時間真的改變時才檢查週末：既有的週末預約仍可改名稱、人數或取消
+    // （網頁的修改表單每次都會帶上時間，所以要比較是否與原本相同）
+    const timeChanged = startTime.getTime() !== new Date(booking.startTime).getTime() ||
+      endTime.getTime() !== new Date(booking.endTime).getTime();
+    if (timeChanged) ensureWorkday(startTime);
   } catch (timeError) {
     return { status: 400, body: { error: (timeError as Error).message } };
   }

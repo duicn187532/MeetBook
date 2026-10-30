@@ -32,6 +32,21 @@ export function ensureDate(dateInput: unknown): Date {
  * 驗證預訂時間的有效性
  * @throws Error 如果時間無效或順序錯誤
  */
+const TAIPEI_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/** 台北時間的星期（0 = 週日 … 6 = 週六） */
+export function taipeiWeekday(date: Date): number {
+  return new Date(date.getTime() + TAIPEI_OFFSET_MS).getUTCDay();
+}
+
+export const WEEKEND_MESSAGE = "週六、週日不開放預約，請選擇週一到週五";
+
+/** 週六、週日不上班：開始時間（台北）落在週末時丟出錯誤 */
+export function ensureWorkday(startTime: Date): void {
+  const day = taipeiWeekday(startTime);
+  if (day === 0 || day === 6) throw new Error(WEEKEND_MESSAGE);
+}
+
 export function validateBookingTimes(
   startTimeInput: unknown,
   endTimeInput: unknown,

@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { Meeting } from "../types/common";
+import { weekWorkdays } from "../utils/workdays";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -39,8 +40,8 @@ const WeekCalendar = ({
   setSelectedMeeting,
   setShowInfoModal,
 }: WeekCalendarProps) => {
-  const weekStart = currentDate.startOf("week").add(1, "day"); // 週一
-  const displayedWeekDates = Array.from({ length: 6 }, (_, i) => weekStart.add(i, "day"));
+  // 週一到週五（週六不上班）
+  const displayedWeekDates = weekWorkdays(currentDate);
   const dayString = currentDate.format("YYYY-MM-DD");
   const TIMELINE_START = dayjs.tz(`${dayString} 08:45`, "YYYY-MM-DD HH:mm", "Asia/Taipei");
   const TIMELINE_END = dayjs.tz(`${dayString} 18:15`, "YYYY-MM-DD HH:mm", "Asia/Taipei");
