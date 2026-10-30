@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { RoomKey, roomNames } from "../types/common";
 import { roomPhotos, roomSeats } from "../config/rooms";
 import { taipeiHHmm, taipeiMs } from "../utils/bookingHelpers";
-import { TodayOverview as Overview, TodayRoom } from "../utils/todayStatus";
+import { afterHoursLine, isAfterHours, TodayOverview as Overview, TodayRoom } from "../utils/todayStatus";
 
 // 卡片時間軸的範圍：09:00 ~ 18:00（刻度 09、12、15、18 平均分布）
 const AXIS_START_MIN = 9 * 60;
@@ -46,6 +46,7 @@ const shortTime = (ms: number) => taipeiHHmm(ms).replace(/^0/, "");
 
 interface LiveHeaderProps {
   overview: Overview;
+  now: number;
   offset: number; // 與今天相差幾天
   updatedAt: number | null; // 資料最後更新時間
   onChangeDay: (delta: number) => void;
@@ -67,15 +68,18 @@ const ArrowButton = ({ dir, onClick }: { dir: "prev" | "next"; onClick: () => vo
 );
 
 // 上方標頭：切換日期、日期與摘要
-export const TodayHeader = ({ overview, offset, updatedAt, onChangeDay }: LiveHeaderProps) => {
+export const TodayHeader = ({ overview, now, offset, updatedAt, onChangeDay }: LiveHeaderProps) => {
   const d = dayjs(overview.date);
   const busy = overview.counts.busy;
   const available = overview.rooms.filter((r) => r.kind !== "busy" && r.quickBook).length;
   const parts: string[] = [];
-  if (updatedAt) parts.push(`${shortTime(updatedAt)}更新`);
-  if (overview.phase === "after") {
-    parts.push(`共${overview.total}場會議`);
+  if (offset === 0 && (overview.phase === "after" || isAfterHours(overview.date, now))) {
+    // 今天已下班：只顯示一句輕鬆的話
+    parts.push(afterHoursLine(overview.date));
+  } else if (overview.phase === "after") {
+    parts.push(`這天共${overview.total}場會議`);
   } else {
+    if (updatedAt) parts.push(`${shortTime(updatedAt)}更新`);
     parts.push(available > 0 ? `${available}間可預約` : "都已預約滿");
     if (overview.phase === "open" && busy > 0) parts.push(`${busy}間使用中`);
   }

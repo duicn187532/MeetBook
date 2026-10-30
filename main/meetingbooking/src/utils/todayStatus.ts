@@ -9,6 +9,9 @@ const QUICK_BOOK_MINUTES = 60;
 const QUICK_BOOK_MIN_MINUTES = 15;
 const MINUTE = 60_000;
 
+// 可預約時段至少要這麼長才列出
+const MIN_FREE_MINUTES = 15;
+
 export type RoomStatusKind = "busy" | "soon" | "free" | "done";
 export type DayPhase = "before" | "open" | "after";
 
@@ -87,8 +90,6 @@ export function quickBookTimes(
   return null;
 }
 
-// 可預約時段至少要這麼長才列出
-const MIN_FREE_MINUTES = 15;
 
 /**
  * LIVE 卡片的可預約文字：從現在（或當天 08:45）到 18:15 之間的空檔
@@ -96,10 +97,28 @@ const MIN_FREE_MINUTES = 15;
  * - 空檔在最前面：「14:00 前」；在最後面：「16:30 後」；在中間：「12:00–13:30」
  * - 最多列 3 段，其餘以「…」表示
  */
+/** 當天已剩不到可預約的最短時間（18:00 之後）或已過 18:15：視為下班 */
+export function isAfterHours(date: string, now: number): boolean {
+  return now >= taipeiMs(date, DAY_END_MIN) - MIN_FREE_MINUTES * MINUTE;
+}
+
+// 下班後摘要條的輕鬆語句，依日期輪替（同一天固定同一句）
+export const AFTER_HOURS_LINES = [
+  "下班囉，今天辛苦了 🌙",
+  "會議室也下班了，回家好好休息 🏠",
+  "今天也辛苦了，明天見 ✨",
+  "下班時間到，放鬆一下吧 ☕",
+];
+
+export function afterHoursLine(date: string): string {
+  const n = [...date].reduce((sum, c) => sum + c.charCodeAt(0), 0);
+  return AFTER_HOURS_LINES[n % AFTER_HOURS_LINES.length];
+}
+
 export function availabilityText(slots: TodaySlot[], date: string, now: number): string {
   const dayStart = taipeiMs(date, DAY_START_MIN);
   const dayEnd = taipeiMs(date, DAY_END_MIN);
-  if (now >= dayEnd) return "今日已結束";
+  if (isAfterHours(date, now)) return "今日已結束";
   const from = Math.max(now, dayStart);
   const upcoming = slots.filter((s) => s.end > from);
   if (upcoming.length === 0) return "目前無預約";

@@ -572,6 +572,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
         <div>
           <TodayHeader
             overview={todayOverview}
+            now={now}
             offset={liveOffset}
             updatedAt={updatedAt}
             onChangeDay={(delta) => setLiveOffset((o) => liveOffsetAfter(o, delta))}
