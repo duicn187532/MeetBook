@@ -21,6 +21,48 @@ body {
   animation: loading-progress 2s linear infinite;
 }
 
+/* 背景更新的細進度線：延遲 0.4 秒才淡入，避免短暫更新時閃一下 */
+.refresh-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  animation: refresh-bar-in 0.3s ease 0.4s forwards;
+}
+.refresh-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  border-radius: 1px;
+  background: rgb(60 151 255 / 0.55);
+  animation: refresh-bar-slide 1.4s ease-in-out infinite;
+}
+@keyframes refresh-bar-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes refresh-bar-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(290%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .refresh-bar::before {
+    width: 100%;
+    animation: none;
+    background: rgb(60 151 255 / 0.3);
+  }
+}
+
 .animation-delay-500 {
   animation-delay: -0.5s;
 }
