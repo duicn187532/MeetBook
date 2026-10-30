@@ -146,6 +146,11 @@ main {
 }
 .card h2 { font-size: 15px; margin: 0 0 2px; }
 .card .sub { color: var(--text-3); font-size: 12px; margin: 0 0 14px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+.card-head h2 { margin: 0; }
+.seg { display: inline-flex; flex: none; padding: 2px; border-radius: 999px; background: var(--surface-2); }
+.seg button { border: 0; background: none; min-height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; color: var(--text-2); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 12%); }
 
 /* ===== 控制項 ===== */
 .field { display: grid; gap: 6px; margin-bottom: 14px; align-content: start; }
@@ -790,22 +795,45 @@ function renderStats(s) {
       : h("div", { class: "empty", text: "沒有資料" }),
   );
 
-  const topCard = h("div", { class: "card" },
-    h("h2", { text: "預約最多的人" }),
-    h("p", { class: "sub", text: "依使用時數排序，前 10 名" }),
-    s.topBookers.length
-      ? h("ol", { class: "rank" }, s.topBookers.map((b, i) =>
+  // 排行榜：可切換依時數或依筆數；粗體是目前排序依據
+  const rankBody = h("div");
+  const rankSub = h("p", { class: "sub" });
+  const rankChips = h("div", { class: "seg", role: "group", "aria-label": "排行依據" });
+  function drawRank() {
+    const byCount = rankMode === "count";
+    const list = (byCount ? s.topBookersByCount : s.topBookers) || [];
+    rankSub.textContent = `依${byCount ? "預約筆數" : "使用時數"}排序，前 10 名`;
+    rankChips.replaceChildren(...[["hours", "依時數"], ["count", "依筆數"]].map(([key, label]) =>
+      h("button", {
+        type: "button", "aria-pressed": String(key === rankMode), text: label,
+        onclick: () => { rankMode = key; try { localStorage.setItem("mb-admin-rank", key); } catch { /* 忽略 */ } drawRank(); },
+      })
+    ));
+    rankBody.replaceChildren(list.length
+      ? h("ol", { class: "rank" }, list.map((b, i) =>
           h("li", {},
             h("span", { class: "pos num", text: String(i + 1) }),
             h("span", { class: "who", text: b.name }),
-            h("span", { class: "amt num" }, h("b", { text: `${fmtHours(b.hours)} 小時` }), ` · ${b.count} 筆`),
+            byCount
+              ? h("span", { class: "amt num" }, h("b", { text: `${b.count} 筆` }), ` · ${fmtHours(b.hours)} 小時`)
+              : h("span", { class: "amt num" }, h("b", { text: `${fmtHours(b.hours)} 小時` }), ` · ${b.count} 筆`),
           )
         ))
-      : h("div", { class: "empty", text: "沒有資料" }),
+      : h("div", { class: "empty", text: "沒有資料" }));
+  }
+  drawRank();
+  const topCard = h("div", { class: "card" },
+    h("div", { class: "card-head" }, h("h2", { text: "預約最多的人" }), rankChips),
+    rankSub,
+    rankBody,
   );
 
   body.replaceChildren(kpis, facts, roomCard, heatCard, deptCard, topCard);
 }
+
+// 排行榜依據（記在這台裝置）
+let rankMode = "hours";
+try { if (localStorage.getItem("mb-admin-rank") === "count") rankMode = "count"; } catch { /* 忽略 */ }
 
 // ===== 使用者 =====
 let users = [];

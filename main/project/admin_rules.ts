@@ -164,7 +164,8 @@ export interface StatsResult {
   // heatmap[weekday 0=週一][hourIndex] = 0–1 佔用率（所有會議室合計）
   heatmap: number[][];
   departments: NamedStat[];
-  topBookers: NamedStat[];
+  topBookers: NamedStat[]; // 依使用時數
+  topBookersByCount: NamedStat[]; // 依預約筆數
 }
 
 const round = (n: number, digits = 1) => Math.round(n * 10 ** digits) / 10 ** digits;
@@ -318,6 +319,8 @@ export function computeStats(
     hours: round(v.minutes / 60),
   });
   const byHours = (a: NamedStat, b: NamedStat) => b.hours - a.hours || b.count - a.count;
+  const byCount = (a: NamedStat, b: NamedStat) => b.count - a.count || b.hours - a.hours;
+  const bookerStats = [...bookerMap.values()].map((v) => toNamed(v.name, v));
 
   return {
     range: { from: range.from.toISOString(), to: range.to.toISOString() },
@@ -335,6 +338,7 @@ export function computeStats(
     rooms: roomStats,
     heatmap,
     departments: [...deptMap.entries()].map(([name, v]) => toNamed(name, v)).sort(byHours),
-    topBookers: [...bookerMap.values()].map((v) => toNamed(v.name, v)).sort(byHours).slice(0, 10),
+    topBookers: [...bookerStats].sort(byHours).slice(0, 10),
+    topBookersByCount: [...bookerStats].sort(byCount).slice(0, 10),
   };
 }
