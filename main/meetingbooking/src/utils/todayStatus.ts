@@ -27,6 +27,7 @@ export interface TodayRoom {
   slots: TodaySlot[]; // 依開始時間排序
   current: Meeting | null;
   quickBook: { startTime: string; endTime: string } | null; // 沒有可預約的時段時為 null
+  availability: string; // LIVE 卡片上的可預約時段文字，例如「14:00 前 · 16:30 後可預約」
 }
 
 export interface TodayOverview {
@@ -86,8 +87,49 @@ export function quickBookTimes(
   return null;
 }
 
+// 可預約時段至少要這麼長才列出
+const MIN_FREE_MINUTES = 15;
+
+/**
+ * LIVE 卡片的可預約文字：從現在（或當天 08:45）到 18:15 之間的空檔
+ * - 沒有之後的預約：「目前無預約」
+ * - 空檔在最前面：「14:00 前」；在最後面：「16:30 後」；在中間：「12:00–13:30」
+ * - 最多列 3 段，其餘以「…」表示
+ */
+export function availabilityText(slots: TodaySlot[], date: string, now: number): string {
+  const dayStart = taipeiMs(date, DAY_START_MIN);
+  const dayEnd = taipeiMs(date, DAY_END_MIN);
+  if (now >= dayEnd) return "今日已結束";
+  const from = Math.max(now, dayStart);
+  const upcoming = slots.filter((s) => s.end > from);
+  if (upcoming.length === 0) return "目前無預約";
+
+  const windows: { start: number; end: number }[] = [];
+  let cursor = from;
+  for (const s of upcoming) {
+    if (s.start > cursor) windows.push({ start: cursor, end: Math.min(s.start, dayEnd) });
+    cursor = Math.max(cursor, s.end);
+  }
+  if (cursor < dayEnd) windows.push({ start: cursor, end: dayEnd });
+  const usable = windows.filter((w) => w.end - w.start >= MIN_FREE_MINUTES * MINUTE);
+  if (usable.length === 0) return "今日已滿";
+
+  const parts = usable.slice(0, 3).map((w) => {
+    if (w.start === from && w.end === dayEnd) return "全天";
+    if (w.start === from) return `${taipeiHHmm(w.end)} 前`;
+    if (w.end === dayEnd) return `${taipeiHHmm(w.start)} 後`;
+    return `${taipeiHHmm(w.start)}–${taipeiHHmm(w.end)}`;
+  });
+  return `${parts.join(" · ")}${usable.length > 3 ? " …" : ""}可預約`;
+}
+
 export function todayRoomStatus(room: RoomKey, slots: TodaySlot[], date: string, now: number): TodayRoom {
-  const base = { room, slots, quickBook: quickBookTimes(slots, date, now) };
+  const base = {
+    room,
+    slots,
+    quickBook: quickBookTimes(slots, date, now),
+    availability: availabilityText(slots, date, now),
+  };
   const last = slots[slots.length - 1];
 
   if (now >= taipeiMs(date, DAY_END_MIN)) {

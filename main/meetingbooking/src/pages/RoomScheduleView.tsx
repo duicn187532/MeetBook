@@ -78,6 +78,8 @@ const RoomScheduleView = () => {
   // Today 分頁（實驗性功能）
   const [todayMode, setTodayMode] = useState(() => loadPref("today") === "1");
   const now = useNow(todayMode);
+  // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天）
+  const [liveOffset, setLiveOffset] = useState(0);
   // 更新日誌只給沒看過的人看一次：一顯示就記為看過
   const [changelogEntries, setChangelogEntries] = useState(unseenChangelog);
   useEffect(() => {
@@ -152,7 +154,7 @@ const RoomScheduleView = () => {
   // 查詢範圍：目前畫面需要的區間（月檢視 3 個月、日／週檢視前後 3 週）還在已查詢的範圍內就不重查；
   // 超出時才以目前日期重新取「前 1 個月 ~ 後 3 個月」，換週、換月不會每次都重新讀取
   // Today 分頁一律以今天為準，確保今天的資料在查詢範圍內
-  const rangeBase = todayMode ? dayjs() : currentDate;
+  const rangeBase = todayMode ? dayjs().add(liveOffset, "day") : currentDate;
   const needFrom = selectedView === "Month" && !todayMode
     ? rangeBase.startOf("month").subtract(7, "day")
     : (todayMode || rangeBase.isBefore(viewStartDate) ? rangeBase : viewStartDate).subtract(21, "day");
@@ -189,8 +191,16 @@ const RoomScheduleView = () => {
     return () => clearInterval(timer);
   }, [todayMode]);
 
-  const todayDate = dayjs(now).tz("Asia/Taipei").format("YYYY-MM-DD");
+  const todayDate = dayjs(now).tz("Asia/Taipei").add(liveOffset, "day").format("YYYY-MM-DD");
   const todayOverview = todayMode ? buildTodayOverview(meetings, ROOMS, todayDate, now) : null;
+
+  // 資料最後一次讀取完成的時間（LIVE 標頭顯示「HH:mm 更新」）
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
+  const wasFetching = useRef(false);
+  useEffect(() => {
+    if (wasFetching.current && !fetching) setUpdatedAt(Date.now());
+    wasFetching.current = fetching;
+  }, [fetching]);
 
   // 點已選的會議室（或已在 Today 時點 Today）重新讀取資料；切換到其他會議室直接用已載入的資料
   function selectRoom(room: RoomKey) {
@@ -204,12 +214,13 @@ const RoomScheduleView = () => {
 
   function selectToday() {
     if (!todayMode) setTodayMode(true);
+    setLiveOffset(0);
     reloadMeetings();
   }
 
   // 從 Today 卡片進入該會議室本週的週檢視
   function openRoomToday(room: RoomKey) {
-    const today = dayjs();
+    const today = dayjs().add(liveOffset, "day");
     setTodayMode(false);
     setSelectedRoom(room);
     setSelectedView("Week");
@@ -548,8 +559,13 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
         onSelectToday={selectToday}
       />
       {todayOverview ? (
-        <div className="mt-2">
-          <TodayHeader overview={todayOverview} now={now} />
+        <div>
+          <TodayHeader
+            overview={todayOverview}
+            offset={liveOffset}
+            updatedAt={updatedAt}
+            onChangeDay={(delta) => setLiveOffset((o) => o + delta)}
+          />
         </div>
       ) : (
         <>
@@ -586,10 +602,6 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
             now={now}
             onOpenRoom={openRoomToday}
             onQuickBook={quickBook}
-            onSelectMeeting={(meeting) => {
-              setSelectedMeeting(meeting);
-              setShowInfoModal(true);
-            }}
           />
         ) : (
           <div className="min-h-full" style={swipe.style}>
@@ -606,14 +618,17 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           </div>
         )}
       </div>
-      <button
-        onClick={() => setTimeout(()=>{
-          openBookingModal();
-        }, 250)}
-        className={`fixed bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
-      >
-        <span className="text-3xl">+</span>
-      </button>
+      {/* LIVE 分頁每張卡片都有「立即預約」，不顯示右下角的新增按鈕，避免蓋住最後一張卡片 */}
+      {!todayMode && (
+        <button
+          onClick={() => setTimeout(()=>{
+            openBookingModal();
+          }, 250)}
+          className={`fixed bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
+        >
+          <span className="text-3xl">+</span>
+        </button>
+      )}
       {showBookingModal && (
         <BookingModal
           bookingForm={bookingForm}
