@@ -1,0 +1,46 @@
+# 前端自動部署：main 上的前端有變動時，自動建置並發布到 GitHub Pages（gh-pages 分支）
+# 也可以在 GitHub 網頁或 App 的 Actions 頁面手動執行「Deploy frontend」
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "main/meetingbooking/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# 同時只跑一個部署，新的會排在舊的後面，不會互相覆蓋
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main/meetingbooking
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: main/meetingbooking/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          # 後端網址是公開資訊（會編進前端程式）；要換網址時到 repo 的 Settings → Variables 設定 VITE_API_URL 即可
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://meetingbooking.duicn187532.deno.net/api/bookings/' }}
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: main/meetingbooking/dist
+          # 保留舊檔案：還開著舊頁面的同事不會因為檔案被刪掉而出錯
+          keep_files: true
+          commit_message: "Deploy frontend from ${{ github.sha }}"
