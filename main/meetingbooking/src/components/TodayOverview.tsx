@@ -94,8 +94,6 @@ interface TodayOverviewProps {
 
 const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: TodayRoom } & TodayOverviewProps) => {
   const style = roomStyle[room.room];
-  const showNow = overview.phase === "open";
-  const nowPos = position(now, overview.date);
   return (
     <div className="relative bg-white rounded-[22px] shadow-[0_2px_12px_rgba(140,120,50,0.08)] px-4 pt-4 pb-3">
       {/* 整張卡片可點，進入該會議室的週檢視；立即預約按鈕疊在上面 */}
@@ -160,9 +158,6 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
               />
             );
           })}
-          {showNow && (
-            <span className="absolute -top-1 -bottom-1 w-0.5 rounded-full bg-[#2B2B2B]/60" style={{ left: `${nowPos * 100}%` }} />
-          )}
         </div>
         <div className="relative h-4 mt-1 text-[11px] text-gray-400 tabular-nums">
           {[9, 12, 15, 18].map((h) => (
