@@ -8,12 +8,15 @@ import { overlapFilter } from "./booking_rules.ts";
 import { ROOMS } from "./line_bot.ts";
 import {
   ACTIVE_USER_FILTER,
-  collectLabels,
   computeStats,
   DEFAULT_ROLE,
+  displayOrg,
   isUserDisabled,
+  MAX_RECORDS,
   normalizeUserInput,
+  ORG,
   parseStatsRange,
+  toAdminBooking,
   type UserInput,
 } from "./admin_rules.ts";
 import {
@@ -159,8 +162,9 @@ function toAdminUser(u: UserDoc) {
     id: u.id,
     name: u.name ?? "",
     extension: u.extension ?? "",
-    department: u.department?.label ?? "",
-    group: u.group?.label ?? "",
+    // 以代碼對應固定的部門／組別名稱
+    department: displayOrg(u.department, "department"),
+    group: displayOrg(u.group, "group"),
     disabled: isUserDisabled(u),
   };
 }
@@ -168,16 +172,7 @@ function toAdminUser(u: UserDoc) {
 async function listUsers(ctx: Ctx) {
   const list = await users.find({}, { projection: { _id: 0 } }).toArray();
   list.sort((a, b) => a.id.localeCompare(b.id));
-  json(ctx, 200, {
-    data: list.map(toAdminUser),
-    departments: collectLabels(list, "department").map((d) => d.label),
-    groups: collectLabels(list, "group").map((g) => g.label),
-  });
-}
-
-async function knownLabels() {
-  const list = await users.find({}, { projection: { _id: 0, department: 1, group: 1, id: 1 } }).toArray();
-  return { departments: collectLabels(list, "department"), groups: collectLabels(list, "group") };
+  json(ctx, 200, { data: list.map(toAdminUser), org: ORG });
 }
 
 async function extensionTaken(extension: string, exceptId: string | null): Promise<boolean> {
@@ -191,14 +186,15 @@ async function createUser(ctx: Ctx) {
   let input: UserInput;
   try {
     input = await ctx.request.body.json();
-    const user = normalizeUserInput(input, await knownLabels(), false);
+    const user = normalizeUserInput(input, false);
     if (await users.findOne({ id: user.id! })) return json(ctx, 409, { error: `行編 ${user.id} 已存在` });
     if (await extensionTaken(user.extension!, null)) {
       return json(ctx, 409, { error: `分機 ${user.extension} 已有其他人使用` });
     }
     const doc: UserDoc = {
       id: user.id!,
-      name: user.name!,
+      // 沒填姓名時與既有資料一樣存 null
+      name: user.name || null,
       extension: user.extension!,
       department: user.department!,
       group: user.group!,
@@ -222,7 +218,7 @@ async function updateUser(ctx: Ctx) {
   try {
     const existing = await users.findOne({ id });
     if (!existing) return json(ctx, 404, { error: "找不到這位使用者" });
-    const update = normalizeUserInput(await ctx.request.body.json(), await knownLabels(), true);
+    const update = normalizeUserInput(await ctx.request.body.json(), true, existing);
     const willBeActive = update.disabled === undefined ? !isUserDisabled(existing) : !update.disabled;
     const extension = update.extension ?? existing.extension ?? "";
     if (willBeActive && await extensionTaken(extension, id)) {
@@ -231,6 +227,7 @@ async function updateUser(ctx: Ctx) {
     // 停用狀態寫入既有的 status 欄位，並移除早期版本寫入的 disabled
     const { disabled, ...fields } = update;
     const set: Partial<UserDoc> = { ...fields, updatedTime: new Date() };
+    if (fields.name !== undefined) set.name = fields.name || null;
     if (disabled !== undefined) set.status = !disabled;
     await users.updateOne(
       { id },
@@ -242,6 +239,32 @@ async function updateUser(ctx: Ctx) {
   } catch (error) {
     json(ctx, 400, { error: (error as Error).message });
   }
+}
+
+// ===== 預約紀錄 =====
+
+// GET /admin/api/bookings?from=YYYY-MM-DD&to=YYYY-MM-DD：依「預約送出時間」篩選，含已取消
+async function listBookings(ctx: Ctx) {
+  const params = ctx.request.url.searchParams;
+  let range: { from: Date; to: Date };
+  try {
+    range = parseStatsRange(params.get("from"), params.get("to"));
+  } catch (error) {
+    return json(ctx, 400, { error: (error as Error).message });
+  }
+  const docs = await bookings
+    .find({ createdTime: { $gte: range.from, $lt: range.to } } as Filter<BookingDoc>, {
+      projection: { _id: 0, editPassword: 0 },
+    })
+    .sort({ createdTime: -1 })
+    .limit(MAX_RECORDS + 1)
+    .toArray();
+  const rooms = ROOMS.map((r) => ({ key: r.key, name: r.name }));
+  json(ctx, 200, {
+    data: docs.slice(0, MAX_RECORDS).map((d) => toAdminBooking(d, rooms)),
+    truncated: docs.length > MAX_RECORDS,
+    rooms,
+  });
 }
 
 // ===== 統計 =====
@@ -272,4 +295,5 @@ adminRouter
   .get("/admin/api/users", listUsers)
   .post("/admin/api/users", createUser)
   .patch("/admin/api/users/:id", updateUser)
+  .get("/admin/api/bookings", listBookings)
   .get("/admin/api/stats", stats);

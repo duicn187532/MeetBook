@@ -1,6 +1,6 @@
 // 管理後台：使用者資料驗證與使用統計（純函式，與資料庫無關，方便單元測試）
 import { ensureDate } from "./booking_rules.ts";
-import type { BookingDoc, LabelCode, UserDoc } from "./types.ts";
+import type { BookingDoc, LabelCode } from "./types.ts";
 
 const MINUTE = 60_000;
 const DAY_MS = 24 * 60 * MINUTE;
@@ -66,35 +66,99 @@ export function normalizeExtension(value: unknown): string {
   return raw;
 }
 
-// 部門／組別：前端傳 { label }，沿用既有代碼；新的名稱以名稱當代碼
-export function normalizeLabel(value: unknown, field: string, known: LabelCode[]): LabelCode {
-  const label = value && typeof value === "object" ? (value as { label?: unknown }).label : value;
-  const name = label === undefined || label === null ? "" : text(label, field, 30);
-  if (name === "") return { code: "", label: "" };
-  const existing = known.find((k) => k.label === name);
-  return existing ? { code: existing.code, label: existing.label } : { code: name, label: name };
+// ===== 部門與組別 =====
+
+export type OrgGroup = LabelCode;
+export interface OrgDepartment extends LabelCode {
+  groups: OrgGroup[];
+}
+
+// 固定的部門與組別對應（代碼與既有資料相同）；以代碼為準，名稱寫法不同（如「數位策略」）仍視為同一部門
+export const ORG: OrgDepartment[] = [
+  {
+    code: "technology",
+    label: "金融科技部",
+    groups: [{ code: "innovation", label: "創新研發" }, { code: "analysis", label: "數據分析" }],
+  },
+  {
+    code: "strategy",
+    label: "數位策略部",
+    groups: [{ code: "person", label: "個人產品" }, { code: "company", label: "法人產品" }],
+  },
+  {
+    code: "marketing",
+    label: "數位行銷部",
+    groups: [{ code: "promotion", label: "行銷推廣" }, { code: "management", label: "維運管理" }],
+  },
+];
+
+const EMPTY: LabelCode = { code: "", label: "" };
+
+function codeOf(value: unknown, field: string): string {
+  const code = value && typeof value === "object" ? (value as { code?: unknown }).code : value;
+  if (code === undefined || code === null || code === "") return "";
+  if (typeof code !== "string") throw new Error(`${field}格式錯誤`);
+  return code;
+}
+
+/**
+ * 驗證部門與組別：只能選對照表中的部門，組別必須屬於該部門；兩者都可以留空
+ * 傳入的是代碼（{ code } 或字串），寫入時一律使用對照表的名稱
+ */
+export function normalizeOrg(
+  departmentInput: unknown,
+  groupInput: unknown,
+): { department: LabelCode; group: LabelCode } {
+  const deptCode = codeOf(departmentInput, "部門");
+  const groupCode = codeOf(groupInput, "組別");
+  if (!deptCode) {
+    if (groupCode) throw new Error("請先選擇部門");
+    return { department: EMPTY, group: EMPTY };
+  }
+  const dept = ORG.find((d) => d.code === deptCode);
+  if (!dept) throw new Error("部門不在可選清單中");
+  if (!groupCode) return { department: { code: dept.code, label: dept.label }, group: EMPTY };
+  const group = dept.groups.find((g) => g.code === groupCode);
+  if (!group) throw new Error(`${dept.label}沒有這個組別`);
+  return { department: { code: dept.code, label: dept.label }, group: { code: group.code, label: group.label } };
+}
+
+/** 依代碼取得對照表中的名稱；不在對照表（如「其他」）時沿用資料上的名稱 */
+export function displayOrg(value: LabelCode | undefined, field: "department" | "group"): LabelCode {
+  if (!value || (!value.code && !value.label)) return EMPTY;
+  if (field === "department") {
+    const d = ORG.find((x) => x.code === value.code);
+    return d ? { code: d.code, label: d.label } : { code: value.code || value.label, label: value.label || value.code };
+  }
+  for (const d of ORG) {
+    const g = d.groups.find((x) => x.code === value.code);
+    if (g) return { code: g.code, label: g.label };
+  }
+  return { code: value.code || value.label, label: value.label || value.code };
 }
 
 /**
  * 驗證新增或修改的使用者資料
- * @param partial true 時只處理有帶的欄位（修改），false 時行編與姓名為必填（新增）
+ * @param partial true 時只處理有帶的欄位（修改），false 時只有行編必填（新增）
+ * @param current 修改時的原始資料：只改部門或只改組別時，用來檢查對應關係
  */
 export function normalizeUserInput(
   input: UserInput,
-  known: { departments: LabelCode[]; groups: LabelCode[] },
   partial: boolean,
+  current?: { department?: LabelCode; group?: LabelCode },
 ): NormalizedUser {
   const out: NormalizedUser = {};
   if (!partial) out.id = normalizeUserId(input.id);
-  if (!partial || input.name !== undefined) {
-    out.name = text(input.name ?? "", "姓名", 30);
-    if (!partial && out.name === "") throw new Error("請填寫姓名");
-  }
+  if (!partial || input.name !== undefined) out.name = text(input.name ?? "", "姓名", 30);
   if (!partial || input.extension !== undefined) out.extension = normalizeExtension(input.extension ?? "");
-  if (!partial || input.department !== undefined) {
-    out.department = normalizeLabel(input.department, "部門", known.departments);
+  if (!partial || input.department !== undefined || input.group !== undefined) {
+    const org = normalizeOrg(
+      input.department !== undefined ? input.department : current?.department?.code,
+      input.group !== undefined ? input.group : current?.group?.code,
+    );
+    out.department = org.department;
+    out.group = org.group;
   }
-  if (!partial || input.group !== undefined) out.group = normalizeLabel(input.group, "組別", known.groups);
   if (input.disabled !== undefined) {
     if (typeof input.disabled !== "boolean") throw new Error("停用狀態格式錯誤");
     out.disabled = input.disabled;
@@ -103,14 +167,63 @@ export function normalizeUserInput(
   return out;
 }
 
-// 從使用者名單整理出不重複的部門／組別（依名稱排序）
-export function collectLabels(list: UserDoc[], field: "department" | "group"): LabelCode[] {
-  const map = new Map<string, LabelCode>();
-  for (const u of list) {
-    const v = u[field];
-    if (v?.label && !map.has(v.label)) map.set(v.label, { code: v.code || v.label, label: v.label });
+// ===== 預約紀錄 =====
+
+// 預約紀錄一次最多回傳的筆數
+export const MAX_RECORDS = 5000;
+
+export interface AdminBooking {
+  id: string;
+  title: string;
+  room: string;
+  roomName: string;
+  userId: string;
+  name: string;
+  extension: string;
+  department: string;
+  group: string;
+  participants: number;
+  startTime: string;
+  endTime: string;
+  createdTime: string;
+  updatedTime: string | null;
+  updatedCount: number;
+  cancelled: boolean;
+  multi: string[]; // 同一次預約的其他會議室
+}
+
+function iso(value: unknown): string {
+  try {
+    return ensureDate(value).toISOString();
+  } catch {
+    return "";
   }
-  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label, "zh-Hant"));
+}
+
+/** 轉成後台顯示用的預約紀錄（不含編輯密碼） */
+export function toAdminBooking(doc: BookingDoc, rooms: { key: string; name: string }[]): AdminBooking {
+  const user = doc.user && typeof doc.user === "object" ? doc.user : null;
+  const raw = typeof doc.user === "string" ? doc.user.trim() : "";
+  const roomName = (key: string) => rooms.find((r) => r.key === key)?.name ?? key;
+  return {
+    id: doc.id,
+    title: doc.title || "",
+    room: doc.room,
+    roomName: roomName(doc.room),
+    userId: user?.id ?? "",
+    name: user?.name || raw,
+    extension: user?.extension ?? "",
+    department: displayOrg(user?.department, "department").label,
+    group: displayOrg(user?.group, "group").label,
+    participants: typeof doc.participantsNum === "number" ? doc.participantsNum : 0,
+    startTime: iso(doc.startTime),
+    endTime: iso(doc.endTime),
+    createdTime: iso(doc.createdTime),
+    updatedTime: doc.updatedTime ? iso(doc.updatedTime) || null : null,
+    updatedCount: doc.updatedCount ?? 0,
+    cancelled: doc.cancelled === true,
+    multi: Array.isArray(doc.isMulti) ? doc.isMulti.map(roomName) : [],
+  };
 }
 
 // ===== 統計 =====
@@ -202,7 +315,11 @@ function userKey(user: BookingDoc["user"]): { key: string; name: string; dept: s
     return { key: `raw:${raw}`, name: raw || "（未知）", dept: "（未分類）" };
   }
   const name = user.name || (user.id ? `行編 ${user.id.slice(-4)}` : "（未知）");
-  return { key: user.id || `name:${name}`, name, dept: user.department?.label || "（未分類）" };
+  return {
+    key: user.id || `name:${name}`,
+    name,
+    dept: displayOrg(user.department, "department").label || "（未分類）",
+  };
 }
 
 /**

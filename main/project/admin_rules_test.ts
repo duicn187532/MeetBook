@@ -1,20 +1,18 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
-  collectLabels,
   computeStats,
+  displayOrg,
   HEAT_HOURS,
   isUserDisabled,
+  normalizeOrg,
   normalizeUserId,
   normalizeUserInput,
   parseStatsRange,
+  toAdminBooking,
 } from "./admin_rules.ts";
-import type { BookingDoc, UserDoc } from "./types.ts";
+import type { BookingDoc } from "./types.ts";
 
 const ROOMS = [{ key: "A101", name: "Alpha" }, { key: "A102", name: "Beta" }];
-const known = {
-  departments: [{ code: "strategy", label: "數位策略部" }],
-  groups: [{ code: "company", label: "法人產品" }],
-};
 
 function booking(start: string, end: string, extra: Partial<BookingDoc> = {}): BookingDoc {
   return {
@@ -48,38 +46,57 @@ Deno.test("normalizeUserId 補零成 6 碼並拒絕非數字", () => {
   assertThrows(() => normalizeUserId("1234567"));
 });
 
-Deno.test("normalizeUserInput 新增時必填，部門沿用既有代碼", () => {
+Deno.test("normalizeUserInput 新增時只有行編必填，姓名可留空", () => {
+  assertEquals(normalizeUserInput({ id: "5977" }, false), {
+    id: "005977",
+    name: "",
+    extension: "",
+    department: { code: "", label: "" },
+    group: { code: "", label: "" },
+  });
   const user = normalizeUserInput(
-    { id: "5977", name: " 祐晨 ", extension: "51164", department: { label: "數位策略部" }, group: "新組別" },
-    known,
+    { id: "5977", name: " 祐晨 ", extension: "51164", department: { code: "strategy" }, group: { code: "company" } },
     false,
   );
-  assertEquals(user, {
-    id: "005977",
-    name: "祐晨",
-    extension: "51164",
-    department: { code: "strategy", label: "數位策略部" },
-    group: { code: "新組別", label: "新組別" },
+  assertEquals(user.name, "祐晨");
+  assertEquals(user.department, { code: "strategy", label: "數位策略部" });
+  assertEquals(user.group, { code: "company", label: "法人產品" });
+  assertThrows(() => normalizeUserInput({ name: "a" }, false));
+  assertThrows(() => normalizeUserInput({ id: "5977", extension: "12" }, false), Error, "分機");
+});
+
+Deno.test("normalizeOrg 只接受對照表中的部門，且組別必須屬於該部門", () => {
+  assertEquals(normalizeOrg({ code: "technology" }, { code: "innovation" }), {
+    department: { code: "technology", label: "金融科技部" },
+    group: { code: "innovation", label: "創新研發" },
   });
-  assertThrows(() => normalizeUserInput({ id: "5977", name: "" }, known, false), Error, "姓名");
-  assertThrows(() => normalizeUserInput({ id: "5977", name: "a", extension: "12" }, known, false), Error, "分機");
+  assertEquals(normalizeOrg("marketing", ""), {
+    department: { code: "marketing", label: "數位行銷部" },
+    group: { code: "", label: "" },
+  });
+  assertThrows(() => normalizeOrg({ code: "technology" }, { code: "person" }), Error, "沒有這個組別");
+  assertThrows(() => normalizeOrg({ code: "others" }, ""), Error, "不在可選清單");
+  assertThrows(() => normalizeOrg("", { code: "person" }), Error, "請先選擇部門");
 });
 
-Deno.test("normalizeUserInput 修改時只處理有帶的欄位，且不能改行編", () => {
-  assertEquals(normalizeUserInput({ disabled: true, id: "9999" }, known, true), { disabled: true });
-  assertEquals(normalizeUserInput({ extension: "" }, known, true), { extension: "" });
-  assertThrows(() => normalizeUserInput({}, known, true), Error, "沒有要更新");
-  assertThrows(() => normalizeUserInput({ disabled: "yes" }, known, true));
+Deno.test("normalizeUserInput 修改時只改組別，以原本的部門檢查對應", () => {
+  const current = { department: { code: "strategy", label: "數位策略" }, group: { code: "person", label: "個人產品" } };
+  assertEquals(normalizeUserInput({ group: { code: "company" } }, true, current), {
+    department: { code: "strategy", label: "數位策略部" },
+    group: { code: "company", label: "法人產品" },
+  });
+  assertThrows(() => normalizeUserInput({ group: { code: "analysis" } }, true, current), Error, "沒有這個組別");
+  assertEquals(normalizeUserInput({ disabled: true, id: "9999" }, true), { disabled: true });
+  assertEquals(normalizeUserInput({ name: "" }, true), { name: "" });
+  assertThrows(() => normalizeUserInput({}, true), Error, "沒有要更新");
+  assertThrows(() => normalizeUserInput({ disabled: "yes" }, true));
 });
 
-Deno.test("collectLabels 去除重複與空白", () => {
-  const list: UserDoc[] = [
-    { id: "1", department: { code: "b", label: "乙部" } },
-    { id: "2", department: { code: "a", label: "甲部" } },
-    { id: "3", department: { code: "b", label: "乙部" } },
-    { id: "4" },
-  ];
-  assertEquals(collectLabels(list, "department").map((d) => d.label).length, 2);
+Deno.test("displayOrg 以代碼對應名稱，不在對照表時沿用原名稱", () => {
+  assertEquals(displayOrg({ code: "strategy", label: "數位策略" }, "department").label, "數位策略部");
+  assertEquals(displayOrg({ code: "analysis", label: "x" }, "group").label, "數據分析");
+  assertEquals(displayOrg({ code: "others", label: "其他" }, "department"), { code: "others", label: "其他" });
+  assertEquals(displayOrg(undefined, "group"), { code: "", label: "" });
 });
 
 Deno.test("parseStatsRange 以台北日期為界，包含結束日", () => {
@@ -161,4 +178,36 @@ Deno.test("isUserDisabled 以 status: false 或舊的 disabled: true 判斷停�
   assertEquals(isUserDisabled({ status: null }), false);
   assertEquals(isUserDisabled({ disabled: true }), true);
   assertEquals(isUserDisabled({ status: true, disabled: true }), true);
+});
+
+Deno.test("toAdminBooking 轉成後台紀錄，不帶編輯密碼，部門以代碼對應名稱", () => {
+  const doc = booking("2026-10-27T09:00:00+08:00", "2026-10-27T10:00:00+08:00", {
+    room: "A102",
+    isMulti: ["A101"],
+    updatedCount: 2,
+    updatedTime: new Date("2026-10-26T01:00:00Z"),
+    editPassword: "secret",
+    user: {
+      id: "006812",
+      name: "NeilP",
+      extension: "51189",
+      department: { code: "strategy", label: "數位策略" },
+      group: { code: "person", label: "個人產品" },
+    },
+  });
+  const r = toAdminBooking(doc, ROOMS);
+  assertEquals(r.roomName, "Beta");
+  assertEquals(r.multi, ["Alpha"]);
+  assertEquals(r.department, "數位策略部");
+  assertEquals(r.startTime, "2026-10-27T01:00:00.000Z");
+  assertEquals(r.updatedCount, 2);
+  assert(!JSON.stringify(r).includes("secret"));
+  // 舊資料：user 是字串、時間是字串
+  const old = toAdminBooking(
+    { ...doc, user: "59773 #51164", startTime: "2026-10-27T01:00:00.000Z", updatedTime: undefined },
+    ROOMS,
+  );
+  assertEquals(old.name, "59773 #51164");
+  assertEquals(old.startTime, "2026-10-27T01:00:00.000Z");
+  assertEquals(old.updatedTime, null);
 });

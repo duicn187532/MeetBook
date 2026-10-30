@@ -17,7 +17,7 @@ export interface UserInfo {
 export interface UserDoc {
   _id?: ObjectId;
   id: string;
-  name?: string;
+  name?: string | null;
   extension?: string;
   department?: LabelCode;
   group?: LabelCode;
