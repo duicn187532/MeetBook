@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ViewMode } from "../types/common";
+import { addWorkdays, weekWorkdays, workdaysFrom, WORKDAYS_PER_WEEK } from "../utils/workdays";
 
 interface ViewToggleProps {
   selectedView: ViewMode;
@@ -62,22 +63,20 @@ const ViewToggle = ({
 }: ViewToggleProps) => {
   const backgroundColor = roomBackgroundColors[selectedRoom as RoomKey]["bg"] || "bg-gray-100";
   const datesBackgroundColor = roomBackgroundColors[selectedRoom as RoomKey]["dates"] || "bg-gray-100";
-  // 日視圖：t ~ t+5
-  const displayedDates = [0, 1, 2, 3, 4, 5].map((offset) =>
-    viewStartDate.add(offset, "day")
-  );
+  // 日視圖：從 viewStartDate 起連續 5 個工作日（跳過週六、週日）
+  const displayedDates = workdaysFrom(viewStartDate, WORKDAYS_PER_WEEK);
 
   const handlePrevDaysOnDay = () => {
-    const newDate = viewStartDate.subtract(6, "day");
+    const newDate = addWorkdays(viewStartDate, -WORKDAYS_PER_WEEK);
     setViewStartDate(newDate);
-    setCurrentDate(currentDate.subtract(6, "day"))
+    setCurrentDate(addWorkdays(currentDate, -WORKDAYS_PER_WEEK));
     updateBookingDate(newDate);
   };
 
   const handleNextDaysOnDay = () => {
-    const newDate = viewStartDate.add(6, "day");
+    const newDate = addWorkdays(viewStartDate, WORKDAYS_PER_WEEK);
     setViewStartDate(newDate);
-    setCurrentDate(currentDate.add(6, "day"))
+    setCurrentDate(addWorkdays(currentDate, WORKDAYS_PER_WEEK));
     updateBookingDate(newDate);
   };
 
@@ -95,11 +94,8 @@ const ViewToggle = ({
     updateBookingDate(newDate);
   };
 
-  // 週視圖
-  const weekStart = currentDate.startOf("week").add(1, "day"); // 從週一開始
-  const displayedWeekDates = Array.from({ length: 6 }, (_, i) =>
-    weekStart.add(i, "day")
-  );
+  // 週視圖：週一到週五
+  const displayedWeekDates = weekWorkdays(currentDate);
 
   return (
     <div className={`p-2 flex flex-col ${backgroundColor} items-center rounded-t-2xl h-[150px]`}>

@@ -48,6 +48,7 @@ import {
 } from "../utils/bookingHelpers";
 import { loadPref, savePref } from "../utils/storage";
 import { buildTodayOverview } from "../utils/todayStatus";
+import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../utils/workdays";
 
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
@@ -83,8 +84,9 @@ const RoomScheduleView = () => {
   useEffect(() => {
     if (changelog.length > 0 && changelogEntries.length > 0) savePref("changelogSeen", changelog[0].id);
   }, [changelogEntries.length]);
-  const [currentDate, setCurrentDate] = useState(dayjs());
-  const [viewStartDate, setViewStartDate] = useState(dayjs());
+  // 週末開啟時從下一個工作日開始（週六、週日不上班）
+  const [currentDate, setCurrentDate] = useState(() => rollToWorkday(dayjs()));
+  const [viewStartDate, setViewStartDate] = useState(() => rollToWorkday(dayjs()));
   const [editPassword, setEditPassword] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   // 最近一次自動帶入的預設時間；使用者沒改過時，開啟預約視窗會換成最新的預設值
@@ -209,7 +211,7 @@ const RoomScheduleView = () => {
 
   // 從 Today 卡片進入該會議室本週的週檢視
   function openRoomToday(room: RoomKey) {
-    const today = dayjs();
+    const today = rollToWorkday(dayjs());
     setTodayMode(false);
     setSelectedRoom(room);
     setSelectedView("Week");
@@ -249,11 +251,13 @@ const RoomScheduleView = () => {
       setCurrentDate(currentDate.add(7 * step, "day"));
       updateBookingDate(newStart);
     } else {
-      const next = currentDate.add(step, "day");
+      // 日檢視一次一個工作日，超出上方日期列時整列換頁
+      const next = addWorkdays(currentDate, step);
       setCurrentDate(next);
       updateBookingDate(next);
-      if (next.isBefore(viewStartDate, "day")) setViewStartDate(viewStartDate.subtract(6, "day"));
-      else if (next.isAfter(viewStartDate.add(5, "day"), "day")) setViewStartDate(viewStartDate.add(6, "day"));
+      const strip = workdaysFrom(viewStartDate, WORKDAYS_PER_WEEK);
+      if (next.isBefore(strip[0], "day")) setViewStartDate(addWorkdays(strip[0], -WORKDAYS_PER_WEEK));
+      else if (next.isAfter(strip[strip.length - 1], "day")) setViewStartDate(addWorkdays(strip[0], WORKDAYS_PER_WEEK));
     }
   });
 
