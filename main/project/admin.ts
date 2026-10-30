@@ -158,10 +158,7 @@ function toAdminUser(u: UserDoc) {
 
 async function listUsers(ctx: Ctx) {
   const list = await users.find({}, { projection: { _id: 0 } }).toArray();
-  list.sort((a, b) =>
-    (a.department?.label ?? "").localeCompare(b.department?.label ?? "", "zh-Hant") ||
-    (a.name ?? "").localeCompare(b.name ?? "", "zh-Hant") || a.id.localeCompare(b.id)
-  );
+  list.sort((a, b) => a.id.localeCompare(b.id));
   json(ctx, 200, {
     data: list.map(toAdminUser),
     departments: collectLabels(list, "department").map((d) => d.label),

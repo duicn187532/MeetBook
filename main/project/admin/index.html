@@ -257,6 +257,23 @@ main {
 .search { position: relative; margin-bottom: 10px; }
 .search svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 18px; height: 18px; color: var(--text-3); }
 .search .input { padding-left: 38px; }
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a7974' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 16px;
+  font-size: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  text-overflow: ellipsis;
+}
+.select.on { border-color: var(--accent); background-color: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.list-meta .sort { display: flex; align-items: center; gap: 6px; }
+.list-meta .sort .select { min-height: 34px; padding-top: 4px; padding-bottom: 4px; font-size: 14px; width: auto; }
+.list-meta .clear { border: 0; background: none; color: var(--accent); font-size: 13px; padding: 4px 0; }
 .list-meta { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-3); margin: 0 2px 8px; }
 .users { display: grid; gap: 8px; }
 .user {
@@ -399,7 +416,22 @@ main {
         <input class="input" id="q" type="search" placeholder="搜尋姓名、行編、分機、部門" autocomplete="off" enterkeyhint="search">
       </div>
       <div class="chips" role="group" aria-label="狀態篩選" id="user-filters"></div>
-      <div class="list-meta"><span id="user-count"></span></div>
+      <div class="filters">
+        <select class="select" id="f-dept-filter" aria-label="依部門篩選"></select>
+        <select class="select" id="f-group-filter" aria-label="依組別篩選"></select>
+      </div>
+      <div class="list-meta">
+        <span><span id="user-count"></span> <button class="clear" type="button" id="clear-filters" hidden>清除篩選</button></span>
+        <label class="sort">排序
+          <select class="select" id="sort" aria-label="排序方式">
+            <option value="id">行編 小→大</option>
+            <option value="id-desc">行編 大→小</option>
+            <option value="name">姓名</option>
+            <option value="ext">分機</option>
+            <option value="dept">部門 → 行編</option>
+          </select>
+        </label>
+      </div>
       <div class="users" id="users"><div class="loading">載入中…</div></div>
     </section>
   </main>
@@ -780,13 +812,25 @@ let users = [];
 let departments = [];
 let groups = [];
 let userFilter = "active";
+let deptFilter = "";
+let groupFilter = "";
+const NONE = "__none__";
+const PREF_KEY = "mb-admin-users";
+try {
+  const pref = JSON.parse(localStorage.getItem(PREF_KEY) || "{}");
+  if (pref.sort) document.getElementById("sort").value = pref.sort;
+  if (["active", "disabled", "all"].includes(pref.status)) userFilter = pref.status;
+} catch { /* 無法使用 localStorage 時用預設值 */ }
+function savePref() {
+  try { localStorage.setItem(PREF_KEY, JSON.stringify({ sort: $("sort").value, status: userFilter })); } catch { /* 忽略 */ }
+}
 const USER_FILTERS = [["active", "啟用中"], ["disabled", "已停用"], ["all", "全部"]];
 
 function renderUserFilters() {
   $("user-filters").replaceChildren(...USER_FILTERS.map(([key, label]) =>
     h("button", {
       class: "chip", type: "button", "aria-pressed": String(key === userFilter), text: label,
-      onclick: () => { userFilter = key; renderUserFilters(); renderUsers(); },
+      onclick: () => { userFilter = key; savePref(); renderUserFilters(); renderOrgFilters(); renderUsers(); },
     })
   ));
 }
@@ -805,6 +849,7 @@ async function loadUsers() {
     loaded.users = true;
     $("dept-list").replaceChildren(...departments.map((d) => h("option", { value: d })));
     $("group-list").replaceChildren(...groups.map((g) => h("option", { value: g })));
+    renderOrgFilters();
     renderUsers();
     updateUserSub();
   } catch (err) {
@@ -812,16 +857,73 @@ async function loadUsers() {
   }
 }
 
+// 部門、組別下拉選單；組別只列出所選部門底下有的組
+function renderOrgFilters() {
+  const opts = (all, label, current, field, scope) => {
+    const pool = users.filter((u) => matchesStatus(u) && scope(u));
+    const names = all.filter((n) => pool.some((u) => u[field] === n));
+    if (current && current !== NONE && !names.includes(current)) names.push(current);
+    const noneN = pool.filter((u) => !u[field]).length;
+    return [
+      h("option", { value: "", text: `全部${label}` }),
+      ...names.map((n) => h("option", { value: n, text: `${n}（${pool.filter((u) => u[field] === n).length}）` })),
+      noneN || current === NONE ? h("option", { value: NONE, text: `未設定${label}（${noneN}）` }) : null,
+    ].filter(Boolean);
+  };
+  const d = $("f-dept-filter"), g = $("f-group-filter");
+  d.replaceChildren(...opts(departments, "部門", deptFilter, "department", () => true));
+  d.value = deptFilter;
+  g.replaceChildren(...opts(groups, "組別", groupFilter, "group", (u) => matchOrg(u.department, deptFilter)));
+  g.value = groupFilter;
+  d.classList.toggle("on", !!deptFilter);
+  g.classList.toggle("on", !!groupFilter);
+  $("clear-filters").hidden = !deptFilter && !groupFilter && !$("q").value;
+}
+const matchOrg = (value, filter) => !filter || (filter === NONE ? !value : value === filter);
+const matchesStatus = (u) => userFilter === "all" || (userFilter === "disabled") === u.disabled;
+
+$("f-dept-filter").addEventListener("change", (e) => {
+  deptFilter = e.target.value;
+  groupFilter = "";
+  renderOrgFilters();
+  renderUsers();
+});
+$("f-group-filter").addEventListener("change", (e) => {
+  groupFilter = e.target.value;
+  renderOrgFilters();
+  renderUsers();
+});
+$("sort").addEventListener("change", () => { savePref(); renderUsers(); });
+$("clear-filters").addEventListener("click", () => {
+  deptFilter = groupFilter = "";
+  $("q").value = "";
+  renderOrgFilters();
+  renderUsers();
+});
+
+const zh = (a, b) => String(a || "").localeCompare(String(b || ""), "zh-Hant");
+// 空值一律排在最後
+const emptyLast = (a, b, cmp) => (!a && !b ? 0 : !a ? 1 : !b ? -1 : cmp(a, b));
+const SORTS = {
+  "id": (a, b) => a.id.localeCompare(b.id),
+  "id-desc": (a, b) => b.id.localeCompare(a.id),
+  "name": (a, b) => emptyLast(a.name, b.name, zh) || a.id.localeCompare(b.id),
+  "ext": (a, b) => emptyLast(a.extension, b.extension, (x, y) => x.localeCompare(y)) || a.id.localeCompare(b.id),
+  "dept": (a, b) =>
+    emptyLast(a.department, b.department, zh) || emptyLast(a.group, b.group, zh) || a.id.localeCompare(b.id),
+};
+
 const norm = (s) => String(s || "").toLowerCase();
 function renderUsers() {
   const q = norm($("q").value.trim());
   const list = users.filter((u) =>
-    (userFilter === "all" || (userFilter === "disabled") === u.disabled) &&
+    matchesStatus(u) && matchOrg(u.department, deptFilter) && matchOrg(u.group, groupFilter) &&
     (!q || [u.name, u.id, u.id.replace(/^0+/, ""), u.extension, u.department, u.group].some((v) => norm(v).includes(q)))
-  );
+  ).sort(SORTS[$("sort").value] || SORTS.id);
   $("user-count").textContent = `${list.length} 人`;
+  $("clear-filters").hidden = !deptFilter && !groupFilter && !q;
   if (!list.length) {
-    $("users").replaceChildren(h("div", { class: "empty", text: q ? "找不到符合的使用者" : "沒有使用者" }));
+    $("users").replaceChildren(h("div", { class: "empty", text: q || deptFilter || groupFilter ? "找不到符合的使用者" : "沒有使用者" }));
     return;
   }
   $("users").replaceChildren(...list.map((u) =>
