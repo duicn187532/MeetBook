@@ -131,6 +131,9 @@ Deno.test("computeStats 計算使用率、取消率與熱力圖", () => {
   // 週三那筆已取消，不計入
   assertEquals(stats.heatmap[2][nine], 0);
   assertEquals(stats.departments[0].name, "數位策略部");
+  // 筆數排行：祐晨 2 筆排第一；同筆數時以時數較多者在前
+  assertEquals(stats.topBookersByCount[0], { name: "祐晨", count: 2, hours: 3 });
+  assertEquals(stats.topBookersByCount.length, 2);
   assert(stats.departments.some((d) => d.name === "（未分類）"));
 });
 
