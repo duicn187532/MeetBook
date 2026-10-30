@@ -25,10 +25,7 @@ const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: 
         todayMode ? "bg-[#F5D46B] text-white [text-shadow:0_1px_1px_rgba(150,110,0,0.25)]" : "bg-gray-100 text-gray-700"
       }`}
     >
-      <span className="relative flex w-2 h-2" aria-hidden="true">
-        {todayMode && <span className="absolute inset-0 rounded-full bg-[#3BFF7A] opacity-70 animate-ping" />}
-        <span className="relative w-2 h-2 rounded-full live-dot" />
-      </span>
+      <span className="w-1.5 h-1.5 rounded-full live-dot" aria-hidden="true" />
       LIVE
     </button>
     {rooms.map((room) => {

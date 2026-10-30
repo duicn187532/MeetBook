@@ -78,7 +78,7 @@ export const TodayHeader = ({ overview, offset, updatedAt, onChangeDay }: LiveHe
           <ChevronRight className="w-3.5 h-3.5" strokeWidth={2.5} />
         </button>
       </div>
-      <div className="rounded-full bg-[#F6EBA4] px-5 py-1 text-[13px] font-medium text-[#4A4423] tabular-nums tracking-wide">
+      <div className="live-pill rounded-full bg-[#F6EBA4] px-5 py-1 text-[13px] font-medium text-[#4A4423] tabular-nums tracking-wide">
         {parts.join(" · ")}
       </div>
     </div>
