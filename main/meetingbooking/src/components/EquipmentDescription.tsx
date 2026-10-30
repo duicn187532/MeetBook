@@ -1,9 +1,6 @@
 // src/components/Equipment.tsx
 import { Users, Monitor, Square, Tv } from "lucide-react";
-// 以 ?inline 打包進主程式：進入網站時就一起載好，切換會議室或分頁都不會再重新下載
-import a101 from "../assets/rooms/a101.jpeg?inline";
-import a102 from "../assets/rooms/a102.jpeg?inline";
-import a103 from "../assets/rooms/a103.jpeg?inline";
+import { roomPhotos } from "../config/rooms";
 
 interface EquipmentProps {
   selectedRoom: string;
@@ -14,9 +11,9 @@ interface EquipmentProps {
 const equipmentMapping: { 
   [room: string]: { seats: number; hasProjector: boolean; hasWhiteboard: boolean; hasTv:boolean; imageUrl: string } 
 } = {
-  A101: { seats: 10, hasProjector: true, hasWhiteboard: true, hasTv: false, imageUrl: a101 },
-  A102: { seats: 15, hasProjector: true, hasWhiteboard: true, hasTv: false,imageUrl: a102 },
-  A103: { seats: 20, hasProjector: false, hasWhiteboard: true, hasTv: true,imageUrl: a103 },
+  A101: { seats: 10, hasProjector: true, hasWhiteboard: true, hasTv: false, imageUrl: roomPhotos.A101 },
+  A102: { seats: 15, hasProjector: true, hasWhiteboard: true, hasTv: false,imageUrl: roomPhotos.A102 },
+  A103: { seats: 20, hasProjector: false, hasWhiteboard: true, hasTv: true,imageUrl: roomPhotos.A103 },
 };
 
 const Equipment = ({ selectedRoom, imageUrl }: EquipmentProps) => {

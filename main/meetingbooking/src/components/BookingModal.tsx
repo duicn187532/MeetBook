@@ -212,8 +212,8 @@ const BookingModal = ({
                 }
               }}
               ampm={false}
-              minTime={dayjs().hour(8).minute(45)}
-              maxTime={dayjs().hour(18).minute(15)}
+              minTime={dayjs().hour(8).minute(45).second(0).millisecond(0)}
+              maxTime={dayjs().hour(18).minute(15).second(0).millisecond(0)}
               desktopModeMediaQuery="(max-width: 9999px)"
               timeSteps={{ hours: 1, minutes: 5 }}
             // slotProps={{
@@ -240,8 +240,8 @@ const BookingModal = ({
                 }
               }}
               ampm={false}
-              minTime={dayjs().hour(8).minute(45)}
-              maxTime={dayjs().hour(18).minute(15)}
+              minTime={dayjs().hour(8).minute(45).second(0).millisecond(0)}
+              maxTime={dayjs().hour(18).minute(15).second(0).millisecond(0)}
               desktopModeMediaQuery="(max-width: 9999px)"
               timeSteps={{ hours: 1, minutes: 5 }}
             // slotProps={{
