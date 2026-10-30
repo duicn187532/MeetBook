@@ -119,7 +119,7 @@ main {
   bottom: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   background: var(--surface);
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
@@ -151,6 +151,8 @@ main {
 .field { display: grid; gap: 6px; margin-bottom: 14px; align-content: start; }
 .field label { font-size: 13px; color: var(--text-2); font-weight: 600; }
 .field .hint { font-size: 12px; color: var(--text-3); }
+.field .hint:empty { display: none; }
+.field label .opt { font-weight: 400; color: var(--text-3); }
 .input {
   width: 100%;
   min-height: 46px;
@@ -162,6 +164,13 @@ main {
   outline: none;
 }
 .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 36px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a7974' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 18px;
+}
+select.input:disabled { opacity: .55; }
 .input[readonly] { background: var(--surface-2); color: var(--text-2); }
 .btn {
   min-height: 46px;
@@ -294,6 +303,32 @@ main {
 .user .ids { font-size: 13px; color: var(--text-2); }
 .user .org { font-size: 13px; color: var(--text-3); margin-top: 2px; }
 .user.off .nm, .user.off .ids, .user.off .org { color: var(--text-3); }
+/* ===== 預約紀錄 ===== */
+.recs { display: grid; gap: 8px; }
+.rec {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+.rec .r1 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.rec .ttl { font-weight: 600; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec .sent { flex: none; font-size: 12px; color: var(--text-3); }
+.rec .r2 { font-size: 14px; color: var(--text); margin-top: 3px; }
+.rec .r3 { font-size: 13px; color: var(--text-3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec .tags { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: 1px; }
+.rec.off .ttl, .rec.off .r2 { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-3); }
+.tag { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); text-decoration: none; display: inline-block; }
+.tag.red { background: var(--danger-soft); color: var(--danger); }
+.more { width: 100%; margin-top: 10px; }
+.notice { font-size: 13px; color: var(--text-2); background: var(--surface-2); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; }
+.detail { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; font-size: 15px; }
+.detail dt { color: var(--text-3); font-size: 13px; padding-top: 2px; white-space: nowrap; }
+.detail dd { margin: 0; overflow-wrap: anywhere; }
 .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--danger-soft); color: var(--danger); }
 .chev { width: 18px; height: 18px; color: var(--text-3); }
 .fab {
@@ -409,6 +444,42 @@ main {
       <div id="stats-body"><div class="loading">載入中…</div></div>
     </section>
 
+    <!-- 預約紀錄 -->
+    <section id="view-records" hidden>
+      <div class="chips" role="group" aria-label="送出時間區間" id="rec-periods"></div>
+      <div class="custom-range" id="rec-custom" hidden>
+        <input class="input" type="date" id="rec-from" aria-label="開始日期">
+        <span>至</span>
+        <input class="input" type="date" id="rec-to" aria-label="結束日期">
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="input" id="rec-q" type="search" placeholder="搜尋會議名稱、預約人、行編、分機" autocomplete="off" enterkeyhint="search">
+      </div>
+      <div class="filters">
+        <select class="select" id="rec-room" aria-label="依會議室篩選"></select>
+        <select class="select" id="rec-status" aria-label="依狀態篩選">
+          <option value="">全部狀態</option>
+          <option value="active">有效</option>
+          <option value="cancelled">已取消</option>
+          <option value="edited">修改過</option>
+          <option value="multi">一次訂多間</option>
+        </select>
+      </div>
+      <div class="list-meta">
+        <span><span id="rec-count"></span> <button class="clear" type="button" id="rec-clear" hidden>清除篩選</button></span>
+        <label class="sort">排序
+          <select class="select" id="rec-sort" aria-label="排序方式">
+            <option value="sent-desc">送出時間 新→舊</option>
+            <option value="sent-asc">送出時間 舊→新</option>
+            <option value="meet-desc">會議時間 新→舊</option>
+            <option value="meet-asc">會議時間 舊→新</option>
+          </select>
+        </label>
+      </div>
+      <div class="recs" id="recs"><div class="loading">載入中…</div></div>
+    </section>
+
     <!-- 使用者 -->
     <section id="view-users" hidden>
       <div class="search">
@@ -445,6 +516,10 @@ main {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
       使用統計
     </button>
+    <button type="button" role="tab" data-tab="records" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="2.5"/><path d="M8 2.5v3M16 2.5v3M8 10.5h8M8 14.5h8M8 18h5"/></svg>
+      預約紀錄
+    </button>
     <button type="button" role="tab" data-tab="users" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.7.8 2.8 2.6 3 5.2"/></svg>
       使用者名單
@@ -461,7 +536,7 @@ main {
     <button class="btn-ghost" type="button" id="sheet-close">取消</button>
   </div>
   <div class="field">
-    <label for="f-name">姓名</label>
+    <label for="f-name">姓名 <span class="opt">（選填）</span></label>
     <input class="input" id="f-name" maxlength="30" autocomplete="off">
   </div>
   <div class="row2">
@@ -477,13 +552,12 @@ main {
   </div>
   <div class="field">
     <label for="f-dept">部門</label>
-    <input class="input" id="f-dept" list="dept-list" maxlength="30" autocomplete="off">
-    <datalist id="dept-list"></datalist>
+    <select class="input select-input" id="f-dept"></select>
   </div>
   <div class="field">
     <label for="f-group">組別</label>
-    <input class="input" id="f-group" list="group-list" maxlength="30" autocomplete="off">
-    <datalist id="group-list"></datalist>
+    <select class="input select-input" id="f-group"></select>
+    <span class="hint" id="f-group-hint"></span>
   </div>
   <div class="switch-row">
     <div>
@@ -498,6 +572,17 @@ main {
     <button class="btn btn-primary" type="submit" id="sheet-save">儲存</button>
   </div>
 </form>
+
+<!-- 預約紀錄明細 -->
+<div class="sheet-backdrop" id="rec-backdrop" hidden></div>
+<section class="sheet" id="rec-sheet" role="dialog" aria-modal="true" aria-labelledby="rec-sheet-title" hidden>
+  <div class="grab"></div>
+  <div class="sheet-head">
+    <h2 id="rec-sheet-title">預約明細</h2>
+    <button class="btn-ghost" type="button" id="rec-sheet-close">關閉</button>
+  </div>
+  <dl class="detail" id="rec-detail"></dl>
+</section>
 
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -569,7 +654,7 @@ $("login-form").addEventListener("submit", async (e) => {
   btn.textContent = "登入中…";
   try {
     await api("login", { method: "POST", body: JSON.stringify({ password: $("pw").value }) });
-    loaded.stats = loaded.users = false;
+    loaded.stats = loaded.users = loaded.records = false;
     showApp();
   } catch (err) {
     $("login-error").textContent = err.message;
@@ -586,8 +671,8 @@ $("logout").addEventListener("click", async () => {
 
 // ===== 分頁 =====
 let currentTab = "stats";
-const loaded = { stats: false, users: false };
-const TITLES = { stats: "使用統計", users: "使用者名單" };
+const loaded = { stats: false, users: false, records: false };
+const TITLES = { stats: "使用統計", records: "預約紀錄", users: "使用者名單" };
 
 function selectTab(tab) {
   currentTab = tab;
@@ -596,11 +681,15 @@ function selectTab(tab) {
   }
   $("view-stats").hidden = tab !== "stats";
   $("view-users").hidden = tab !== "users";
+  $("view-records").hidden = tab !== "records";
   $("add-user").hidden = tab !== "users";
   $("page-title").firstChild.textContent = TITLES[tab];
   if (tab === "stats" && !loaded.stats) loadStats();
   if (tab === "users" && !loaded.users) loadUsers();
-  if (tab === "users") updateUserSub(); else $("page-sub").textContent = periodLabel();
+  if (tab === "records" && !loaded.records) loadRecords();
+  if (tab === "users") updateUserSub();
+  else if (tab === "records") updateRecSub();
+  else $("page-sub").textContent = periodLabel();
   window.scrollTo({ top: 0 });
 }
 for (const b of document.querySelectorAll(".tabbar button")) {
@@ -807,9 +896,207 @@ function renderStats(s) {
   body.replaceChildren(kpis, facts, roomCard, heatCard, deptCard, topCard);
 }
 
+// ===== 預約紀錄 =====
+let records = [];
+let recTruncated = false;
+let recPeriod = "7d";
+let recShown = 100;
+const REC_PAGE = 100;
+const REC_PERIODS = [["today", "今天"], ["7d", "近 7 天"], ["month", "本月"], ["last", "上月"], ["custom", "自訂"]];
+const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
+const tpe = (iso) => {
+  // 轉成台北時間的各欄位
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, weekday: "short" })
+      .formatToParts(d).map((x) => [x.type, x.value]),
+  );
+  const dow = new Date(Date.UTC(+p.year, +p.month - 1, +p.day)).getUTCDay();
+  return { y: p.year, m: p.month, d: p.day, hm: `${p.hour === "24" ? "00" : p.hour}:${p.minute}`, w: WEEK[dow] };
+};
+const fmtSent = (iso) => { const t = tpe(iso); return t ? `${+t.m}/${+t.d} ${t.hm}` : "—"; };
+const fmtFull = (iso) => { const t = tpe(iso); return t ? `${t.y}/${t.m}/${t.d}（${t.w}）${t.hm}` : "—"; };
+function fmtMeeting(r) {
+  const s = tpe(r.startTime), e = tpe(r.endTime);
+  if (!s) return "時間不明";
+  const sameDay = e && s.y === e.y && s.m === e.m && s.d === e.d;
+  return `${+s.m}/${+s.d}（${s.w}）${s.hm}–${e ? (sameDay ? e.hm : `${+e.m}/${+e.d} ${e.hm}`) : "?"}`;
+}
+
+try {
+  const pref = JSON.parse(localStorage.getItem("mb-admin-recs") || "{}");
+  if (REC_PERIODS.some(([k]) => k === pref.period) && pref.period !== "custom") recPeriod = pref.period;
+  if (pref.sort) document.getElementById("rec-sort").value = pref.sort;
+} catch { /* 忽略 */ }
+function saveRecPref() {
+  try { localStorage.setItem("mb-admin-recs", JSON.stringify({ period: recPeriod, sort: $("rec-sort").value })); } catch { /* 忽略 */ }
+}
+
+function recRange() {
+  const t = taipeiToday();
+  const y = t.getFullYear(), m = t.getMonth();
+  switch (recPeriod) {
+    case "today": return [t, t];
+    case "7d": return [new Date(y, m, t.getDate() - 6), t];
+    case "month": return [new Date(y, m, 1), t];
+    case "last": return [new Date(y, m - 1, 1), new Date(y, m, 0)];
+    default: return [parseDay($("rec-from").value), parseDay($("rec-to").value)];
+  }
+}
+function updateRecSub() {
+  const [f, t] = recRange();
+  $("page-sub").textContent = isNaN(f) || isNaN(t) ? "" : `送出時間 ${ymd(f)}${ymd(f) === ymd(t) ? "" : ` – ${ymd(t)}`}`;
+}
+function renderRecPeriods() {
+  $("rec-periods").replaceChildren(...REC_PERIODS.map(([key, label]) =>
+    h("button", {
+      class: "chip", type: "button", "aria-pressed": String(key === recPeriod), text: label,
+      onclick: () => {
+        recPeriod = key;
+        saveRecPref();
+        renderRecPeriods();
+        $("rec-custom").hidden = key !== "custom";
+        if (key === "custom") {
+          const [f, t] = [new Date(taipeiToday().getFullYear(), taipeiToday().getMonth(), 1), taipeiToday()];
+          if (!$("rec-from").value) $("rec-from").value = ymd(f);
+          if (!$("rec-to").value) $("rec-to").value = ymd(t);
+        }
+        loadRecords();
+      },
+    })
+  ));
+}
+$("rec-from").addEventListener("change", () => loadRecords());
+$("rec-to").addEventListener("change", () => loadRecords());
+
+let recSeq = 0;
+async function loadRecords() {
+  const [f, t] = recRange();
+  if (isNaN(f) || isNaN(t)) return;
+  updateRecSub();
+  const seq = ++recSeq;
+  $("recs").replaceChildren(h("div", { class: "loading", text: "載入中…" }));
+  try {
+    const res = await api(`bookings?from=${ymd(f)}&to=${ymd(t)}`);
+    if (seq !== recSeq) return;
+    records = res.data;
+    recTruncated = res.truncated;
+    loaded.records = true;
+    const roomSel = $("rec-room");
+    const cur = roomSel.value;
+    roomSel.replaceChildren(h("option", { value: "", text: "全部會議室" }), ...res.rooms.map((r) => h("option", { value: r.key, text: r.name })));
+    roomSel.value = cur;
+    recShown = REC_PAGE;
+    renderRecords();
+  } catch (err) {
+    if (seq !== recSeq) return;
+    $("recs").replaceChildren(h("div", { class: "empty", text: err.message }));
+  }
+}
+
+const REC_SORTS = {
+  "sent-desc": (a, b) => b.createdTime.localeCompare(a.createdTime),
+  "sent-asc": (a, b) => a.createdTime.localeCompare(b.createdTime),
+  "meet-desc": (a, b) => b.startTime.localeCompare(a.startTime) || b.createdTime.localeCompare(a.createdTime),
+  "meet-asc": (a, b) => a.startTime.localeCompare(b.startTime) || a.createdTime.localeCompare(b.createdTime),
+};
+const REC_STATUS = {
+  "": () => true,
+  active: (r) => !r.cancelled,
+  cancelled: (r) => r.cancelled,
+  edited: (r) => r.updatedCount > 0,
+  multi: (r) => r.multi.length > 0,
+};
+
+function renderRecords() {
+  const q = norm($("rec-q").value.trim());
+  const room = $("rec-room").value;
+  const status = $("rec-status").value;
+  const list = records.filter((r) =>
+    (!room || r.room === room) && (REC_STATUS[status] || REC_STATUS[""])(r) &&
+    (!q || [r.title, r.name, r.userId, r.userId.replace(/^0+/, ""), r.extension, r.department, r.group].some((v) => norm(v).includes(q)))
+  ).sort(REC_SORTS[$("rec-sort").value] || REC_SORTS["sent-desc"]);
+  const cancelled = list.filter((r) => r.cancelled).length;
+  $("rec-count").textContent = `${list.length} 筆${cancelled ? `（取消 ${cancelled}）` : ""}`;
+  $("rec-clear").hidden = !q && !room && !status;
+  $("rec-room").classList.toggle("on", !!room);
+  $("rec-status").classList.toggle("on", !!status);
+
+  const box = $("recs");
+  const nodes = [];
+  if (recTruncated) nodes.push(h("div", { class: "notice", text: "這段期間的紀錄太多，只顯示最新的 5,000 筆，請縮小區間。" }));
+  if (!list.length) {
+    nodes.push(h("div", { class: "empty", text: records.length ? "找不到符合的紀錄" : "這段期間沒有預約紀錄" }));
+    box.replaceChildren(...nodes);
+    return;
+  }
+  for (const r of list.slice(0, recShown)) {
+    const tags = [];
+    if (r.cancelled) tags.push(h("span", { class: "tag red", text: "已取消" }));
+    if (r.updatedCount > 0) tags.push(h("span", { class: "tag", text: `改 ${r.updatedCount} 次` }));
+    if (r.multi.length) tags.push(h("span", { class: "tag", text: `+${r.multi.join("、")}` }));
+    nodes.push(h("button", { class: r.cancelled ? "rec off" : "rec", type: "button", onclick: () => openRecord(r) },
+      h("div", { class: "r1" },
+        h("span", { class: "ttl" }, r.title || "（未填會議名稱）"),
+        h("span", { class: "sent num", text: `送出 ${fmtSent(r.createdTime)}` }),
+      ),
+      h("div", { class: "r2 num" }, `${fmtMeeting(r)} · ${r.roomName}`, tags.length ? h("span", { class: "tags" }, ...tags) : null),
+      h("div", { class: "r3 num", text: [
+        r.name || (r.userId ? `行編 ${r.userId.slice(-4)}` : "（未知）"),
+        r.extension ? `#${r.extension}` : "",
+        r.department,
+      ].filter(Boolean).join(" · ") }),
+    ));
+  }
+  if (list.length > recShown) {
+    nodes.push(h("button", { class: "btn more", type: "button", text: `顯示更多（還有 ${list.length - recShown} 筆）`,
+      onclick: () => { recShown += REC_PAGE; renderRecords(); } }));
+  }
+  box.replaceChildren(...nodes);
+}
+const rerenderRecords = () => { recShown = REC_PAGE; renderRecords(); };
+$("rec-q").addEventListener("input", rerenderRecords);
+$("rec-room").addEventListener("change", rerenderRecords);
+$("rec-status").addEventListener("change", rerenderRecords);
+$("rec-sort").addEventListener("change", () => { saveRecPref(); rerenderRecords(); });
+$("rec-clear").addEventListener("click", () => {
+  $("rec-q").value = "";
+  $("rec-room").value = "";
+  $("rec-status").value = "";
+  rerenderRecords();
+});
+
+function openRecord(r) {
+  const row = (k, v) => [h("dt", { text: k }), h("dd", { class: "num" }, v)];
+  $("rec-detail").replaceChildren(
+    ...row("會議名稱", r.title || "（未填）"),
+    ...row("狀態", r.cancelled ? h("span", { class: "tag red", text: "已取消" }) : "有效"),
+    ...row("會議時間", fmtMeeting(r)),
+    ...row("會議室", r.multi.length ? `${r.roomName}（同時預約 ${r.multi.join("、")}）` : r.roomName),
+    ...row("人數", r.participants ? `${r.participants} 人` : "—"),
+    ...row("預約人", [r.name || "（未填姓名）", r.userId ? `行編 ${r.userId.replace(/^0+(?=\d{4})/, "")}` : "", r.extension ? `#${r.extension}` : ""].filter(Boolean).join(" · ")),
+    ...row("部門", [r.department, r.group].filter(Boolean).join(" · ") || "—"),
+    ...row("送出時間", fmtFull(r.createdTime)),
+    ...row("最後修改", r.updatedTime ? `${fmtFull(r.updatedTime)}（共 ${r.updatedCount} 次）` : "沒有修改過"),
+  );
+  $("rec-backdrop").hidden = false;
+  $("rec-sheet").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function closeRecord() {
+  $("rec-backdrop").hidden = true;
+  $("rec-sheet").hidden = true;
+  document.body.style.overflow = "";
+}
+$("rec-sheet-close").addEventListener("click", closeRecord);
+$("rec-backdrop").addEventListener("click", closeRecord);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("rec-sheet").hidden) closeRecord(); });
+
 // ===== 使用者 =====
 let users = [];
 let departments = [];
+let org = []; // 固定的部門與組別對應（由後端提供）
 let groups = [];
 let userFilter = "active";
 let deptFilter = "";
@@ -843,12 +1130,19 @@ function updateUserSub() {
 async function loadUsers() {
   try {
     const res = await api("users");
-    users = res.data;
-    departments = res.departments;
-    groups = res.groups;
+    org = res.org || [];
+    // 名單、篩選與排序沿用名稱字串；表單以代碼對應
+    users = res.data.map((u) => ({
+      ...u,
+      deptCode: u.department.code,
+      department: u.department.label,
+      groupCode: u.group.code,
+      group: u.group.label,
+    }));
+    const extra = (field) => [...new Set(users.map((u) => u[field]).filter(Boolean))];
+    departments = [...new Set([...org.map((d) => d.label), ...extra("department")])];
+    groups = [...new Set([...org.flatMap((d) => d.groups.map((g) => g.label)), ...extra("group")])];
     loaded.users = true;
-    $("dept-list").replaceChildren(...departments.map((d) => h("option", { value: d })));
-    $("group-list").replaceChildren(...groups.map((g) => h("option", { value: g })));
     renderOrgFilters();
     renderUsers();
     updateUserSub();
@@ -960,6 +1254,32 @@ $("q").addEventListener("input", renderUsers);
 // ===== 使用者表單 =====
 let editing = null; // null = 新增
 
+// 部門下拉：固定清單；原本的部門不在清單中（例如「其他」）時保留為選項，未修改就不會被改掉
+function fillDeptSelect(user) {
+  const sel = $("f-dept");
+  const opts = [h("option", { value: "", text: "未設定" }), ...org.map((d) => h("option", { value: d.code, text: d.label }))];
+  const cur = user?.deptCode || "";
+  if (cur && !org.some((d) => d.code === cur)) opts.push(h("option", { value: cur, text: `${user.department}（原本的部門）` }));
+  sel.replaceChildren(...opts);
+  sel.value = cur;
+}
+// 組別下拉：只列出所選部門的組別
+function fillGroupSelect(selected, user) {
+  const sel = $("f-group");
+  const dept = org.find((d) => d.code === $("f-dept").value);
+  const opts = [h("option", { value: "", text: dept ? "未設定" : "請先選擇部門" })];
+  if (dept) opts.push(...dept.groups.map((g) => h("option", { value: g.code, text: g.label })));
+  // 保留不在對照表中的原組別（部門也沒改時）
+  if (!dept && user && $("f-dept").value === user.deptCode && user.groupCode) {
+    opts.push(h("option", { value: user.groupCode, text: `${user.group}（原本的組別）` }));
+  }
+  sel.replaceChildren(...opts);
+  sel.value = [...sel.options].some((o) => o.value === selected) ? selected : "";
+  sel.disabled = sel.options.length <= 1;
+  $("f-group-hint").textContent = dept ? `${dept.label}：${dept.groups.map((g) => g.label).join("、")}` : "";
+}
+$("f-dept").addEventListener("change", () => fillGroupSelect("", editing));
+
 function openSheet(user) {
   editing = user || null;
   $("sheet-title").textContent = user ? "編輯使用者" : "新增使用者";
@@ -968,8 +1288,8 @@ function openSheet(user) {
   $("f-id").readOnly = !!user;
   $("f-id-hint").textContent = user ? "行編建立後不能修改" : "不含檢查碼，例如 5977";
   $("f-ext").value = user?.extension || "";
-  $("f-dept").value = user?.department || "";
-  $("f-group").value = user?.group || "";
+  fillDeptSelect(user);
+  fillGroupSelect(user?.groupCode || "", user);
   $("f-disabled").checked = !!user?.disabled;
   $("form-error").textContent = "";
   $("sheet-backdrop").hidden = false;
@@ -993,12 +1313,11 @@ $("sheet").addEventListener("submit", async (e) => {
   const payload = {
     name: $("f-name").value.trim(),
     extension: $("f-ext").value.trim(),
-    department: { label: $("f-dept").value.trim() },
-    group: { label: $("f-group").value.trim() },
+    department: { code: $("f-dept").value },
+    group: { code: $("f-group").value },
     disabled: $("f-disabled").checked,
   };
   if (!editing) {
-    if (!payload.name) return void ($("form-error").textContent = "請填寫姓名");
     payload.id = $("f-id").value.trim();
     if (!payload.id) return void ($("form-error").textContent = "請填寫行編");
   }
@@ -1009,8 +1328,8 @@ $("sheet").addEventListener("submit", async (e) => {
     if (editing) {
       const changed = {};
       for (const k of ["name", "extension", "disabled"]) if (payload[k] !== editing[k]) changed[k] = payload[k];
-      if (payload.department.label !== editing.department) changed.department = payload.department;
-      if (payload.group.label !== editing.group) changed.group = payload.group;
+      if (payload.department.code !== (editing.deptCode || "")) changed.department = payload.department;
+      if (payload.group.code !== (editing.groupCode || "")) changed.group = payload.group;
       if (!Object.keys(changed).length) { closeSheet(); return; }
       await api(`users/${encodeURIComponent(editing.id)}`, { method: "PATCH", body: JSON.stringify(changed) });
       toast(changed.disabled === true ? `已停用 ${payload.name}` : changed.disabled === false ? `已重新啟用 ${payload.name}` : "已儲存");
@@ -1029,6 +1348,7 @@ $("sheet").addEventListener("submit", async (e) => {
 
 // ===== 啟動 =====
 renderPeriods();
+renderRecPeriods();
 renderUserFilters();
 api("session").then((r) => (r.loggedIn ? showApp() : showLogin())).catch(() => showLogin());
 </script>
