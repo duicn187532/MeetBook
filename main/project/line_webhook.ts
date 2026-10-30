@@ -15,11 +15,13 @@ import {
   formatBookingErrors,
   formatBookingSuccess,
   formatTodayBookings,
+  isTaipeiWeekend,
   parseBookingFields,
   QUERY_COMMAND,
   randomEditPassword,
   taipeiParts,
   verifySignature,
+  WEEKEND_REPLY,
 } from "./line_bot.ts";
 import type { BookingDoc } from "./types.ts";
 
@@ -79,6 +81,8 @@ async function handleText(text: string, now: number): Promise<{ action: string; 
     return { action: "query", texts: [await todayBookingsText(now)] };
   }
   if (command === BOOK_COMMAND) {
+    // 週末直接告知不開放，不必填完表單才被拒絕
+    if (isTaipeiWeekend(now)) return { action: "template", texts: [WEEKEND_REPLY] };
     return { action: "template", texts: [BOOK_INSTRUCTIONS, bookTemplate(now)] };
   }
   const booked = await bookFromForm(text, now);

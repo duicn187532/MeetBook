@@ -159,6 +159,14 @@ export interface BookingRequest {
   endTime: Date;
 }
 
+export const WEEKEND_REPLY = "今天是週末，不開放預約，請於週一到週五使用快速預約";
+
+/** 台北時間的今天是否為週六或週日（快速預約只能預約今天） */
+export function isTaipeiWeekend(now: number): boolean {
+  const weekday = new Date(`${taipeiParts(now).date}T00:00:00Z`).getUTCDay();
+  return weekday === 0 || weekday === 6;
+}
+
 // 驗證欄位並換算成今天的預約時間；失敗時回傳要回覆給使用者的錯誤訊息
 export function buildBookingRequest(
   fields: Partial<Record<Field, string>>,
@@ -166,6 +174,8 @@ export function buildBookingRequest(
 ): { ok: true; request: BookingRequest } | { ok: false; errors: string[] } {
   const errors: string[] = [];
   const { date } = taipeiParts(now);
+  // 快速預約只能預約今天；週六、週日不上班
+  if (isTaipeiWeekend(now)) return { ok: false, errors: [WEEKEND_REPLY] };
 
   const hhmm = fields.start ? parseStartTime(fields.start) : null;
   if (!fields.start) errors.push("2️⃣ 開始時間未填寫");

@@ -2,14 +2,17 @@ import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
   DEFAULT_FUTURE_DAYS,
   DEFAULT_PAST_DAYS,
+  ensureWorkday,
   normalizeParticipants,
   normalizeRooms,
   overlapFilter,
   parseRange,
   pickBookingUpdate,
   taipeiDate,
+  taipeiWeekday,
   toPublicBooking,
   validateBookingTimes,
+  WEEKEND_MESSAGE,
 } from "./booking_rules.ts";
 import type { BookingDoc } from "./types.ts";
 
@@ -159,4 +162,17 @@ Deno.test("toPublicBooking 處理舊格式的字串 user", () => {
   const pub = toPublicBooking({ id: "b2", user: "王小明 1234 #51164" } as unknown as BookingDoc);
   assertEquals(pub.user.name, "未具名");
   assert(!JSON.stringify(pub).includes("1234"));
+});
+
+Deno.test("ensureWorkday 以台北時間判斷，週六、週日不可預約", () => {
+  // 2026-10-30 是週五、10-31 週六、11-01 週日、11-02 週一
+  ensureWorkday(new Date("2026-10-30T09:00:00+08:00"));
+  ensureWorkday(new Date("2026-11-02T08:45:00+08:00"));
+  assertThrows(() => ensureWorkday(new Date("2026-10-31T10:00:00+08:00")), Error, WEEKEND_MESSAGE);
+  assertThrows(() => ensureWorkday(new Date("2026-11-01T10:00:00+08:00")), Error, WEEKEND_MESSAGE);
+  // UTC 還是週五、台北已是週六
+  assertEquals(taipeiWeekday(new Date("2026-10-30T16:30:00Z")), 6);
+  assertThrows(() => ensureWorkday(new Date("2026-10-30T16:30:00Z")), Error, WEEKEND_MESSAGE);
+  // UTC 還是週日、台北已是週一
+  ensureWorkday(new Date("2026-11-01T17:00:00Z"));
 });
