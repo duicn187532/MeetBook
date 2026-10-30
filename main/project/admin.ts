@@ -6,7 +6,16 @@ import { bookings, dbConfigured, ensureConnected, users } from "./db.ts";
 import { logEvent } from "./logger.ts";
 import { overlapFilter } from "./booking_rules.ts";
 import { ROOMS } from "./line_bot.ts";
-import { collectLabels, computeStats, normalizeUserInput, parseStatsRange, type UserInput } from "./admin_rules.ts";
+import {
+  ACTIVE_USER_FILTER,
+  collectLabels,
+  computeStats,
+  DEFAULT_ROLE,
+  isUserDisabled,
+  normalizeUserInput,
+  parseStatsRange,
+  type UserInput,
+} from "./admin_rules.ts";
 import {
   createSession,
   deriveKey,
@@ -152,7 +161,7 @@ function toAdminUser(u: UserDoc) {
     extension: u.extension ?? "",
     department: u.department?.label ?? "",
     group: u.group?.label ?? "",
-    disabled: u.disabled === true,
+    disabled: isUserDisabled(u),
   };
 }
 
@@ -173,7 +182,7 @@ async function knownLabels() {
 
 async function extensionTaken(extension: string, exceptId: string | null): Promise<boolean> {
   if (!extension) return false;
-  const filter: Filter<UserDoc> = { extension, disabled: { $ne: true } };
+  const filter = { extension, ...ACTIVE_USER_FILTER } as Filter<UserDoc>;
   if (exceptId) filter.id = { $ne: exceptId };
   return (await users.findOne(filter)) !== null;
 }
@@ -193,7 +202,11 @@ async function createUser(ctx: Ctx) {
       extension: user.extension!,
       department: user.department!,
       group: user.group!,
-      disabled: user.disabled ?? false,
+      // 與既有使用者資料相同的欄位
+      email: null,
+      lineId: null,
+      role: DEFAULT_ROLE,
+      status: !(user.disabled ?? false),
       createdTime: new Date(),
     };
     await users.insertOne(doc);
@@ -210,14 +223,22 @@ async function updateUser(ctx: Ctx) {
     const existing = await users.findOne({ id });
     if (!existing) return json(ctx, 404, { error: "找不到這位使用者" });
     const update = normalizeUserInput(await ctx.request.body.json(), await knownLabels(), true);
-    const willBeActive = update.disabled === undefined ? existing.disabled !== true : !update.disabled;
+    const willBeActive = update.disabled === undefined ? !isUserDisabled(existing) : !update.disabled;
     const extension = update.extension ?? existing.extension ?? "";
     if (willBeActive && await extensionTaken(extension, id)) {
       return json(ctx, 409, { error: `分機 ${extension} 已有其他人使用` });
     }
-    await users.updateOne({ id }, { $set: { ...update, updatedTime: new Date() } });
+    // 停用狀態寫入既有的 status 欄位，並移除早期版本寫入的 disabled
+    const { disabled, ...fields } = update;
+    const set: Partial<UserDoc> = { ...fields, updatedTime: new Date() };
+    if (disabled !== undefined) set.status = !disabled;
+    await users.updateOne(
+      { id },
+      disabled !== undefined ? { $set: set, $unset: { disabled: "" } } : { $set: set },
+    );
     logEvent("info", "管理後台修改使用者", { module: "Admin", details: { id, fields: Object.keys(update) } });
-    json(ctx, 200, { data: toAdminUser({ ...existing, ...update }) });
+    const { disabled: _old, ...rest } = existing;
+    json(ctx, 200, { data: toAdminUser({ ...rest, ...set }) });
   } catch (error) {
     json(ctx, 400, { error: (error as Error).message });
   }

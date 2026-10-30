@@ -14,6 +14,7 @@ import {
   toPublicBooking,
   validateBookingTimes,
 } from "./booking_rules.ts";
+import { ACTIVE_USER_FILTER } from "./admin_rules.ts";
 import type { BookingDoc, UserDoc, UserInfo } from "./types.ts";
 
 type Ctx = RouterContext<string>;
@@ -413,7 +414,7 @@ export { addBooking, getActiveBooked, updateBooking };
 // ===== 輔助函式 =====
 
 // 管理後台停用的使用者不能再預約
-const ACTIVE_USER = { disabled: { $ne: true } } as const;
+const ACTIVE_USER = ACTIVE_USER_FILTER;
 
 // 使用者驗證函式
 async function findUserStrict(userIdRaw: string): Promise<UserDoc | null> {

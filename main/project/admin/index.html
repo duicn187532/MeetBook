@@ -462,7 +462,7 @@ main {
   </div>
   <div class="field">
     <label for="f-name">姓名</label>
-    <input class="input" id="f-name" maxlength="30" autocomplete="off" required>
+    <input class="input" id="f-name" maxlength="30" autocomplete="off">
   </div>
   <div class="row2">
     <div class="field">
@@ -997,8 +997,8 @@ $("sheet").addEventListener("submit", async (e) => {
     group: { label: $("f-group").value.trim() },
     disabled: $("f-disabled").checked,
   };
-  if (!payload.name) return void ($("form-error").textContent = "請填寫姓名");
   if (!editing) {
+    if (!payload.name) return void ($("form-error").textContent = "請填寫姓名");
     payload.id = $("f-id").value.trim();
     if (!payload.id) return void ($("form-error").textContent = "請填寫行編");
   }

@@ -3,6 +3,7 @@ import {
   collectLabels,
   computeStats,
   HEAT_HOURS,
+  isUserDisabled,
   normalizeUserId,
   normalizeUserInput,
   parseStatsRange,
@@ -148,4 +149,13 @@ Deno.test("computeStats 只把可預約時段計入使用率，週末不計", ()
   // 08:00–08:45 不在可預約時段，只算 15 分鐘；08 點欄位容量 15 分鐘 × 2 間
   assertEquals(early.heatmap[0][HEAT_HOURS.indexOf(8)], 0.5);
   assertEquals(early.rooms[0].utilization, Math.round((15 / 570) * 1000) / 1000);
+});
+
+Deno.test("isUserDisabled 以 status: false 或舊的 disabled: true 判斷停用", () => {
+  assertEquals(isUserDisabled({ status: false }), true);
+  assertEquals(isUserDisabled({ status: true }), false);
+  assertEquals(isUserDisabled({}), false);
+  assertEquals(isUserDisabled({ status: null }), false);
+  assertEquals(isUserDisabled({ disabled: true }), true);
+  assertEquals(isUserDisabled({ status: true, disabled: true }), true);
 });
