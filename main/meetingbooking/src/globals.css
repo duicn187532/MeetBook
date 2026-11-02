@@ -60,6 +60,11 @@ body {
   background: rgb(60 151 255 / 0.55);
   animation: refresh-bar-slide 1.4s ease-in-out infinite;
 }
+/* 手動重新整理（點目前所在的分頁）：不延遲，立即顯示 */
+.refresh-bar.refresh-bar-now {
+  opacity: 1;
+  animation: none;
+}
 @keyframes refresh-bar-in {
   to {
     opacity: 1;

@@ -52,6 +52,8 @@ import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../
 
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
+// 手動重新整理時進度線最短顯示的時間（毫秒）
+const MANUAL_REFRESH_MIN_MS = 800;
 
 // 還沒看過的更新日誌（記錄的是看過的最新一筆 id）
 // 以某天為準的查詢範圍：前 1 個月初 ~ 後 3 個月底（約 5 個月，前後都留有好幾週的空檔）
@@ -210,10 +212,28 @@ const RoomScheduleView = () => {
     wasFetching.current = fetching;
   }, [fetching]);
 
+  // 手動重新整理（點目前所在的分頁）：進度線立即出現並至少顯示一段時間，讓人看得出有在更新。
+  // 新主機讀取通常不到 0.4 秒，背景更新的進度線為了不閃爍會延遲 0.4 秒才出現，手動時若沿用就幾乎看不到
+  const [manualHold, setManualHold] = useState(false); // 還在最短顯示時間內
+  const [manualBar, setManualBar] = useState(false); // 目前的進度線是手動觸發的（立即顯示）
+  const manualTimer = useRef<number | undefined>(undefined);
+  const showRefreshBar = (fetching && rangeLoaded) || manualHold;
+  useEffect(() => {
+    if (!showRefreshBar) setManualBar(false);
+  }, [showRefreshBar]);
+  useEffect(() => () => window.clearTimeout(manualTimer.current), []);
+  function manualReload() {
+    reloadMeetings();
+    setManualBar(true);
+    setManualHold(true);
+    window.clearTimeout(manualTimer.current);
+    manualTimer.current = window.setTimeout(() => setManualHold(false), MANUAL_REFRESH_MIN_MS);
+  }
+
   // 點已選的會議室（或已在 Today 時點 Today）重新讀取資料；切換到其他會議室直接用已載入的資料
   function selectRoom(room: RoomKey) {
     if (!todayMode && room === selectedRoom) {
-      reloadMeetings();
+      manualReload();
       return;
     }
     setTodayMode(false);
@@ -221,8 +241,12 @@ const RoomScheduleView = () => {
   }
 
   function selectToday() {
-    if (!todayMode) setTodayMode(true);
     setLiveOffset(firstLiveOffset());
+    if (todayMode) {
+      manualReload();
+      return;
+    }
+    setTodayMode(true);
     reloadMeetings();
   }
 
@@ -593,11 +617,11 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           />
         </>
       )}
-      {/* 背景更新時在行事曆上緣顯示一條細進度線；0.4 秒內完成就不會出現 */}
+      {/* 背景更新時在行事曆上緣顯示一條細進度線；0.4 秒內完成就不會出現（手動重新整理時立即出現） */}
       <div className="relative h-0 z-20" role="status" aria-live="polite">
-        {fetching && rangeLoaded && (
+        {showRefreshBar && (
           <>
-            <div className="refresh-bar" aria-hidden="true" />
+            <div className={manualBar ? "refresh-bar refresh-bar-now" : "refresh-bar"} aria-hidden="true" />
             <span className="sr-only">更新中</span>
           </>
         )}
