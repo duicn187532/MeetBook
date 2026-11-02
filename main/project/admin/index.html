@@ -21,6 +21,8 @@
   --accent-soft: #e6f0fc;
   --danger: #d03b3b;
   --danger-soft: #fbeaea;
+  --warn: #b45309;
+  --warn-soft: #fdf0dc;
   --good: #0a7d0a;
   --heat-0: #f0efec;
   --heat-1: #cde2fb;
@@ -46,6 +48,8 @@
     --accent-soft: #1b2a3d;
     --danger: #e66767;
     --danger-soft: #3a1f1f;
+    --warn: #f0a24a;
+    --warn-soft: #3a2a14;
     --good: #3fbf3f;
     --heat-0: #26261f;
     --heat-1: #0d366b;
@@ -334,6 +338,9 @@ select.input:disabled { opacity: .55; }
 .detail { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; font-size: 15px; }
 .detail dt { color: var(--text-3); font-size: 13px; padding-top: 2px; white-space: nowrap; }
 .detail dd { margin: 0; overflow-wrap: anywhere; }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.field .hint.warn { color: var(--warn); font-weight: 500; }
+.toast.warn { background: var(--warn); color: #fff; }
 .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--danger-soft); color: var(--danger); }
 .chev { width: 18px; height: 18px; color: var(--text-3); }
 .fab {
@@ -553,6 +560,7 @@ select.input:disabled { opacity: .55; }
     <div class="field">
       <label for="f-ext">分機</label>
       <input class="input num" id="f-ext" inputmode="numeric" maxlength="6" autocomplete="off">
+      <span class="hint warn" id="f-ext-hint" role="status"></span>
     </div>
   </div>
   <div class="field">
@@ -627,13 +635,14 @@ async function api(path, options = {}) {
 }
 
 let toastTimer;
-function toast(message, isError = false) {
+// kind：true 或 "err" 為錯誤（紅）、"warn" 為提醒（橘，停留較久）
+function toast(message, kind = false) {
   const el = $("toast");
   el.textContent = message;
-  el.className = isError ? "toast err" : "toast";
+  el.className = kind === "warn" ? "toast warn" : kind ? "toast err" : "toast";
   el.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (el.hidden = true), 2800);
+  toastTimer = setTimeout(() => (el.hidden = true), kind === "warn" ? 6000 : 2800);
 }
 
 // ===== 登入 =====
@@ -1134,17 +1143,29 @@ const PREF_KEY = "mb-admin-users";
 try {
   const pref = JSON.parse(localStorage.getItem(PREF_KEY) || "{}");
   if (pref.sort) document.getElementById("sort").value = pref.sort;
-  if (["active", "disabled", "all"].includes(pref.status)) userFilter = pref.status;
+  if (["active", "disabled", "all", "conflict"].includes(pref.status)) userFilter = pref.status;
 } catch { /* 無法使用 localStorage 時用預設值 */ }
 function savePref() {
   try { localStorage.setItem(PREF_KEY, JSON.stringify({ sort: $("sort").value, status: userFilter })); } catch { /* 忽略 */ }
 }
-const USER_FILTERS = [["active", "啟用中"], ["disabled", "已停用"], ["all", "全部"]];
+const USER_FILTERS = [["active", "啟用中"], ["disabled", "已停用"], ["all", "全部"], ["conflict", "分機重複"]];
+
+// 啟用中的人之間共用同一支分機：標記 extConflict，並記下同分機的其他人
+function markExtensionConflicts() {
+  const byExt = new Map();
+  for (const u of users) if (!u.disabled && u.extension) byExt.set(u.extension, [...(byExt.get(u.extension) || []), u]);
+  for (const u of users) {
+    const same = !u.disabled && u.extension ? byExt.get(u.extension).filter((o) => o !== u) : [];
+    u.extConflict = same.length > 0;
+  }
+}
+const conflictCount = () => users.filter((u) => u.extConflict).length;
 
 function renderUserFilters() {
   $("user-filters").replaceChildren(...USER_FILTERS.map(([key, label]) =>
     h("button", {
-      class: "chip", type: "button", "aria-pressed": String(key === userFilter), text: label,
+      class: "chip", type: "button", "aria-pressed": String(key === userFilter),
+      text: key === "conflict" && loaded.users ? `${label}（${conflictCount()}）` : label,
       onclick: () => { userFilter = key; savePref(); renderUserFilters(); renderOrgFilters(); renderUsers(); },
     })
   ));
@@ -1171,6 +1192,8 @@ async function loadUsers() {
     departments = [...new Set([...org.map((d) => d.label), ...extra("department")])];
     groups = [...new Set([...org.flatMap((d) => d.groups.map((g) => g.label)), ...extra("group")])];
     loaded.users = true;
+    markExtensionConflicts();
+    renderUserFilters();
     renderOrgFilters();
     renderUsers();
     updateUserSub();
@@ -1202,7 +1225,8 @@ function renderOrgFilters() {
   $("clear-filters").hidden = !deptFilter && !groupFilter && !$("q").value;
 }
 const matchOrg = (value, filter) => !filter || (filter === NONE ? !value : value === filter);
-const matchesStatus = (u) => userFilter === "all" || (userFilter === "disabled") === u.disabled;
+const matchesStatus = (u) =>
+  userFilter === "all" || (userFilter === "conflict" ? u.extConflict : (userFilter === "disabled") === u.disabled);
 
 $("f-dept-filter").addEventListener("change", (e) => {
   deptFilter = e.target.value;
@@ -1241,11 +1265,15 @@ function renderUsers() {
   const list = users.filter((u) =>
     matchesStatus(u) && matchOrg(u.department, deptFilter) && matchOrg(u.group, groupFilter) &&
     (!q || [u.name, u.id, u.id.replace(/^0+/, ""), u.extension, u.department, u.group].some((v) => norm(v).includes(q)))
-  ).sort(SORTS[$("sort").value] || SORTS.id);
-  $("user-count").textContent = `${list.length} 人`;
+  // 分機重複時依分機排序，同分機的人排在一起
+  ).sort(userFilter === "conflict" ? SORTS.ext : SORTS[$("sort").value] || SORTS.id);
+  $("user-count").textContent = userFilter === "conflict" ? `${list.length} 人共用分機` : `${list.length} 人`;
+  // 分機重複固定依分機排列，排序選單暫時隱藏
+  $("sort").closest(".sort").hidden = userFilter === "conflict";
   $("clear-filters").hidden = !deptFilter && !groupFilter && !q;
   if (!list.length) {
-    $("users").replaceChildren(h("div", { class: "empty", text: q || deptFilter || groupFilter ? "找不到符合的使用者" : "沒有使用者" }));
+    const empty = userFilter === "conflict" && !q && !deptFilter && !groupFilter ? "目前沒有分機重複 👍" : q || deptFilter || groupFilter ? "找不到符合的使用者" : "沒有使用者";
+    $("users").replaceChildren(h("div", { class: "empty", text: empty }));
     return;
   }
   $("users").replaceChildren(...list.map((u) =>
@@ -1255,6 +1283,7 @@ function renderUsers() {
           h("span", { class: "nm", text: u.name || "（未填姓名）" }),
           h("span", { class: "ids num", text: `${u.id.replace(/^0+(?=\d{4})/, "")}${u.extension ? ` · #${u.extension}` : ""}` }),
           u.disabled ? h("span", { class: "badge", text: "已停用" }) : null,
+          u.extConflict ? h("span", { class: "badge warn", text: "分機重複" }) : null,
         ),
         h("div", { class: "org", text: [u.department, u.group].filter(Boolean).join(" · ") || "未設定部門" }),
       ),
@@ -1316,6 +1345,7 @@ function openSheet(user) {
   $("f-id").readOnly = !!user;
   $("f-id-hint").textContent = user ? "行編建立後不能修改" : "不含檢查碼，例如 5977";
   $("f-ext").value = user?.extension || "";
+  updateExtHint();
   fillDeptSelect(user);
   fillGroupSelect(user?.groupCode || "", user);
   $("f-disabled").checked = !!user?.disabled;
@@ -1330,6 +1360,20 @@ function closeSheet() {
   $("sheet").hidden = true;
   document.body.style.overflow = "";
 }
+// 分機與其他啟用中的人重複時即時提醒（不阻擋儲存）
+function updateExtHint() {
+  const ext = $("f-ext").value.trim();
+  const willBeActive = !$("f-disabled").checked;
+  const others = ext && willBeActive
+    ? users.filter((u) => !u.disabled && u.extension === ext && (!editing || u.id !== editing.id))
+    : [];
+  $("f-ext-hint").textContent = others.length
+    ? `⚠ 已有 ${others.map((u) => u.name || u.id.replace(/^0+(?=\d{4})/, "")).join("、")} 使用，仍可儲存`
+    : "";
+}
+$("f-ext").addEventListener("input", updateExtHint);
+$("f-disabled").addEventListener("change", updateExtHint);
+
 $("sheet-close").addEventListener("click", closeSheet);
 $("sheet-cancel").addEventListener("click", closeSheet);
 $("sheet-backdrop").addEventListener("click", closeSheet);
@@ -1359,11 +1403,13 @@ $("sheet").addEventListener("submit", async (e) => {
       if (payload.department.code !== (editing.deptCode || "")) changed.department = payload.department;
       if (payload.group.code !== (editing.groupCode || "")) changed.group = payload.group;
       if (!Object.keys(changed).length) { closeSheet(); return; }
-      await api(`users/${encodeURIComponent(editing.id)}`, { method: "PATCH", body: JSON.stringify(changed) });
-      toast(changed.disabled === true ? `已停用 ${payload.name}` : changed.disabled === false ? `已重新啟用 ${payload.name}` : "已儲存");
+      const res = await api(`users/${encodeURIComponent(editing.id)}`, { method: "PATCH", body: JSON.stringify(changed) });
+      const done = changed.disabled === true ? `已停用 ${payload.name}` : changed.disabled === false ? `已重新啟用 ${payload.name}` : "已儲存";
+      res.warning ? toast(`${done}。${res.warning}`, "warn") : toast(done);
     } else {
-      await api("users", { method: "POST", body: JSON.stringify(payload) });
-      toast(`已新增 ${payload.name}`);
+      const res = await api("users", { method: "POST", body: JSON.stringify(payload) });
+      const done = `已新增 ${payload.name || payload.id}`;
+      res.warning ? toast(`${done}。${res.warning}`, "warn") : toast(done);
     }
     closeSheet();
     await loadUsers();
