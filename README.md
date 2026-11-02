@@ -2,6 +2,10 @@
 
 會議室預約系統：前端 React + Vite（部署在 GitHub Pages），後端 Deno + Oak + MongoDB Atlas（部署在 Deno Deploy）。
 
+> **後端正在遷移到 Cloudflare Workers + D1**（`main/worker`，網址 `https://meetbook.duicn187532.workers.dev`）。
+> 正式切換的步驟與回復方式見 [`main/worker/README.md` 的「正式切換」](main/worker/README.md#正式切換)。
+> 切換完成並穩定後，會移除下方 Deno 後端的說明與程式。
+
 ```
 main/
 ├── meetingbooking/   前端（React 19、MUI DatePicker、Tailwind）
@@ -61,7 +65,7 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 
 1. LINE Developers → 該官方帳號的 Messaging API channel：取得 Channel secret（Basic settings）與 Channel access token（Messaging API，long-lived）。
 2. Deno Deploy → Environment Variables 新增 `LINE_CHANNEL_SECRET`、`LINE_CHANNEL_ACCESS_TOKEN`（設為 secret，Production 與 Development 都勾選）。
-3. LINE Developers → Messaging API → Webhook URL 設為 `https://meetingbooking.duicn187532.deno.net/line/webhook`，按 Verify，並開啟 Use webhook。舊伺服器的 webhook 會被取代。
+3. LINE Developers → Messaging API → Webhook URL 設為 `https://meetbook.duicn187532.workers.dev/line/webhook`（Cloudflare Worker；切換前為 `https://meetingbooking.duicn187532.deno.net/line/webhook`），按 Verify，並開啟 Use webhook。
 4. LINE Official Account Manager → 關閉「自動回應訊息」（否則會多一則預設回覆）；圖文選單的按鈕設為傳送文字 `快速查詢`／`快速預約`。
 
 ### 管理後台（/admin）
