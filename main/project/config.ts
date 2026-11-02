@@ -22,3 +22,6 @@ export const LINE_API_BASE = Deno.env.get("LINE_API_BASE") || "https://api.line.
 
 // 管理後台（/admin）登入密碼；未設定或少於 8 個字元時後台不啟用，/admin 一律回 404
 export const ADMIN_PASSWORD = Deno.env.get("ADMIN_PASSWORD") || "";
+
+// 遷移切換期間設為 true：舊系統只能查詢，不能寫入（見 read_only.ts）
+export const READ_ONLY = Deno.env.get("READ_ONLY") === "true";

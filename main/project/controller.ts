@@ -16,6 +16,8 @@ import {
   validateBookingTimes,
 } from "./booking_rules.ts";
 import { ACTIVE_USER_FILTER } from "./admin_rules.ts";
+import { READ_ONLY } from "./config.ts";
+import { READ_ONLY_MESSAGE } from "./read_only.ts";
 import type { BookingDoc, UserDoc, UserInfo } from "./types.ts";
 
 type Ctx = RouterContext<string>;
@@ -143,6 +145,9 @@ export type CreateBookingResult =
  */
 export async function createBooking(input: NewBookingInput): Promise<CreateBookingResult> {
   const { title, user, rooms: roomList, participantsNum, editPassword } = input;
+
+  // 唯讀模式（遷移切換期間）：LINE 快速預約也不能寫入
+  if (READ_ONLY) return { ok: false, status: 400, error: READ_ONLY_MESSAGE };
 
   const matchedUser = await findUserStrict(user);
   if (!matchedUser) {

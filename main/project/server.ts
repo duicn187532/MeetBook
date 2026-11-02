@@ -1,4 +1,4 @@
-import { CORS_ORIGIN, ENV, PORT } from "./config.ts";
+import { CORS_ORIGIN, ENV, PORT, READ_ONLY } from "./config.ts";
 import { Application, Router } from "oak";
 import { oakCors } from "cors";
 import { addBooking, getActiveBooked, updateBooking } from "./controller.ts";
@@ -6,12 +6,14 @@ import { dbConfigured, ensureConnected, ensureIndexes, pingDb } from "./db.ts";
 import { logEvent } from "./logger.ts";
 import { lineWebhook } from "./line_webhook.ts";
 import { adminGuard, adminRouter } from "./admin.ts";
+import { isBlockedWrite, READ_ONLY_MESSAGE } from "./read_only.ts";
 
 const app = new Application();
 const router = new Router();
 
 console.log("Environment:", ENV, "Timeline:", Deno.env.get("DENO_TIMELINE") ?? "-");
 console.log("CORS Origin:", CORS_ORIGIN);
+console.log("Read-only:", READ_ONLY);
 
 // 未預期的例外統一回 500，避免連線直接中斷
 app.use(async (ctx, next) => {
@@ -35,6 +37,16 @@ app.use(
     allowedHeaders: ["Content-Type"],
   }),
 );
+
+// 唯讀模式（遷移切換期間）：擋下會修改資料的請求。回 400 讓前端直接顯示錯誤訊息
+app.use(async (ctx, next) => {
+  if (isBlockedWrite(READ_ONLY, ctx.request.method, ctx.request.url.pathname)) {
+    ctx.response.status = 400;
+    ctx.response.body = { error: READ_ONLY_MESSAGE };
+    return;
+  }
+  await next();
+});
 
 // 資料庫未設定或連不上時 API 回 503，服務本身仍可啟動
 app.use(async (ctx, next) => {
