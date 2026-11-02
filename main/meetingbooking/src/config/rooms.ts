@@ -7,3 +7,6 @@ import { RoomKey } from "../types/common";
 
 export const roomPhotos: Record<RoomKey, string> = { A101: a101, A102: a102, A103: a103 };
 export const roomSeats: Record<RoomKey, number> = { A101: 10, A102: 15, A103: 20 };
+
+// 設備簡述（電腦版側欄與標頭使用）
+export const roomEquipment: Record<RoomKey, string> = { A101: "投影機 · 白板", A102: "投影機 · 白板", A103: "電視 · 白板" };

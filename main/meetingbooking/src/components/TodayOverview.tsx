@@ -27,7 +27,7 @@ function position(ms: number, date: string) {
 }
 
 // 今天／明天／昨天；其他日子顯示「週三」「下週一」「上週五」（一週從週一開始）
-function relativeDay(date: dayjs.Dayjs, offset: number) {
+export function relativeDay(date: dayjs.Dayjs, offset: number) {
   if (offset === 0) return "今天";
   if (offset === 1) return "明天";
   if (offset === -1) return "昨天";
@@ -67,9 +67,8 @@ const ArrowButton = ({ dir, onClick }: { dir: "prev" | "next"; onClick: () => vo
   </button>
 );
 
-// 上方標頭：切換日期、日期與摘要
-export const TodayHeader = ({ overview, now, offset, updatedAt, onChangeDay }: LiveHeaderProps) => {
-  const d = dayjs(overview.date);
+// 摘要條文字（手機與電腦版共用）
+export function liveSummary(overview: Overview, now: number, offset: number, updatedAt: number | null) {
   const busy = overview.counts.busy;
   const available = overview.rooms.filter((r) => r.kind !== "busy" && r.quickBook).length;
   const parts: string[] = [];
@@ -83,6 +82,12 @@ export const TodayHeader = ({ overview, now, offset, updatedAt, onChangeDay }: L
     parts.push(available > 0 ? `${available}間可預約` : "都已預約滿");
     if (overview.phase === "open" && busy > 0) parts.push(`${busy}間使用中`);
   }
+  return parts.join(" · ");
+}
+
+// 上方標頭：切換日期、日期與摘要
+export const TodayHeader = ({ overview, now, offset, updatedAt, onChangeDay }: LiveHeaderProps) => {
+  const d = dayjs(overview.date);
   return (
     <div className="font-live bg-[#FFFAE8] pt-[17px] flex flex-col items-center">
       <div className="flex items-center justify-between w-[300px] max-w-[calc(100%-32px)]">
@@ -98,7 +103,7 @@ export const TodayHeader = ({ overview, now, offset, updatedAt, onChangeDay }: L
         <ArrowButton dir="next" onClick={() => onChangeDay(1)} />
       </div>
       <div className="live-pill mt-[17px] min-w-[275px] h-[27px] px-6 rounded-full bg-[#FFEB83] flex items-center justify-center text-[14px] text-[#484848] tabular-nums">
-        {parts.join(" · ")}
+        {liveSummary(overview, now, offset, updatedAt)}
       </div>
     </div>
   );
