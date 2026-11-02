@@ -726,10 +726,11 @@ function periodRange(key) {
   const t = taipeiToday();
   const y = t.getFullYear(), m = t.getMonth();
   switch (key) {
-    case "month": return [new Date(y, m, 1), t];
+    // 整個月份／整年：包含今天之後已經預約的場次
+    case "month": return [new Date(y, m, 1), new Date(y, m + 1, 0)];
     case "last": return [new Date(y, m - 1, 1), new Date(y, m, 0)];
-    case "3m": return [new Date(y, m - 2, 1), t];
-    case "year": return [new Date(y, 0, 1), t];
+    case "3m": return [new Date(y, m - 2, 1), new Date(y, m + 1, 0)];
+    case "year": return [new Date(y, 0, 1), new Date(y, 11, 31)];
     default: return [parseDay($("from").value), parseDay($("to").value)];
   }
 }
