@@ -247,7 +247,8 @@ async function updateUser(ctx: Ctx) {
 
 // ===== 預約紀錄 =====
 
-// GET /admin/api/bookings?from=YYYY-MM-DD&to=YYYY-MM-DD：依「預約送出時間」篩選，含已取消
+// GET /admin/api/bookings?from=YYYY-MM-DD&to=YYYY-MM-DD[&by=meeting]，含已取消
+// 預設依「預約送出時間」篩選；by=meeting 時改依「會議時間」與區間重疊者（沒有送出時間的舊資料也查得到）
 async function listBookings(ctx: Ctx) {
   const params = ctx.request.url.searchParams;
   let range: { from: Date; to: Date };
@@ -256,11 +257,11 @@ async function listBookings(ctx: Ctx) {
   } catch (error) {
     return json(ctx, 400, { error: (error as Error).message });
   }
+  const byMeeting = params.get("by") === "meeting";
+  const filter = byMeeting ? overlapFilter(range.from, range.to) : { createdTime: { $gte: range.from, $lt: range.to } };
   const docs = await bookings
-    .find({ createdTime: { $gte: range.from, $lt: range.to } } as Filter<BookingDoc>, {
-      projection: { _id: 0, editPassword: 0 },
-    })
-    .sort({ createdTime: -1 })
+    .find(filter as Filter<BookingDoc>, { projection: { _id: 0, editPassword: 0 } })
+    .sort(byMeeting ? { startTime: 1 } : { createdTime: -1 })
     .limit(MAX_RECORDS + 1)
     .toArray();
   const rooms = ROOMS.map((r) => ({ key: r.key, name: r.name }));

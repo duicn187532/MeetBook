@@ -152,6 +152,8 @@ main {
 .card .sub { color: var(--text-3); font-size: 12px; margin: 0 0 14px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
 .card-head h2 { margin: 0; }
+.seg.rec-by { display: flex; margin-bottom: 10px; }
+.seg.rec-by button { flex: 1; min-height: 36px; font-size: 14px; }
 .seg { display: inline-flex; flex: none; padding: 2px; border-radius: 999px; background: var(--surface-2); }
 .seg button { border: 0; background: none; min-height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; color: var(--text-2); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 12%); }
@@ -458,7 +460,8 @@ select.input:disabled { opacity: .55; }
 
     <!-- 預約紀錄 -->
     <section id="view-records" hidden>
-      <div class="chips" role="group" aria-label="送出時間區間" id="rec-periods"></div>
+      <div class="seg rec-by" role="group" aria-label="查詢依據" id="rec-by"></div>
+      <div class="chips" role="group" aria-label="查詢區間" id="rec-periods"></div>
       <div class="custom-range" id="rec-custom" hidden>
         <input class="input" type="date" id="rec-from" aria-label="開始日期">
         <span>至</span>
@@ -933,10 +936,18 @@ function renderStats(s) {
 // ===== 預約紀錄 =====
 let records = [];
 let recTruncated = false;
+// 查詢依據：sent＝預約送出時間（預設）、meeting＝會議日期；兩種各自記住區間
+let recBy = "sent";
+const recPeriodOf = { sent: "7d", meeting: "week" };
 let recPeriod = "7d";
 let recShown = 100;
 const REC_PAGE = 100;
-const REC_PERIODS = [["today", "今天"], ["7d", "近 7 天"], ["month", "本月"], ["last", "上月"], ["custom", "自訂"]];
+const REC_PERIOD_SETS = {
+  sent: [["today", "今天"], ["7d", "近 7 天"], ["month", "本月"], ["last", "上月"], ["custom", "自訂"]],
+  meeting: [["today", "今天"], ["week", "本週"], ["nextweek", "下週"], ["month", "本月"], ["custom", "自訂"]],
+};
+const REC_BY = [["sent", "依送出時間"], ["meeting", "依會議日期"]];
+const recPeriods = () => REC_PERIOD_SETS[recBy];
 const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
 const tpe = (iso) => {
   // 轉成台北時間的各欄位
@@ -960,30 +971,64 @@ function fmtMeeting(r) {
 
 try {
   const pref = JSON.parse(localStorage.getItem("mb-admin-recs") || "{}");
-  if (REC_PERIODS.some(([k]) => k === pref.period) && pref.period !== "custom") recPeriod = pref.period;
-  if (pref.sort) document.getElementById("rec-sort").value = pref.sort;
+  // 每次開啟都從「依送出時間」開始；兩種模式的區間各自記住
+  for (const by of ["sent", "meeting"]) {
+    const saved = pref.periods?.[by];
+    if (REC_PERIOD_SETS[by].some(([k]) => k === saved) && saved !== "custom") recPeriodOf[by] = saved;
+  }
+  recPeriod = recPeriodOf[recBy];
+  if (pref.sort?.startsWith("sent")) document.getElementById("rec-sort").value = pref.sort;
 } catch { /* 忽略 */ }
 function saveRecPref() {
-  try { localStorage.setItem("mb-admin-recs", JSON.stringify({ period: recPeriod, sort: $("rec-sort").value })); } catch { /* 忽略 */ }
+  recPeriodOf[recBy] = recPeriod;
+  const data = { periods: recPeriodOf, sort: $("rec-sort").value };
+  try { localStorage.setItem("mb-admin-recs", JSON.stringify(data)); } catch { /* 忽略 */ }
 }
 
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 function recRange() {
   const t = taipeiToday();
   const y = t.getFullYear(), m = t.getMonth();
+  // 本週一（週日算上一週）
+  const monday = addDays(t, -((t.getDay() + 6) % 7));
   switch (recPeriod) {
     case "today": return [t, t];
     case "7d": return [new Date(y, m, t.getDate() - 6), t];
-    case "month": return [new Date(y, m, 1), t];
+    case "week": return [monday, addDays(monday, 4)];
+    case "nextweek": return [addDays(monday, 7), addDays(monday, 11)];
+    // 依送出時間只會到今天；依會議日期看整個月（含之後的預約）
+    case "month": return [new Date(y, m, 1), recBy === "meeting" ? new Date(y, m + 1, 0) : t];
     case "last": return [new Date(y, m - 1, 1), new Date(y, m, 0)];
     default: return [parseDay($("rec-from").value), parseDay($("rec-to").value)];
   }
 }
 function updateRecSub() {
   const [f, t] = recRange();
-  $("page-sub").textContent = isNaN(f) || isNaN(t) ? "" : `送出時間 ${ymd(f)}${ymd(f) === ymd(t) ? "" : ` – ${ymd(t)}`}`;
+  const label = recBy === "meeting" ? "會議日期" : "送出時間";
+  $("page-sub").textContent = isNaN(f) || isNaN(t) ? "" : `${label} ${ymd(f)}${ymd(f) === ymd(t) ? "" : ` – ${ymd(t)}`}`;
+}
+function renderRecBy() {
+  $("rec-by").replaceChildren(...REC_BY.map(([key, label]) =>
+    h("button", {
+      type: "button", "aria-pressed": String(key === recBy), text: label,
+      onclick: () => {
+        if (key === recBy) return;
+        recPeriodOf[recBy] = recPeriod;
+        recBy = key;
+        recPeriod = recPeriodOf[key];
+        // 依送出時間預設新→舊；依會議日期預設會議時間舊→新
+        $("rec-sort").value = key === "meeting" ? "meet-asc" : "sent-desc";
+        $("rec-custom").hidden = recPeriod !== "custom";
+        saveRecPref();
+        renderRecBy();
+        renderRecPeriods();
+        loadRecords();
+      },
+    })
+  ));
 }
 function renderRecPeriods() {
-  $("rec-periods").replaceChildren(...REC_PERIODS.map(([key, label]) =>
+  $("rec-periods").replaceChildren(...recPeriods().map(([key, label]) =>
     h("button", {
       class: "chip", type: "button", "aria-pressed": String(key === recPeriod), text: label,
       onclick: () => {
@@ -1012,7 +1057,7 @@ async function loadRecords() {
   const seq = ++recSeq;
   $("recs").replaceChildren(h("div", { class: "loading", text: "載入中…" }));
   try {
-    const res = await api(`bookings?from=${ymd(f)}&to=${ymd(t)}`);
+    const res = await api(`bookings?from=${ymd(f)}&to=${ymd(t)}${recBy === "meeting" ? "&by=meeting" : ""}`);
     if (seq !== recSeq) return;
     records = res.data;
     recTruncated = res.truncated;
@@ -1423,6 +1468,7 @@ $("sheet").addEventListener("submit", async (e) => {
 
 // ===== 啟動 =====
 renderPeriods();
+renderRecBy();
 renderRecPeriods();
 renderUserFilters();
 api("session").then((r) => (r.loggedIn ? showApp() : showLogin())).catch(() => showLogin());
