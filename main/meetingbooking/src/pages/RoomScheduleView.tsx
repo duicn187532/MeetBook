@@ -83,7 +83,8 @@ const RoomScheduleView = () => {
   const [selectedRoom, setSelectedRoom] = useState<RoomKey>(() => loadPref("room", ROOMS) ?? "A101");
   const [selectedView, setSelectedView] = useState<ViewMode>(() => loadPref("view", VIEWS) ?? "Week");
   // Today 分頁（實驗性功能）
-  const [todayMode, setTodayMode] = useState(() => loadPref("today") === "1");
+  // 開啟網站一律從 LIVE 開始；會議室與檢視模式仍沿用上次的選擇
+  const [todayMode, setTodayMode] = useState(true);
   const now = useNow(todayMode);
   // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天；週末時為下週一）
   const [liveOffset, setLiveOffset] = useState(firstLiveOffset);
@@ -144,7 +145,6 @@ const RoomScheduleView = () => {
 
   useEffect(() => savePref("room", selectedRoom), [selectedRoom]);
   useEffect(() => savePref("view", selectedView), [selectedView]);
-  useEffect(() => savePref("today", todayMode ? "1" : "0"), [todayMode]);
 
   // 按鈕背景色對應
   const buttonBGColors: Record<RoomKey, string> = {
