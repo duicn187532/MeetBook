@@ -6,14 +6,16 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json && tsc -p atlas-import/tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p test/cpu/tsconfig.json && tsc -p atlas-import/tsconfig.json",
     "test": "vitest run",
     "import:export": "node atlas-import/export_atlas.ts",
     "import:transform": "node atlas-import/transform.ts",
     "import:d1-setup": "node atlas-import/d1_setup.ts",
-    "import:verify": "node atlas-import/verify_d1.ts"
+    "import:verify": "node atlas-import/verify_d1.ts",
+    "deploy:dry-run": "wrangler deploy --dry-run --outdir dist"
   },
   "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.4.12",
     "@cloudflare/workers-types": "5.20261102.1",
     "@types/node": "24.19.2",
     "mongodb": "7.8.0",
@@ -21,5 +23,8 @@
     "typescript": "5.9.3",
     "vitest": "5.0.5",
     "wrangler": "4.156.1"
+  },
+  "dependencies": {
+    "hono": "4.13.16"
   }
 }
