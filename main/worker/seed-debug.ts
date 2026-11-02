@@ -1,0 +1,11 @@
+import { MongoMemoryReplSet } from "mongodb-memory-server";
+import { MongoClient } from "mongodb";
+import { writeFileSync } from "node:fs";
+import { legacyBookings, legacyUsers } from "./atlas-import/test/fixtures.ts";
+const rs = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: "7.0.14" } });
+const c = new MongoClient(rs.getUri()); await c.connect();
+await c.db("MB").collection("booked").insertMany(legacyBookings());
+await c.db("MB").collection("users").insertMany(legacyUsers());
+await c.close();
+writeFileSync("/tmp/claude-0/uri.txt", rs.getUri());
+setInterval(() => {}, 1000);

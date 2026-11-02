@@ -1,0 +1,33 @@
+// Cloudflare Worker 設定（MeetBook 後端）
+// 只使用 Workers 免費方案與 D1，不需要信用卡
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "meetbook",
+  "main": "src/index.ts",
+  // 目前 wrangler 4.156.1 內建 workerd 支援的最新日期
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      // 不記錄每個請求的網址：PATCH /api/bookings/:id/:editPassword 的網址中有編輯密碼
+      // 程式自己的結構化 log（logEvent）仍會記錄
+      "invocation_logs": false
+    }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "meetbook",
+      // GitHub Actions 執行時以名稱查出真正的 id 並填入（atlas-import/d1_setup.ts），repo 中保持佔位值
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ENV": "production",
+    "LOG_LEVEL": "info"
+  }
+}
