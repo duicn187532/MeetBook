@@ -1,4 +1,5 @@
 # 比對新舊後端：同時查詢 Deno Deploy（舊）與 Cloudflare Worker（新），確認回應相同，並查詢 Worker 實際的 CPU 時間
+# 正式切換後兩邊資料會不同（新預約只在 Worker），主要用來查看實際 CPU 時間
 # 只送出不會改變資料的請求（查詢，以及一定會在寫入前被拒絕的錯誤請求）。報告在該次執行的 Summary，也會印在 log 中。
 name: 比對新舊後端
 
@@ -6,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       reimport:
-        description: "比對前先從 Atlas 重新匯入 D1，讓兩邊資料相同（正式切換後請取消勾選）"
+        description: "比對前先從 Atlas 重新匯入 D1（只在正式切換前使用；切換後 D1 是正式資料，會被拒絕）"
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: read

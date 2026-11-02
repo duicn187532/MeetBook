@@ -1,6 +1,6 @@
 # MeetBook 後端（Cloudflare Workers + D1）
 
-> 遷移進行中。**正式環境仍然是 Deno Deploy + MongoDB Atlas**（`main/project`）。這個 Worker 部署在 `*.workers.dev`，與 Deno 並行；在修改前端的 `VITE_API_URL`、LINE 的 webhook 網址之前，沒有人會用到它。
+> 遷移進行中。這個 Worker 部署在 `https://meetbook.duicn187532.workers.dev`。依「[正式切換](#正式切換)」的步驟合併切換 PR 後，前端與 LINE 改用這個 Worker；在那之前正式環境仍是 Deno Deploy + MongoDB Atlas（`main/project`）。
 
 | 路徑 | 內容 |
 |---|---|
@@ -199,6 +199,54 @@ Worker 的 secrets 由 GitHub Secrets 寫入，部署時用 `wrangler deploy --s
 | `LINE_CHANNEL_ACCESS_TOKEN` | LINE 回覆訊息 |
 
 還沒設定 `CLOUDFLARE_API_TOKEN`／`CLOUDFLARE_ACCOUNT_ID` 時，workflow 會略過部署，不會失敗。
+
+## 正式切換
+
+建議在**下班後或週末**進行，整個過程約 15 分鐘。切換期間舊系統只能查詢，不能預約。
+
+### 切換前（前一天就可以做）
+
+- [ ] **PR 4a（舊後端唯讀開關）已合併**，Deno Deploy 已自動部署完成。
+- [ ] 到 repo 的 **Settings → Secrets and variables → Actions → Variables** 分頁，看有沒有 `VITE_API_URL`。
+  - **有的話請刪除。** 它會蓋過程式中的預設網址，前端就不會切到新後端。
+- [ ] 到 Actions →「比對新舊後端」→ Run workflow，**勾選**「重新匯入」，確認報告全部 ✅（只有順序不同的 ℹ️ 沒關係）。
+
+### 切換當天（依序做）
+
+1. **讓舊系統停止寫入**：Deno Deploy → `meetingbooking` → **Settings → Environment Variables** → 新增 `READ_ONLY`，值為 `true`，Production 與 Development 都勾選 → 儲存。儲存後會自動重新部署，約 1 分鐘。
+   - 確認方式：在現在的網站試著預約，應該出現「預約系統已搬到新主機，請重新整理頁面後再操作」。
+2. **最後一次轉檔**：Actions →「轉檔 Atlas → D1」→ mode 選 `import`，confirm 輸入 `清空D1並匯入` → 等它完成。
+   - Summary 的「匯入後驗證」要兩列都是 ✅。
+3. **合併 PR 4b（切換）**：合併後「Deploy frontend」會自動執行，約 2 分鐘。到 Actions 確認它成功（綠色勾勾）。
+4. **防止 D1 被覆蓋**：Settings → Secrets and variables → Actions → **Variables** → New repository variable，`D1_IS_PRODUCTION`，值為 `true`。從此轉檔 workflow 會拒絕再匯入。
+5. **LINE webhook**：LINE Developers → 你的 Channel → **Messaging API** → Webhook URL 改成 `https://meetbook.duicn187532.workers.dev/line/webhook` → **Update** → **Verify**（要出現 Success）。
+6. **停止喚醒舊系統**：cron-job.org → 把喚醒 Deno 的那個 job 停用（Disable）。Workers 不需要喚醒。
+7. **驗證**（用手機）：
+   - [ ] 打開 <https://duicn187532.github.io/MeetBook/>，重新整理，看得到預約。
+   - [ ] 新增一筆測試預約，再用編輯密碼取消。
+   - [ ] 打開新的管理後台 <https://meetbook.duicn187532.workers.dev/admin>，「預約紀錄 → 送出時間 → 今天」看得到剛剛那筆測試預約。
+   - [ ] LINE 傳「快速查詢」，有回覆。
+8. **通知同事**：請大家重新整理頁面。如果還看到「已搬到新主機」，等幾分鐘再試，這是 GitHub Pages 的快取。
+   - 管理後台的網址改為 `https://meetbook.duicn187532.workers.dev/admin`。
+
+### 切換後
+
+- 隔天到 Actions →「比對新舊後端」→ Run workflow，**不要勾**「重新匯入」，看報告最下方的實際 CPU 時間。
+  - 切換後兩邊資料本來就會不同（新預約只在新系統），所以預約比對出現 ❌ 是正常的。
+- 舊系統（Deno Deploy、Atlas）先保留，維持唯讀。至少穩定兩週後，再移除舊程式。
+
+### 回復（新系統出問題時）
+
+依照先前的決定（回復策略 A）：切換後在新系統建立的預約不會自動回到舊系統，需要手動補登。
+
+1. **先記下新系統的新預約**：打開新的管理後台 → 預約紀錄 → 送出時間 → 從切換當天到今天 → 截圖。這些是要補登到舊系統的預約。
+2. **前端改回舊後端**：Settings → Secrets and variables → Actions → Variables → 新增（或修改）`VITE_API_URL`，值為 `https://meetingbooking.duicn187532.deno.net/api/bookings/`；然後 Actions →「Deploy frontend」→ Run workflow。
+3. **舊系統恢復寫入**：Deno Deploy → Environment Variables → 刪除 `READ_ONLY`。
+4. **LINE webhook 改回**：`https://meetingbooking.duicn187532.deno.net/line/webhook` → Update → Verify。
+5. **cron-job.org**：重新啟用喚醒 job。
+6. 依第 1 步的截圖補登預約。
+
+之後要再切換一次時，先刪除 Variable `D1_IS_PRODUCTION`，再從「切換當天」第 1 步重新開始。
 
 ## 手機設定步驟
 
