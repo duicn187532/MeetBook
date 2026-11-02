@@ -21,6 +21,10 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import ChangelogModal from "../components/ChangelogModal";
 import TodayOverview, { TodayHeader } from "../components/TodayOverview";
 import { changelog, isAnnouncing } from "../config/changelog";
+import DesktopSidebar from "../components/desktop/DesktopSidebar";
+import DesktopLive from "../components/desktop/DesktopLive";
+import DesktopRoomView from "../components/desktop/DesktopRoomView";
+import useMediaQuery, { DESKTOP_QUERY } from "../hooks/useMediaQuery";
 
 // Types
 import {
@@ -86,6 +90,8 @@ const RoomScheduleView = () => {
   // 開啟網站一律從 LIVE 開始；會議室與檢視模式仍沿用上次的選擇
   const [todayMode, setTodayMode] = useState(true);
   const now = useNow(todayMode);
+  // 寬螢幕（電腦）改用側欄排版；手機維持原本的畫面
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
   // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天；週末時為下週一）
   const [liveOffset, setLiveOffset] = useState(firstLiveOffset);
   // 更新日誌只給沒看過的人看一次：一顯示就記為看過
@@ -243,6 +249,40 @@ const RoomScheduleView = () => {
     setBookingForm((prev) => ({ ...prev, room: [room], selectedDate: todayDate, ...times }));
     setErrorMessage("");
     setShowBookingModal(true);
+  }
+
+  // 電腦版：在時間軸上點空白處，帶入會議室、日期與該時段
+  function bookAt(room: RoomKey, date: string, times: { startTime: string; endTime: string }) {
+    defaultTimes.current = times;
+    setBookingForm((prev) => ({ ...prev, room: [room], selectedDate: date, ...times }));
+    setErrorMessage("");
+    setShowBookingModal(true);
+  }
+
+  // 電腦版：點會議直接開啟預約資訊（不需等手機版的按壓動畫）
+  function openMeeting(meeting: Meeting) {
+    setSelectedMeeting(meeting);
+    setShowInfoModal(true);
+  }
+
+  // 電腦版：切換到某個日期（行事曆）
+  function goToDate(date: dayjs.Dayjs) {
+    setCurrentDate(date);
+    setViewStartDate(date);
+    updateBookingDate(date);
+  }
+
+  // 電腦版：上一／下一天、週、月
+  function desktopNavigate(step: 1 | -1) {
+    if (selectedView === "Month") setCurrentDate(currentDate.add(step, "month"));
+    else if (selectedView === "Week") goToDate(currentDate.add(7 * step, "day"));
+    else goToDate(addWorkdays(currentDate, step));
+  }
+
+  // 電腦版：側欄小月曆選日期
+  function pickDate(date: dayjs.Dayjs) {
+    if (todayMode) setLiveOffset(daysFromToday(date));
+    else goToDate(date);
   }
 
   // 依目前已載入的預約推算替代方案；預約時間不在已載入的區間內時不提供，避免建議錯誤
@@ -556,6 +596,158 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
     return `只會取消 ${room} 這一間，同時預約的 ${others.join("、")} 會保留。刪除後無法恢復。`;
   }
 
+  // 預約、資訊、確認、提示等視窗（手機與電腦版共用）
+  const modals = (
+    <>
+      {showBookingModal && (
+        <BookingModal
+          bookingForm={bookingForm}
+          setBookingForm={setBookingForm}
+          errorMessage={errorMessage}
+          onSubmit={handleSubmitBooking}
+          onClose={() => setShowBookingModal(false)}
+        />
+      )}
+      {showInfoModal && (
+        <MeetingInfoModal
+          show={showInfoModal}
+          onClose={closeMeetingModals}
+          meetingInfo={selectedMeeting}
+          editPassword={editPassword}
+          onCancel={() =>
+            handleConfirmAction(handleCancel, {
+              title: "確定刪除嗎？",
+              message: deleteConfirmMessage(selectedMeeting),
+              confirmLabel: "確定",
+              cancelLabel: "取消",
+              confirmColor: "bg-red-500",
+              iconColor: "bg-red-500",
+            })
+          }
+          onOpenEditModal={(info) => {
+            setSelectedMeeting(info);
+            setShowInfoModal(false);
+            setShowEditModal(true);
+          }}
+          onEditPassword={setEditPassword}
+        />
+      )}
+      {showEditModal && selectedMeeting && (
+        <EditMeetingModal
+          onClose={closeMeetingModals}
+          MeetingInfo={selectedMeeting}
+          initialPassword={editPassword}
+          errorMessage={editError}
+          onSubmit={(editData, pw) =>
+            handleConfirmAction(() => handleEdit(editData, selectedMeeting, pw), {
+              title: "確定修改嗎？",
+              message: "請確認修改內容。",
+              confirmLabel: "確定",
+              cancelLabel: "取消",
+              confirmColor: "bg-[#3F3F3F]",
+              iconColor: "bg-[#3F3F3F]",
+            })
+          }
+        />
+      )}
+      <ConfirmationModal
+        show={showConfirmModal}
+        title={modalProps.title}
+        message={modalProps.message}
+        confirmLabel={modalProps.confirmLabel}
+        cancelLabel={modalProps.cancelLabel}
+        confirmColor={modalProps.confirmColor}
+        iconColor={modalProps.iconColor}
+        onConfirm={() => {
+          // 執行確認後動作
+          confirmAction();
+          setShowConfirmModal(false);
+        }}
+        onCancel={() => setShowConfirmModal(false)}
+      />
+      {(loading || (fetching && !rangeLoaded)) && <LoadingOverlay />}
+      {showAlertModal && (
+        <AlertModal
+          type={alertType}
+          title={alertTitle}
+          message={alertMessage}
+          onClose={() => {
+            setShowAlertModal(false);
+            const next = afterAlertClose.current;
+            afterAlertClose.current = null;
+            next?.();
+          }}
+        />
+      )}
+      {changelogEntries.length > 0 && (
+        <ChangelogModal entries={changelogEntries} onClose={() => setChangelogEntries([])} />
+      )}
+    </>
+  );
+
+  // 電腦版：左側欄 + 右側 LIVE 或會議室行事曆
+  if (isDesktop) {
+    const liveDate = dayjs().add(liveOffset, "day");
+    return (
+      <div className="flex h-screen supports-[height:100dvh]:h-[100dvh] bg-[#F4F4F2]">
+        <DesktopSidebar
+          todayMode={todayMode}
+          selectedRoom={selectedRoom}
+          activeDate={todayMode ? liveDate : currentDate}
+          highlightWeek={!todayMode && selectedView === "Week"}
+          meetings={todayMode ? meetings : roomMeetings}
+          loadedRange={loadedRange}
+          version={changelog[0]?.version ?? ""}
+          onNewBooking={openBookingModal}
+          onSelectToday={selectToday}
+          onSelectRoom={selectRoom}
+          onPickDate={pickDate}
+          onOpenChangelog={() => setChangelogEntries(changelog.slice(0, 3))}
+        />
+        <main className="flex-1 min-w-0 flex flex-col relative">
+          {/* 背景更新時在上緣顯示一條細進度線 */}
+          <div className="absolute inset-x-0 top-0 h-0 z-20" role="status" aria-live="polite">
+            {fetching && rangeLoaded && (
+              <>
+                <div className="refresh-bar" aria-hidden="true" />
+                <span className="sr-only">更新中</span>
+              </>
+            )}
+          </div>
+          {todayOverview ? (
+            <DesktopLive
+              overview={todayOverview}
+              now={now}
+              offset={liveOffset}
+              updatedAt={updatedAt}
+              onChangeDay={(delta) => setLiveOffset((o) => liveOffsetAfter(o, delta))}
+              onOpenRoom={openRoomToday}
+              onQuickBook={quickBook}
+              onOpenMeeting={openMeeting}
+            />
+          ) : (
+            <DesktopRoomView
+              room={selectedRoom}
+              view={selectedView}
+              currentDate={currentDate}
+              meetings={roomMeetings}
+              onChangeView={setSelectedView}
+              onNavigate={desktopNavigate}
+              onToday={() => goToDate(rollToWorkday(dayjs()))}
+              onOpenDay={(d) => {
+                goToDate(d);
+                setSelectedView("Day");
+              }}
+              onOpenMeeting={openMeeting}
+              onPickSlot={(date, times) => bookAt(selectedRoom, date, times)}
+            />
+          )}
+        </main>
+        {modals}
+      </div>
+    );
+  }
+
   // 以下為組合各個元件與 UI
   // 高度用 dvh，避免手機瀏覽器（含 LINE 內建瀏覽器）的工具列蓋住下方；
   // 畫面很矮時（手機橫放）改成整頁捲動，否則上方標題與切換列會把行事曆擠到只剩一條
@@ -640,89 +832,7 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           <span className="text-3xl">+</span>
         </button>
       )}
-      {showBookingModal && (
-        <BookingModal
-          bookingForm={bookingForm}
-          setBookingForm={setBookingForm}
-          errorMessage={errorMessage}
-          onSubmit={handleSubmitBooking}
-          onClose={() => setShowBookingModal(false)}
-        />
-      )}
-      {showInfoModal && (
-        <MeetingInfoModal
-          show={showInfoModal}
-          onClose={closeMeetingModals}
-          meetingInfo={selectedMeeting}
-          editPassword={editPassword}
-          onCancel={() =>
-            handleConfirmAction(handleCancel, {
-              title: "確定刪除嗎？",
-              message: deleteConfirmMessage(selectedMeeting),
-              confirmLabel: "確定",
-              cancelLabel: "取消",
-              confirmColor: "bg-red-500",
-              iconColor: "bg-red-500",
-            })
-          }
-          onOpenEditModal={(info) => {
-            setSelectedMeeting(info);
-            setShowInfoModal(false);
-            setShowEditModal(true);
-          }}
-          onEditPassword={setEditPassword}
-        />
-      )}
-      {showEditModal && selectedMeeting && (
-        <EditMeetingModal
-          onClose={closeMeetingModals}
-          MeetingInfo={selectedMeeting}
-          initialPassword={editPassword}
-          errorMessage={editError}
-          onSubmit={(editData, pw) =>
-            handleConfirmAction(() => handleEdit(editData, selectedMeeting, pw), {
-              title: "確定修改嗎？",
-              message: "請確認修改內容。",
-              confirmLabel: "確定",
-              cancelLabel: "取消",
-              confirmColor: "bg-[#3F3F3F]",
-              iconColor: "bg-[#3F3F3F]",
-            })
-          }
-        />
-      )}
-      <ConfirmationModal
-        show={showConfirmModal}
-        title={modalProps.title}
-        message={modalProps.message}
-        confirmLabel={modalProps.confirmLabel}
-        cancelLabel={modalProps.cancelLabel}
-        confirmColor={modalProps.confirmColor}
-        iconColor={modalProps.iconColor}
-        onConfirm={() => {
-          // 執行確認後動作
-          confirmAction();
-          setShowConfirmModal(false);
-        }}
-        onCancel={() => setShowConfirmModal(false)}
-      />
-      {(loading || (fetching && !rangeLoaded)) && <LoadingOverlay />}
-      {showAlertModal && (
-        <AlertModal
-          type={alertType}
-          title={alertTitle}
-          message={alertMessage}
-          onClose={() => {
-            setShowAlertModal(false);
-            const next = afterAlertClose.current;
-            afterAlertClose.current = null;
-            next?.();
-          }}
-        />
-      )}
-      {changelogEntries.length > 0 && (
-        <ChangelogModal entries={changelogEntries} onClose={() => setChangelogEntries([])} />
-      )}
+      {modals}
     </div>
   );
 };
