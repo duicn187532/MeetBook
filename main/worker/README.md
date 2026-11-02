@@ -1,0 +1,204 @@
+# MeetBook 後端（Cloudflare Workers + D1）
+
+> 遷移進行中。**正式環境仍然是 Deno Deploy + MongoDB Atlas**（`main/project`），在明確切換之前完全不受影響。
+
+目前這個資料夾有：
+
+| 路徑 | 內容 |
+|---|---|
+| `migrations/` | D1 資料表（由 wrangler 的 D1 migrations 管理） |
+| `atlas-import/` | Atlas → D1 的轉檔工具（GitHub Actions 執行，Node 24） |
+| `src/` | Worker 骨架（API、管理後台、LINE webhook 會在下一個 PR 加入，目前不會部署） |
+| `wrangler.jsonc` | Worker 與 D1 設定 |
+
+轉檔由 `.github/workflows/atlas-to-d1.yml` 執行，測試由 `.github/workflows/ci.yml` 的 `worker` job 執行。
+
+## 資料表設計
+
+時間一律存 **UTC epoch 毫秒**（INTEGER），比較是否重疊時是單純的數字比較。
+
+### `bookings`（MongoDB `booked`）
+
+| MongoDB | D1 | 說明 |
+|---|---|---|
+| `id` | `id` | 主鍵 |
+| `groupId` | `group_id` | 舊資料為 NULL |
+| `createdTime`／`updatedTime` | `created_time`／`updated_time` | 舊資料可能為 NULL |
+| `title` | `title` | |
+| `user`（物件） | `user_id`、`user_name`、`user_extension`、`user_department_code`／`_label`、`user_group_code`／`_label` | 物件中缺少的欄位存空字串 |
+| `user`（字串，非常舊的資料） | `user_raw` | 此時上面 7 欄為 NULL |
+| `room` | `room` | |
+| `participantsNum` | `participants_num` | 不是數字的舊資料存 NULL |
+| `cancelled` | `cancelled` | 1／0；**沒有此欄位的舊資料存 NULL**，`cancelled = 0` 不會選到它，與 MongoDB 的 `cancelled: false` 行為相同 |
+| `startTime`／`endTime`（Date 或字串） | `start_time`／`end_time` | 一律轉成 epoch 毫秒 |
+| `editPassword` | `edit_password` | |
+| `updatedCount` | `updated_count` | |
+| `date` | `date` | 台北日期 YYYY-MM-DD |
+| `isMulti` | `is_multi` | JSON 陣列文字 |
+
+索引：
+
+- `(room, cancelled, end_time)`：衝突檢查。
+- `(cancelled, end_time)`：查詢區間內所有會議室。
+- `group_id`：只有 `group_id` 不是 NULL 才建立的部分索引，作用等同 MongoDB 的 sparse 索引。
+
+範圍條件用 `end_time`，不用 `start_time`。查詢時只會掃到結束時間在查詢起點之後的預約，不會掃過全部歷史資料；D1 依掃描列數計費。
+
+### `users`（MongoDB `users`）
+
+- 行編在 MongoDB 沒有唯一限制，所以另外設流水號 `seq` 當主鍵，保留匯入順序。查找時取第一筆，與舊系統的 `findOne` 相同。
+- `department`、`group`、`role` 的 code／label 拆成欄位。
+- `status`：1／0／NULL，NULL 視為啟用。
+- `disabled`：早期後台留下的停用標記，1 代表停用。
+
+### `admin_login_attempts`
+
+管理後台登入失敗次數。原本存在記憶體，Workers 沒有共享記憶體，所以改存 D1。
+
+## 轉檔 workflow：轉檔 Atlas → D1
+
+在 GitHub 的 **Actions → 轉檔 Atlas → D1 → Run workflow** 執行。
+
+| 模式 | 做什麼 | 需要的設定 |
+|---|---|---|
+| `dry-run`（預設） | 唯讀匯出 Atlas → 加密備份並驗證可還原 → 轉換 → 產生報告。**不連線 Cloudflare，不寫入 D1** | `MONGODB_URI`、`BACKUP_PASSPHRASE`、`MONGODB_DB_NAME` |
+| `import` | dry-run 的全部步驟，接著依序執行下列步驟（見下方說明） | 再加上 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`，以及在 confirm 欄位輸入「清空D1並匯入」 |
+
+`import` 模式在 dry-run 之後會：
+
+1. 建立 D1（如果還沒建立）。
+2. 套用 migrations。
+3. 備份 D1 現有資料。
+4. 清空 D1 後匯入。
+5. 讀回全部資料，逐筆逐欄比對。
+
+報告在該次執行的 **Summary** 頁面。報告只有筆數統計、預約 id 與 MongoDB `_id`，不含姓名、行編、分機或密碼。
+
+`import` 可以重複執行，每次都會先清空 D1 再匯入。但有兩點要注意：
+
+- 每次匯入都會用掉 D1 的每日寫入額度。免費方案每天 10 萬列，台北時間早上 8 點重置。報告中有估計值。**正式切換之後，同一天不要再匯入。**
+- 正式切換後，請到 repo 的 Variables 設定 `D1_IS_PRODUCTION` = `true`。設定之後 workflow 會拒絕匯入，避免誤把正式資料清掉。
+
+### 新舊 API 比對
+
+匯入後用新舊 API 查同一個時間區間、比對結果，需要先部署 Worker，所以放在後續的驗證工具 PR。
+
+## 備份
+
+**每一次**執行轉檔 workflow（包括 dry-run）都會先備份。備份失敗或無法解密還原時，workflow 會停止，不會進行任何後續步驟。
+
+| 備份 | 內容 | 保存位置 |
+|---|---|---|
+| Atlas 備份 | 資料庫中**所有** collection（包括 `roomLocks`）與索引定義。格式是 EJSON canonical，保留 Date／字串等原始型別，可以原樣還原 | artifact `atlas-backup-<執行編號>`，保存 90 天 |
+| D1 匯入前備份（只有 import） | 匯入前 D1 的完整 SQL 匯出，以及 Time Travel bookmark | artifact `d1-backup-<執行編號>`，保存 90 天。bookmark 寫在 Summary；免費方案可還原到 7 天內的任一時間點 |
+
+為什麼一定要加密：**公開 repo 的 artifact，任何登入 GitHub 的人都可以下載。**
+
+- 備份用 GnuPG 以 AES-256 加密，密碼是 GitHub Secret `BACKUP_PASSPHRASE`。
+- 每次加密完都會立刻解密，比對內容與原始檔完全相同，才算備份成功。
+- **`BACKUP_PASSPHRASE` 遺失，備份就無法解開。** 請另外存在密碼管理工具。
+- artifact 90 天後會自動刪除。正式切換前最後一次轉檔的備份，建議下載到自己的雲端硬碟長期保存。
+
+解密方式（在任何裝了 GnuPG 的電腦上；需要還原時也可以請我做成 workflow）：
+
+```sh
+unzip atlas-backup-<執行編號>.zip
+gpg --decrypt atlas-backup-*.tar.gz.gpg > backup.tar.gz   # 會詢問 BACKUP_PASSPHRASE
+tar -xzf backup.tar.gz                                      # 得到 atlas/booked.ndjson、users.ndjson…
+```
+
+## 手機設定步驟
+
+以下都在手機瀏覽器操作。GitHub 的 Settings 頁面在手機 App 裡沒有，請用瀏覽器開 github.com。
+
+### 1. 建立 Atlas 唯讀帳號（強烈建議）
+
+讓轉檔用的帳號**本身就沒有寫入權限**，不只是程式不寫入。
+
+1. 登入 <https://cloud.mongodb.com>，進入 MeetBook 的專案。
+2. 左側選單 **Security → Database & Network Access → Database Users**（舊版介面是 **Database Access**），按 **Add New Database User**。
+3. 驗證方式選 **Password**。
+   - 使用者名稱：例如 `meetbook-export`。
+   - 按 **Autogenerate Secure Password** 產生密碼，先複製起來。
+4. **Database User Privileges** 選 **Built-in Role → Only read any database**。
+   - 或者用 **Specific Privileges**，設定 `read` @ 你的資料庫名稱。
+5. 按 **Add User**。
+6. 確認 **Network Access**（IP Access List）裡有 `0.0.0.0/0`。
+   - Deno Deploy 目前能連線，通常表示已經有這一筆。
+   - 沒有的話，GitHub Actions 會連不上，因為它的 IP 不固定。
+7. 回到 **Database → Clusters → Connect → Drivers**，複製連線字串，把 `<db_password>` 換成剛剛的密碼。
+   - 形如：`mongodb+srv://meetbook-export:密碼@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`
+
+轉檔報告的「Atlas 帳號權限」欄會顯示這個帳號是否唯讀。
+
+### 2. 確認正式資料庫名稱
+
+用下列任一種方式確認：
+
+- 到 Deno Deploy 專案的 **Settings → Environment Variables**，看 `DB_NAME` 的值。沒有設定的話，程式預設是 `todo_db`。
+- 在 Atlas 的 **Browse Collections** 中，找有 `booked` 和 `users` 的那個資料庫。
+
+### 3. 產生備份密碼
+
+用密碼管理工具（例如 iPhone 的「密碼」App、Google 密碼管理工具）產生一組**至少 20 個字元**的隨機密碼，並保存在那裡。
+
+### 4. 設定 GitHub Secrets 與 Variables
+
+用瀏覽器打開 repo → **Settings → Secrets and variables → Actions**。
+
+**Secrets** 分頁 → **New repository secret**：
+
+| 名稱 | 值 | 什麼時候需要 |
+|---|---|---|
+| `MONGODB_URI` | 步驟 1 的唯讀連線字串 | dry-run 開始 |
+| `BACKUP_PASSPHRASE` | 步驟 3 的密碼 | dry-run 開始 |
+| `CLOUDFLARE_API_TOKEN` | 見步驟 6 | import 開始 |
+| `CLOUDFLARE_ACCOUNT_ID` | 見步驟 7 | import 開始 |
+
+**Variables** 分頁 → **New repository variable**：
+
+| 名稱 | 值 |
+|---|---|
+| `MONGODB_DB_NAME` | 步驟 2 的資料庫名稱 |
+
+### 5. 執行 dry-run
+
+repo → **Actions** → 左側 **轉檔 Atlas → D1** → **Run workflow**，mode 選 `dry-run` → **Run workflow**。GitHub 手機 App 也可以操作。
+
+跑完後打開該次執行，**Summary** 頁面就是報告。
+
+### 6. 建立 Cloudflare 帳號與 API token（import 前才需要）
+
+1. 到 <https://dash.cloudflare.com/sign-up> 用 email 註冊，並完成信箱驗證。
+   - Workers 免費方案預設就是啟用的。
+   - **如果任何畫面要求填信用卡，請停下來告訴我。** 這次遷移只用免費方案，不需要付款資訊。
+2. 右上角頭像 → **My Profile** → **API Tokens** → **Create Token** → 最下方 **Create Custom Token** 的 **Get started**。
+3. 設定：
+   - **Token name**：`meetbook-github-actions`
+   - **Permissions**：`Account` ／ `D1` ／ `Edit`
+     - 下一個 PR 部署 Worker 時，會請你再編輯這個 token，加上 `Account` ／ `Workers Scripts` ／ `Edit`。
+   - **Account Resources**：`Include` ／ 你的帳號
+   - 其他欄位留空。
+4. **Continue to summary → Create Token**。token 只會顯示一次，複製後存成 GitHub Secret `CLOUDFLARE_API_TOKEN`。
+
+### 7. 找 Account ID
+
+用下列任一種方式找：
+
+- 登入 Cloudflare 後，網址列 `dash.cloudflare.com/` 後面那串 32 個字元的英數字就是 Account ID。
+- 在 **Account home** 帳號名稱旁的 **⋯** 選單裡，選 **Copy account ID**。
+
+存成 GitHub Secret `CLOUDFLARE_ACCOUNT_ID`。
+
+### 8. D1 資料庫
+
+**不用手動建立。** 第一次以 `import` 模式執行時，workflow 會自動建立名為 `meetbook` 的資料庫，location hint 是 `apac`（亞太）。之後每次執行都用名稱找到它。
+
+## 本機開發（給有電腦的人）
+
+```sh
+cd main/worker
+npm ci
+npm run typecheck
+npm test   # 會下載 MongoDB 執行檔並啟動本機 D1，需要約 30 秒
+```

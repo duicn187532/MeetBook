@@ -1,0 +1,181 @@
+# 轉檔：MongoDB Atlas → Cloudflare D1（只能手動執行）
+#
+# 每次執行都會先把 Atlas 整個資料庫加密備份，備份並通過解密驗證後才繼續。
+#   dry-run（預設）：匯出、備份、轉換、產生報告，不連線 Cloudflare，不寫入 D1
+#   import：另外建立 D1（若尚未建立）、套用 migrations、備份 D1 現有資料、清空後匯入、逐筆驗證
+#
+# 對 Atlas 只有讀取；repo 是公開的，log 與報告只有統計數字與 id，備份一律加密後才上傳。
+# 設定與手機操作步驟見 main/worker/README.md。
+name: 轉檔 Atlas → D1
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run：只產生報告，不寫入 D1；import：清空 D1 後匯入"
+        type: choice
+        options:
+          - dry-run
+          - import
+        default: dry-run
+      confirm:
+        description: "import 模式才需要：請輸入「清空D1並匯入」"
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+# 同時只跑一個，避免兩次匯入互相覆蓋
+concurrency:
+  group: atlas-to-d1
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: ${{ inputs.mode }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    defaults:
+      run:
+        working-directory: main/worker
+    steps:
+      - name: 檢查設定
+        working-directory: .
+        env:
+          MODE: ${{ inputs.mode }}
+          CONFIRM: ${{ inputs.confirm }}
+          HAS_MONGODB_URI: ${{ secrets.MONGODB_URI != '' }}
+          HAS_BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE != '' }}
+          HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+          DB_NAME: ${{ vars.MONGODB_DB_NAME }}
+          D1_IS_PRODUCTION: ${{ vars.D1_IS_PRODUCTION }}
+        run: |
+          errors=()
+          [ "$HAS_MONGODB_URI" = "true" ] || errors+=("缺少 Secret：MONGODB_URI")
+          [ "$HAS_BACKUP_PASSPHRASE" = "true" ] || errors+=("缺少 Secret：BACKUP_PASSPHRASE")
+          [ -n "$DB_NAME" ] || errors+=("缺少 Variable：MONGODB_DB_NAME")
+          if [ "$MODE" = "import" ]; then
+            [ "$HAS_CF_TOKEN" = "true" ] || errors+=("缺少 Secret：CLOUDFLARE_API_TOKEN")
+            [ "$HAS_CF_ACCOUNT" = "true" ] || errors+=("缺少 Secret：CLOUDFLARE_ACCOUNT_ID")
+            [ "$CONFIRM" = "清空D1並匯入" ] || errors+=("import 模式需要在 confirm 欄位輸入「清空D1並匯入」")
+            # 正式切換後設定此變數，防止誤把正式資料清掉
+            [ "$D1_IS_PRODUCTION" != "true" ] || errors+=("D1 已是正式資料庫（Variable D1_IS_PRODUCTION=true），不能再匯入")
+          fi
+          if [ ${#errors[@]} -gt 0 ]; then
+            for e in "${errors[@]}"; do echo "::error::$e"; done
+            exit 1
+          fi
+          echo "OUT=$RUNNER_TEMP/meetbook" >> "$GITHUB_ENV"
+          echo "STAMP=$(date -u +%Y%m%dT%H%M%SZ)" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: main/worker/package-lock.json
+
+      - run: npm ci
+
+      - name: 從 Atlas 匯出（唯讀）
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB_NAME: ${{ vars.MONGODB_DB_NAME }}
+        run: node atlas-import/export_atlas.ts "$OUT/atlas"
+
+      - name: 加密備份 Atlas 資料並驗證可還原
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: atlas-import/backup.sh "$OUT/atlas" "$OUT/backup/atlas-backup-$STAMP.tar.gz.gpg" "$OUT/backup.json"
+
+      - name: 上傳加密備份
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-backup-${{ github.run_id }}
+          path: ${{ runner.temp }}/meetbook/backup/
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: 轉換並產生報告
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          node atlas-import/transform.ts "$OUT/atlas" "$OUT/out" --mode "$MODE" --backup "$OUT/backup.json"
+          cat "$OUT/out/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # ===== 以下只在 import 模式執行 =====
+
+      - name: 準備 D1（不存在就建立）並套用 migrations
+        if: inputs.mode == 'import'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          node atlas-import/d1_setup.ts
+          npx wrangler d1 migrations apply meetbook --remote
+
+      - name: 備份 D1 現有資料
+        if: inputs.mode == 'import'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          # Time Travel：免費方案可以還原到 7 天內任一時間點，這個 bookmark 是匯入前的時間點
+          bookmark="$(npx wrangler d1 time-travel info meetbook --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s.slice(s.search(/[{[]/)));console.log(j.bookmark??"")})')"
+          mkdir -p "$OUT/d1-before"
+          npx wrangler d1 export meetbook --remote --output "$OUT/d1-before/d1.sql" > /dev/null
+          atlas-import/backup.sh "$OUT/d1-before" "$OUT/backup-d1/d1-before-import-$STAMP.tar.gz.gpg" "$OUT/d1-backup.json"
+          {
+            echo "## D1 匯入前備份"
+            echo ""
+            echo "- Time Travel bookmark（匯入前）：\`$bookmark\`"
+            echo "- 加密的 SQL 匯出：artifact \`d1-backup-${GITHUB_RUN_ID}\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上傳 D1 加密備份
+        if: inputs.mode == 'import'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-backup-${{ github.run_id }}
+          path: ${{ runner.temp }}/meetbook/backup-d1/
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: 清空 D1 並匯入
+        if: inputs.mode == 'import'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # wrangler 的錯誤訊息可能引用 SQL 片段，輸出前把引號內的值遮蔽
+          if npx wrangler d1 execute meetbook --remote --yes --file "$OUT/out/import.sql" > "$OUT/import.log" 2>&1; then
+            echo "匯入完成"
+          else
+            sed -E "s/'[^']*'/'***'/g" "$OUT/import.log" | cut -c1-300 | tail -20
+            exit 1
+          fi
+
+      - name: 驗證 D1 資料
+        if: inputs.mode == 'import'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          status=0
+          node atlas-import/verify_d1.ts "$OUT/out/expected.json" "$OUT/verify.md" --remote || status=$?
+          [ -f "$OUT/verify.md" ] && cat "$OUT/verify.md" >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      - name: 清除暫存資料
+        if: always()
+        working-directory: .
+        run: rm -rf "${OUT:-$RUNNER_TEMP/meetbook}"

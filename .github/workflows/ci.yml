@@ -42,6 +42,30 @@ jobs:
         env:
           MONGODB_TEST_URI: mongodb://localhost:27017/?replicaSet=rs0
 
+  # Cloudflare Workers 後端（遷移中）：目前是 D1 資料表與轉檔工具
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main/worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: main/worker/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      # 轉檔流程測試會啟動 MongoDB（mongodb-memory-server），快取下載的執行檔
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-7.0.14-${{ runner.os }}
+      - run: npm test
+        env:
+          MONGOMS_DOWNLOAD_DIR: /home/runner/.cache/mongodb-binaries
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
