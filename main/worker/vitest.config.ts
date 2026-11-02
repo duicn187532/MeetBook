@@ -8,10 +8,10 @@ export default defineConfig({
   test: {
     projects: [
       {
-        // 轉檔工具與純函式的 CPU 時間量測（Node）
+        // 轉檔工具、比對工具與 CPU 時間量測（Node）
         test: {
           name: "node",
-          include: ["atlas-import/test/**/*.test.ts", "test/cpu/**/*.test.ts"],
+          include: ["atlas-import/test/**/*.test.ts", "compare/test/**/*.test.ts", "test/cpu/**/*.test.ts"],
           // 轉檔流程測試會啟動 MongoDB（mongodb-memory-server）與 wrangler 本機 D1，需要較長時間
           testTimeout: 180_000,
           hookTimeout: 300_000,

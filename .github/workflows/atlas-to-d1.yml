@@ -22,6 +22,15 @@ on:
         description: "import 模式才需要：請輸入「清空D1並匯入」"
         type: string
         required: false
+  # 讓「比對新舊後端」workflow 在比對前先重新匯入（同樣受 D1_IS_PRODUCTION 保護）
+  workflow_call:
+    inputs:
+      mode:
+        type: string
+        default: dry-run
+      confirm:
+        type: string
+        required: false
 
 permissions:
   contents: read

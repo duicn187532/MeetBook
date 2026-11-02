@@ -8,6 +8,7 @@
 | `migrations/` | D1 資料表（由 wrangler 的 D1 migrations 管理） |
 | `test/` | Worker 測試（在 workerd 中執行，D1 由 Miniflare 提供）與 CPU 時間量測 |
 | `atlas-import/` | Atlas → D1 的轉檔工具（GitHub Actions 執行，Node 24） |
+| `compare/` | 新舊後端比對與 CPU 時間報告（GitHub Actions 執行） |
 | `wrangler.jsonc` | Worker 與 D1 設定 |
 
 相關 workflow：
@@ -130,7 +131,29 @@ D1 執行查詢的時間不算在 Worker 的 CPU 時間裡；Worker 本身逐筆
 
 ### 新舊 API 比對
 
-匯入後用新舊 API 查同一個時間區間、比對結果，需要先部署 Worker，所以放在後續的驗證工具 PR。
+用 `.github/workflows/compare-apis.yml`（Actions →「比對新舊後端」）。程式在 `compare/`。
+
+**執行步驟：**
+
+1. 先從 Atlas 重新匯入 D1，讓兩邊資料相同。可以取消勾選來略過這一步；正式切換後一定要取消。
+2. 同時查詢舊系統（Deno）與新系統（Worker），逐筆比對。
+3. 向 Cloudflare 查詢 Worker 實際的 CPU 時間。
+
+**比對的項目：**
+
+- **預約查詢**：今天、本月、上個月、前端預設範圍、最大範圍、各會議室、沒帶參數。
+- **錯誤處理**：參數錯誤、缺少欄位、找不到使用者、找不到預約。
+- **CORS**。
+- **管理後台**：使用者清單、預約紀錄、統計。需要 `ADMIN_PASSWORD`；Deno 版密碼不同時，另外設定 `OLD_ADMIN_PASSWORD`。
+
+只送出不會改變資料的請求：查詢，以及一定會在寫入前被拒絕的錯誤請求。報告只有狀態碼、筆數、欄位路徑與預約 id，不含資料內容。
+
+**已知、不影響使用的差異：**
+
+- **預約順序**：新系統嚴格依開始時間排序；舊系統會把時間存成文字的舊預約排在前面。前端畫面本來就依時間顯示，不受影響。
+- **`date` 欄位**：17 筆舊資料的 `date` 不是字串。舊 API 回傳 null 或不回傳，新 API 回傳空字串。前端一律以 `startTime` 重新計算日期，不受影響。
+
+查詢實際 CPU 時間，需要在 Cloudflare API token 加上 `Account` → `Account Analytics` → `Read`；沒有這個權限時會略過，不會讓 workflow 失敗。
 
 ## 備份
 
