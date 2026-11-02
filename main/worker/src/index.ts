@@ -1,16 +1,74 @@
-// MeetBook 後端（Cloudflare Workers）
-// 目前只是骨架：API、管理後台與 LINE webhook 在下一個 PR 加入。這個檔案還不會被部署。
+// MeetBook 後端（Cloudflare Workers + D1）
+// 路由、狀態碼與回應格式與 Deno 版 server.ts 相同，前端不需要任何修改
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { corsOrigin, type Env } from "./env.ts";
+import { logEvent, setLogLevel } from "./logger.ts";
+import { addBooking, getActiveBooked, updateBooking } from "./bookings.ts";
+import { lineWebhook } from "./line_webhook.ts";
+import { adminGuard, adminRouter } from "./admin.ts";
 
-export interface Env {
-  DB: D1Database;
-  ENV: string;
-  LOG_LEVEL: string;
-}
+// strict: false：/api/bookings 與 /api/bookings/ 視為相同（前端送出的網址結尾有 /）
+const app = new Hono<{ Bindings: Env }>({ strict: false });
 
-export default {
-  fetch(request: Request): Response {
-    const { pathname } = new URL(request.url);
-    if (request.method === "GET" && pathname === "/") return Response.json({ ok: true });
-    return new Response("Not Found", { status: 404 });
-  },
-} satisfies ExportedHandler<Env>;
+app.use("*", async (c, next) => {
+  setLogLevel(c.env.LOG_LEVEL);
+  await next();
+});
+
+// 未預期的例外統一回 500，避免連線直接中斷
+app.onError((error, c) => {
+  logEvent("error", "未處理的例外", {
+    details: { path: c.req.path, error: error.message },
+    errorStack: error.stack,
+  });
+  return c.json({ error: "伺服器錯誤" }, 500);
+});
+
+// 正式環境只允許 GitHub Pages 的前端
+app.use(
+  "*",
+  cors({
+    origin: (_origin, c) => corsOrigin(c.env as Env),
+    allowMethods: ["GET", "POST", "PATCH"],
+    allowHeaders: ["Content-Type"],
+  }),
+);
+
+// 資料庫未設定時 API 回 503
+app.use("/api/*", async (c, next) => {
+  if (!c.env.DB) return c.json({ error: "資料庫未設定" }, 503);
+  await next();
+});
+
+app.get("/", (c) => c.json({ ok: true }));
+
+// 部署後用來確認服務與資料庫狀態；詳細錯誤只寫入 log，不回給呼叫端
+app.get("/healthz", async (c) => {
+  let db: "ok" | "not_configured" | "unreachable" = "not_configured";
+  if (c.env.DB) {
+    try {
+      await c.env.DB.prepare("SELECT 1").first();
+      db = "ok";
+    } catch (error) {
+      logEvent("error", "D1 ping 失敗", { details: { error: (error as Error).message } });
+      db = "unreachable";
+    }
+  }
+  return c.json({ ok: db === "ok", db }, db === "ok" ? 200 : 503);
+});
+
+// GET /api/bookings/:room?from=ISO&to=ISO
+app.get("/api/bookings/:room?", getActiveBooked);
+app.post("/api/bookings", addBooking);
+app.patch("/api/bookings/:id/:editPassword?", updateBooking);
+
+// LINE 官方帳號 webhook（在 LINE Developers 設定為 https://<網域>/line/webhook）
+app.post("/line/webhook", lineWebhook);
+
+// 管理後台：未設定 ADMIN_PASSWORD 時 /admin 一律 404
+app.use("/admin", adminGuard);
+app.use("/admin/*", adminGuard);
+app.route("/", adminRouter);
+
+export default app;

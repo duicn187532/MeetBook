@@ -2,3 +2,4 @@ node_modules/
 .wrangler/
 # 轉檔過程的暫存資料（含個資），不可 commit
 out/
+dist/

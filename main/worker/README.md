@@ -1,17 +1,62 @@
 # MeetBook 後端（Cloudflare Workers + D1）
 
-> 遷移進行中。**正式環境仍然是 Deno Deploy + MongoDB Atlas**（`main/project`），在明確切換之前完全不受影響。
-
-目前這個資料夾有：
+> 遷移進行中。**正式環境仍然是 Deno Deploy + MongoDB Atlas**（`main/project`）。這個 Worker 部署在 `*.workers.dev`，與 Deno 並行；在修改前端的 `VITE_API_URL`、LINE 的 webhook 網址之前，沒有人會用到它。
 
 | 路徑 | 內容 |
 |---|---|
+| `src/` | Worker（Hono）：API、管理後台、LINE webhook |
 | `migrations/` | D1 資料表（由 wrangler 的 D1 migrations 管理） |
+| `test/` | Worker 測試（在 workerd 中執行，D1 由 Miniflare 提供）與 CPU 時間量測 |
 | `atlas-import/` | Atlas → D1 的轉檔工具（GitHub Actions 執行，Node 24） |
-| `src/` | Worker 骨架（API、管理後台、LINE webhook 會在下一個 PR 加入，目前不會部署） |
 | `wrangler.jsonc` | Worker 與 D1 設定 |
 
-轉檔由 `.github/workflows/atlas-to-d1.yml` 執行，測試由 `.github/workflows/ci.yml` 的 `worker` job 執行。
+相關 workflow：
+
+- `.github/workflows/deploy-worker.yml`：部署。main 上的 Worker 有變動時自動執行，也可以手動執行。
+- `.github/workflows/atlas-to-d1.yml`：轉檔。
+- `.github/workflows/ci.yml` 的 `worker` job：測試。
+
+## 與 Deno 版的對應
+
+路由、狀態碼、回應格式、錯誤訊息都與 Deno 版相同，前端不需要修改。
+
+| Deno 版 | Worker |
+|---|---|
+| `server.ts` | `src/index.ts` |
+| `controller.ts` | `src/bookings.ts` |
+| `admin.ts` | `src/admin.ts`、`src/stats.ts` |
+| `line_webhook.ts` | `src/line_webhook.ts` |
+| `booking_rules.ts`、`admin_rules.ts`、`admin_auth.ts`、`line_bot.ts`、`logger.ts` | `src/` 中的同名檔案，幾乎原樣移植 |
+| `admin/index.html` | 直接匯入同一個檔案（`main/project/admin/index.html`），不另外複製 |
+
+和 Deno 版不同的實作方式，行為都相同：
+
+| 項目 | Deno 版 | Worker |
+|---|---|---|
+| 防止重複預約 | MongoDB 交易 + 每間會議室一筆鎖文件 | D1 的 `db.batch()` 在同一個 SQL 交易中依序執行（見 `src/db.ts`） |
+| 登入失敗次數 | 存在記憶體 | 存在 D1 的 `admin_login_attempts`（Workers 沒有跨請求共享的記憶體） |
+| 統計 | 程式逐筆計算 | 在 SQL 中彙總（`src/stats.ts`） |
+| 預約列表與後台紀錄 | 程式轉換後輸出 JSON | 每一列的 JSON 由 SQL 產生（`src/json_sql.ts`） |
+
+D1 的做法細節：
+
+- **防止重複預約**：每一句寫入都帶條件，例如「這個時段沒有其他有效預約才寫入」，後面再接一句檢查。只要任何一句沒有寫入，整批就回復，然後重新讀取再試，相當於 MongoDB 交易的自動重試。
+- **統計**：與 Deno 版的 `computeStats` 比對隨機資料，結果完全相同。
+- **列表 JSON**：與 Deno 版的轉換逐字相同。
+
+### CPU 時間（免費方案每個請求上限 10ms）
+
+D1 執行查詢的時間不算在 Worker 的 CPU 時間裡；Worker 本身逐筆解析、轉換、輸出 JSON 才是大量資料時的主要開銷。所以統計改在 SQL 彙總，列表改由 SQL 產生 JSON。
+
+`test/cpu/cpu.test.ts` 量測各 API 在 Worker 中實際做的事。以下數字是在比 Cloudflare 慢的測試機上量到的：
+
+| API | 5,000 筆，改寫前 | 2,000 筆，改寫後 | 5,000 筆，改寫後 |
+|---|---:|---:|---:|
+| 統計 | 24 ms | 1.2 ms | 3–5 ms |
+| 後台預約紀錄 | 43 ms | 2.6 ms | 4–7 ms |
+| 前端查詢 | 23 ms（2,000 筆） | 1.4–2.4 ms | 5–6 ms |
+
+目前資料量約每年 770 筆，前端一次查約 5 個月。部署後可在 Cloudflare 的 Workers → meetbook → Metrics 看實際的 CPU 時間。
 
 ## 資料表設計
 
@@ -54,6 +99,10 @@
 ### `admin_login_attempts`
 
 管理後台登入失敗次數。原本存在記憶體，Workers 沒有共享記憶體，所以改存 D1。
+
+### `write_guard`
+
+原子寫入用的檢查表，只會有一列，見 `src/db.ts` 的 `atomicWrites`。
 
 ## 轉檔 workflow：轉檔 Atlas → D1
 
@@ -106,6 +155,27 @@ unzip atlas-backup-<執行編號>.zip
 gpg --decrypt atlas-backup-*.tar.gz.gpg > backup.tar.gz   # 會詢問 BACKUP_PASSPHRASE
 tar -xzf backup.tar.gz                                      # 得到 atlas/booked.ndjson、users.ndjson…
 ```
+
+## 部署
+
+合併到 main 時自動執行。步驟依序是：
+
+1. 型別檢查。
+2. 準備 D1（不存在就建立）並套用 migrations。
+3. 部署 Worker，同時寫入 secrets。
+4. 檢查 `/healthz`。
+
+部署完成後，Summary 會列出 Worker 的網址。
+
+Worker 的 secrets 由 GitHub Secrets 寫入，部署時用 `wrangler deploy --secrets-file`；沒有設定的 secret 會保留 Worker 上原本的值。
+
+| GitHub Secret | 用途 |
+|---|---|
+| `ADMIN_PASSWORD` | 管理後台密碼（至少 8 個字元，少於 8 個字元時 `/admin` 一律 404） |
+| `LINE_CHANNEL_SECRET` | LINE 簽章驗證 |
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE 回覆訊息 |
+
+還沒設定 `CLOUDFLARE_API_TOKEN`／`CLOUDFLARE_ACCOUNT_ID` 時，workflow 會略過部署，不會失敗。
 
 ## 手機設定步驟
 
@@ -175,8 +245,9 @@ repo → **Actions** → 左側 **轉檔 Atlas → D1** → **Run workflow**，m
 2. 右上角頭像 → **My Profile** → **API Tokens** → **Create Token** → 最下方 **Create Custom Token** 的 **Get started**。
 3. 設定：
    - **Token name**：`meetbook-github-actions`
-   - **Permissions**：`Account` ／ `D1` ／ `Edit`
-     - 下一個 PR 部署 Worker 時，會請你再編輯這個 token，加上 `Account` ／ `Workers Scripts` ／ `Edit`。
+   - **Permissions**（兩列）：
+     - `Account` ／ `D1` ／ `Edit`
+     - `Account` ／ `Workers Scripts` ／ `Edit`（部署 Worker 用）
    - **Account Resources**：`Include` ／ 你的帳號
    - 其他欄位留空。
 4. **Continue to summary → Create Token**。token 只會顯示一次，複製後存成 GitHub Secret `CLOUDFLARE_API_TOKEN`。
@@ -200,5 +271,5 @@ repo → **Actions** → 左側 **轉檔 Atlas → D1** → **Run workflow**，m
 cd main/worker
 npm ci
 npm run typecheck
-npm test   # 會下載 MongoDB 執行檔並啟動本機 D1，需要約 30 秒
+npm test   # Worker 測試、CPU 量測與轉檔流程測試；會下載 MongoDB 執行檔並啟動本機 D1，需要約 1 分鐘
 ```
