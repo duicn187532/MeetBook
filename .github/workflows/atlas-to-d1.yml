@@ -108,6 +108,10 @@ jobs:
         run: |
           node atlas-import/transform.ts "$OUT/atlas" "$OUT/out" --mode "$MODE" --backup "$OUT/backup.json"
           cat "$OUT/out/report.md" >> "$GITHUB_STEP_SUMMARY"
+          # 報告也印在 log 中，方便只能讀取 log 的工具（例如協助遷移的 Claude）讀取；報告只有統計數字與 id，不含個資
+          echo "::group::轉檔報告"
+          cat "$OUT/out/report.md"
+          echo "::endgroup::"
 
       # ===== 以下只在 import 模式執行 =====
 
@@ -172,7 +176,10 @@ jobs:
         run: |
           status=0
           node atlas-import/verify_d1.ts "$OUT/out/expected.json" "$OUT/verify.md" --remote || status=$?
-          [ -f "$OUT/verify.md" ] && cat "$OUT/verify.md" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$OUT/verify.md" ]; then
+            cat "$OUT/verify.md" >> "$GITHUB_STEP_SUMMARY"
+            cat "$OUT/verify.md"
+          fi
           exit $status
 
       - name: 清除暫存資料
