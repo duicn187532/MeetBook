@@ -1,0 +1,70 @@
+# 比對新舊後端：同時查詢 Deno Deploy（舊）與 Cloudflare Worker（新），確認回應相同，並查詢 Worker 實際的 CPU 時間
+# 只送出不會改變資料的請求（查詢，以及一定會在寫入前被拒絕的錯誤請求）。報告在該次執行的 Summary，也會印在 log 中。
+name: 比對新舊後端
+
+on:
+  workflow_dispatch:
+    inputs:
+      reimport:
+        description: "比對前先從 Atlas 重新匯入 D1，讓兩邊資料相同（正式切換後請取消勾選）"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compare-apis
+  cancel-in-progress: false
+
+jobs:
+  reimport:
+    if: inputs.reimport
+    uses: ./.github/workflows/atlas-to-d1.yml
+    with:
+      mode: import
+      confirm: 清空D1並匯入
+    secrets: inherit
+
+  compare:
+    needs: reimport
+    # 沒有重新匯入（reimport 被略過）時也要執行；重新匯入失敗時不執行
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: main/worker
+    env:
+      OLD_API_BASE: ${{ vars.OLD_API_BASE || 'https://meetingbooking.duicn187532.deno.net' }}
+      NEW_API_BASE: ${{ vars.NEW_API_BASE || 'https://meetbook.duicn187532.workers.dev' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: main/worker/package-lock.json
+
+      - run: npm ci
+
+      - name: 比對 API
+        env:
+          # 管理後台的比對需要登入；Deno 版密碼不同時另外設定 OLD_ADMIN_PASSWORD
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          OLD_ADMIN_PASSWORD: ${{ secrets.OLD_ADMIN_PASSWORD }}
+        run: |
+          status=0
+          node compare/compare_apis.ts "$RUNNER_TEMP/compare.md" || status=$?
+          [ -f "$RUNNER_TEMP/compare.md" ] && cat "$RUNNER_TEMP/compare.md" >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      - name: 查詢實際 CPU 時間
+        if: always()
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          node compare/cpu_report.ts "$RUNNER_TEMP/cpu.md"
+          cat "$RUNNER_TEMP/cpu.md" >> "$GITHUB_STEP_SUMMARY"
