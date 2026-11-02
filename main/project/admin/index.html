@@ -73,6 +73,10 @@ body {
 }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
+/* 滑鼠移過分頁時給一點提示（只在有滑鼠的裝置） */
+@media (hover: hover) {
+  .tabbar button:hover { color: var(--accent); }
+}
 [hidden] { display: none !important; }
 .num { font-variant-numeric: tabular-nums; }
 
@@ -103,7 +107,8 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  /* 寬螢幕時標題與「登出」對齊中間 640px 的內容；手機上等於左右 16px */
+  padding: calc(10px + env(safe-area-inset-top)) max(16px, calc(50% - 304px)) 10px;
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -126,7 +131,8 @@ main {
   grid-template-columns: 1fr 1fr 1fr;
   background: var(--surface);
   border-top: 1px solid var(--line);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* 寬螢幕時三個分頁集中在中間 640px，不會散到整條螢幕 */
+  padding: 0 max(0px, calc(50% - 320px)) env(safe-area-inset-bottom);
 }
 .tabbar button {
   border: 0;
@@ -347,7 +353,7 @@ select.input:disabled { opacity: .55; }
 .chev { width: 18px; height: 18px; color: var(--text-3); }
 .fab {
   position: fixed;
-  right: 16px;
+  right: max(16px, calc(50% - 304px));
   bottom: calc(76px + env(safe-area-inset-bottom));
   z-index: 11;
   width: 56px;

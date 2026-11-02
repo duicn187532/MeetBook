@@ -23,14 +23,16 @@ const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: 
       onClick={() => setTimeout(onSelectToday, 200)}
       aria-current={todayMode ? "page" : undefined}
       className={`flex-1 h-[43px] rounded-t-[12px] inline-flex items-center justify-center gap-2 text-[15px] font-bold tracking-wide ${
-        todayMode ? "bg-[#FFC31D] text-white" : "bg-[#EAEAEA] text-[#222222]"
+        todayMode ? "bg-[#FFC31D] text-white" : "bg-[#EAEAEA] text-[#222222] [@media(hover:hover)]:hover:bg-[#DEDEDE]"
       }`}
     >
       <span className="w-1.5 h-1.5 rounded-full live-dot" aria-hidden="true" />
       LIVE
     </button>
     {rooms.map((room) => {
-      const selectedClasses = !todayMode && selectedRoom === room ? roomStyle[room] : "bg-[#EAEAEA] text-[#222222]";
+      const selectedClasses = !todayMode && selectedRoom === room
+        ? roomStyle[room]
+        : "bg-[#EAEAEA] text-[#222222] [@media(hover:hover)]:hover:bg-[#DEDEDE]";
       return (
         <button
           key={room}

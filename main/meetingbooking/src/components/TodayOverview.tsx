@@ -1,6 +1,7 @@
 // src/components/TodayOverview.tsx
 // LIVE 分頁：選定日期三間會議室的狀態卡（照片、可預約時段、立即預約、時間軸）
 // 尺寸與顏色依設計稿（iPhone 390pt 寬）量測
+// 平板：卡片最寬 560px 置中；電腦（1100px 以上）：三張卡片並排，一眼比較三間
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import { RoomKey, roomNames } from "../types/common";
@@ -114,7 +115,7 @@ interface TodayOverviewProps {
 const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: TodayRoom } & TodayOverviewProps) => {
   const style = roomStyle[room.room];
   return (
-    <div className="relative bg-white rounded-[22px] shadow-[0_2px_0_#E0E0E0] pt-[17px] pb-[14px] pl-[15px] pr-[15px]">
+    <div className="relative bg-white rounded-[22px] shadow-[0_2px_0_#E0E0E0] [@media(hover:hover)]:hover:shadow-[0_2px_0_#E0E0E0,0_6px_16px_rgba(0,0,0,0.08)] transition-shadow pt-[17px] pb-[14px] pl-[15px] pr-[15px]">
       {/* 整張卡片可點，進入該會議室的週檢視；立即預約按鈕疊在上面 */}
       <button
         type="button"
@@ -149,7 +150,7 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
                 type="button"
                 onClick={() => onQuickBook(room.room, room.quickBook!)}
                 aria-label={`立即預約 ${roomNames[room.room]}（${room.quickBook.startTime}–${room.quickBook.endTime}）`}
-                className="pointer-events-auto relative shrink-0 w-[87px] h-[29px] inline-flex items-center justify-center gap-1 rounded-full bg-[#FF9114] text-white text-[13px] font-medium shadow-[0_3px_6px_rgba(255,145,20,0.30)] active:scale-95"
+                className="pointer-events-auto relative shrink-0 w-[87px] h-[29px] inline-flex items-center justify-center gap-1 rounded-full bg-[#FF9114] [@media(hover:hover)]:hover:bg-[#F28100] text-white text-[13px] font-medium shadow-[0_3px_6px_rgba(255,145,20,0.30)] active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" strokeWidth={2.5} aria-hidden="true" />
                 立即預約
@@ -191,10 +192,12 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
 };
 
 const TodayOverview = ({ overview, now, onOpenRoom, onQuickBook }: TodayOverviewProps) => (
-  <div className="font-live min-h-full bg-[#FFFAE8] rounded-b-[24px] px-3 pt-[22px] pb-8 flex flex-col gap-4">
+  <div className="font-live min-h-full bg-[#FFFAE8] rounded-b-[24px] px-3 pt-[22px] pb-8">
+    <div className="flex flex-col gap-4 md:max-w-[560px] md:mx-auto min-[1100px]:max-w-none min-[1100px]:grid min-[1100px]:grid-cols-3 min-[1100px]:items-start min-[1100px]:px-3">
     {overview.rooms.map((room) => (
       <RoomCard key={room.room} room={room} overview={overview} now={now} onOpenRoom={onOpenRoom} onQuickBook={onQuickBook} />
     ))}
+    </div>
   </div>
 );
 

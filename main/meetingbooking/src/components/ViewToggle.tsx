@@ -51,6 +51,27 @@ const MonthViewHeader = ({
   </div>
 );
 
+// 圓形黑底箭頭（日／週切換用）
+const RoundArrow = ({ dir, label, onClick, className = "" }: { dir: "prev" | "next"; label: string; onClick: () => void; className?: string }) => (
+  <button
+    onClick={onClick}
+    aria-label={label}
+    className={`p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-[''] ${className}`}
+  >
+    {dir === "prev" ? <ChevronLeft className="text-white w-3 h-3" /> : <ChevronRight className="text-white w-3 h-3" />}
+  </button>
+);
+
+// 月份標題；平板、電腦（md 以上）把左右箭頭放在標題兩側，
+// 讓下面的日期列可以和行事曆的欄位對齊
+const TitleWithArrows = ({ title, onPrev, onNext, prevLabel, nextLabel }: { title: string; onPrev: () => void; onNext: () => void; prevLabel: string; nextLabel: string }) => (
+  <div className="pt-2 flex items-center gap-4">
+    <RoundArrow dir="prev" label={prevLabel} onClick={onPrev} className="hidden md:inline-flex" />
+    <div className="text-2xl font-normal">{title}</div>
+    <RoundArrow dir="next" label={nextLabel} onClick={onNext} className="hidden md:inline-flex" />
+  </div>
+);
+
 const ViewToggle = ({
   selectedView,
   onChangeView,
@@ -118,13 +139,17 @@ const ViewToggle = ({
 
       {selectedView === "Day" && (
         <>
-        <div className="pt-2 text-2xl font-normal ">{currentDate.format("MMMM YYYY")}</div>
+        <TitleWithArrows
+          title={currentDate.format("MMMM YYYY")}
+          onPrev={handlePrevDaysOnDay}
+          onNext={handleNextDaysOnDay}
+          prevLabel="前幾天"
+          nextLabel="後幾天"
+        />
 
         <div className="flex w-full justify-between items-center">
-          <button onClick={handlePrevDaysOnDay} aria-label="前幾天" className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']">
-            <ChevronLeft className=" text-white w-3 h-3" />
-          </button>
-          <div className="flex w-full min-w-0 mx-2 min-[360px]:mx-3 justify-between">
+          <RoundArrow dir="prev" label="前幾天" onClick={handlePrevDaysOnDay} className="md:hidden" />
+          <div className="flex w-full min-w-0 mx-2 min-[360px]:mx-3 md:ml-10 md:-mr-2 justify-between">
             {displayedDates.map((date) => (
               <button
                 key={date.format("YYYY-MM-DD")}
@@ -132,7 +157,7 @@ const ViewToggle = ({
                   setCurrentDate(date);
                   updateBookingDate(date);
                 }}
-                className={`text-xl text-center px-1 min-[360px]:px-2 py-1 rounded ${
+                className={`text-xl text-center px-1 min-[360px]:px-2 py-1 rounded md:flex-1 ${
                   date.isSame(currentDate, "day")
                     ? "bg-white text-red-500 rounded-lg"
                     : "text-gray-700"
@@ -147,27 +172,25 @@ const ViewToggle = ({
               </button>
             ))}
           </div>
-          <button onClick={handleNextDaysOnDay} aria-label="後幾天" className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']">
-            <ChevronRight className="w-3 h-3 text-white" />
-          </button>
+          <RoundArrow dir="next" label="後幾天" onClick={handleNextDaysOnDay} className="md:hidden" />
         </div>
         </>
       )}
       {selectedView === "Week" && (
         <>
           {/* 添加今天的日期顯示 */}
-            <div className="pt-2 text-2xl font-normal">{currentDate.format("MMMM YYYY")}</div>
+          <TitleWithArrows
+            title={currentDate.format("MMMM YYYY")}
+            onPrev={handlePrevDaysOnWeek}
+            onNext={handleNextDaysOnWeek}
+            prevLabel="上一週"
+            nextLabel="下一週"
+          />
 
-
+          {/* md 以上：日期列左邊讓出時間欄（48px）、右邊貼齊，五天剛好對齊下方五欄 */}
           <div className="flex w-full justify-between items-center mb-2">
-            <button 
-              onClick={handlePrevDaysOnWeek}
-              aria-label="上一週"
-              className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']"
-            >
-              <ChevronLeft className="text-white w-3 h-3" />
-            </button>
-            <div className="flex justify-between items-center h-full bg-white w-full min-w-0 mx-2 min-[360px]:mx-3 rounded-lg">
+            <RoundArrow dir="prev" label="上一週" onClick={handlePrevDaysOnWeek} className="md:hidden" />
+            <div className="flex justify-between items-center h-full bg-white w-full min-w-0 mx-2 min-[360px]:mx-3 md:ml-10 md:-mr-2 md:rounded-r-none rounded-lg">
               {displayedWeekDates.map((date) => (
                 <button
                   key={date.format("YYYY-MM-DD")}
@@ -175,7 +198,7 @@ const ViewToggle = ({
                     setCurrentDate(date);
                     updateBookingDate(date);
                   }}
-                  className={`text-center px-1 min-[360px]:px-2 py-1 rounded ${
+                  className={`text-center px-1 min-[360px]:px-2 py-1 rounded md:flex-1 ${
                     date.isSame(currentDate, "day")
                       ? "text-red-500 rounded-lg"
                       : "text-gray-700"
@@ -190,13 +213,7 @@ const ViewToggle = ({
                 </button>
               ))}
             </div>
-            <button 
-              onClick={handleNextDaysOnWeek}
-              aria-label="下一週"
-              className="p-1 rounded-full bg-black relative shrink-0 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']"
-            >
-              <ChevronRight className="w-3 h-3 text-white" />
-            </button>
+            <RoundArrow dir="next" label="下一週" onClick={handleNextDaysOnWeek} className="md:hidden" />
           </div>
         </>
       )}

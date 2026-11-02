@@ -115,6 +115,7 @@ const WeekCalendar = ({
                       rounded absolute left-1 right-1 shadow-md
                       transition-transform duration-75 ease-in
                       active:scale-95
+                      [@media(hover:hover)]:hover:brightness-95
                       cursor-pointer
                     `}
                       style={{ top: `${topPercent}%`, height: `${heightPercent}%` }}

@@ -201,3 +201,10 @@ button:active {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
+
+/* 電腦寬螢幕：App 置中（最寬 1120px），兩側淺灰底 */
+@media (min-width: 1120px) {
+  body {
+    background: #F3F4F6;
+  }
+}

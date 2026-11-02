@@ -559,8 +559,9 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
   // 以下為組合各個元件與 UI
   // 高度用 dvh，避免手機瀏覽器（含 LINE 內建瀏覽器）的工具列蓋住下方；
   // 畫面很矮時（手機橫放）改成整頁捲動，否則上方標題與切換列會把行事曆擠到只剩一條
+  // 電腦上最寬 1120px 置中，不會整個撐滿螢幕；手機寬度不受影響
   return (
-    <div className="flex flex-col h-screen supports-[height:100dvh]:h-[100dvh] [@media(max-height:500px)]:h-auto">
+    <div className="flex flex-col h-screen supports-[height:100dvh]:h-[100dvh] [@media(max-height:500px)]:h-auto w-full max-w-[1120px] mx-auto bg-white min-[1120px]:shadow-[0_0_0_1px_#E5E7EB]">
       <TitleDescription />
       <RoomSelector
         selectedRoom={selectedRoom}
@@ -635,7 +636,8 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           onClick={() => setTimeout(()=>{
             openBookingModal();
           }, 250)}
-          className={`fixed bottom-4 right-4 w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg`}
+          aria-label="新增預約"
+          className={`fixed bottom-4 right-4 min-[1120px]:right-[calc(50vw_-_544px)] w-12 h-12 ${buttonBGColor} text-white rounded-[20px] flex items-center justify-center shadow-lg [@media(hover:hover)]:hover:brightness-110`}
         >
           <span className="text-3xl">+</span>
         </button>
