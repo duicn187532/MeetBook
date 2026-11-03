@@ -35,9 +35,10 @@ jobs:
       - run: npm run build
         env:
           # 後端網址是公開資訊（會編進前端程式）；要換網址時到 repo 的 Settings → Variables 設定 VITE_API_URL 即可
-          # 預設為 Cloudflare Worker；要回復到舊後端（Deno Deploy）時，把 VITE_API_URL 設為
-          # https://meetingbooking.duicn187532.deno.net/api/bookings/ 後手動執行這個 workflow
-          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://meetbook.duicn187532.workers.dev/api/bookings/' }}
+          # 預設為 Cloudflare Pages 入口（轉給 Worker；公司網路擋 workers.dev，但可以連 pages.dev，見 main/pages-entry）
+          # pages.dev 出問題時，可暫時把 VITE_API_URL 設為 https://meetbook.duicn187532.workers.dev/api/bookings/
+          # （公司網路連不上，手機網路可以）後手動執行這個 workflow
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://meetbook.pages.dev/api/bookings/' }}
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
