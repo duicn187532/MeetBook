@@ -2,7 +2,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../src/index.ts";
-import { AI_PAGE_URL, HELP_REPLY, MCP_URL, WEEKEND_REPLY } from "../src/line_bot.ts";
+import { AI_PAGE_URL, AI_TEMPLATE, HELP_REPLY, MCP_URL, WEEKEND_REPLY } from "../src/line_bot.ts";
 import { api, resetDb, rows, seedUser } from "./helpers.ts";
 
 async function sign(body: string, secret = "test-line-secret"): Promise<string> {
@@ -123,15 +123,21 @@ describe("LINE webhook", () => {
     expect(replies[0].body.messages[0].text).toContain("4️⃣ 找不到這個行編，請確認後重新輸入");
   });
 
-  it("ai：回覆兩則設定教學（免費版貼網址、付費版連接器）；大小寫、全形與「ai預約」都可以", async () => {
+  it("ai：回覆方法一（含優點）、可複製的範本、方法二（連接器）三則訊息；大小寫、全形與「ai預約」都可以", async () => {
     for (const text of ["ai", " AI ", "Ａｉ", "ai 預約", "AI教學"]) {
       replies = [];
       await webhook([textEvent(text)]);
       expect(replies.length, text).toBe(1);
-      const [free, connector] = replies[0].body.messages;
-      expect(replies[0].body.messages.length).toBe(2);
+      const [free, template, connector] = replies[0].body.messages;
+      expect(replies[0].body.messages.length).toBe(3);
+      expect(free.text).toContain("✨ 為什麼用 AI 預約？");
+      expect(free.text).toContain("同一個對話會記得你的行編和習慣");
+      expect(free.text).toContain("長按複製下一則訊息（範本）");
+      expect(template.text).toBe(AI_TEMPLATE);
+      expect(template.text.startsWith(`請閱讀 ${AI_PAGE_URL} `)).toBe(true);
+      expect(template.text).toContain("我的行編：");
+      expect(template.text).toContain("這次想預約：");
       expect(free.text).toContain("【用 AI 預約・方法一】");
-      expect(free.text).toContain(AI_PAGE_URL);
       expect(free.text).toContain("編輯密碼請在確認頁自己設定，不要告訴 AI");
       expect(connector.text).toContain("【用 AI 預約・方法二】");
       expect(connector.text).toContain(MCP_URL);

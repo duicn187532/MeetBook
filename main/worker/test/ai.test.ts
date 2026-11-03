@@ -35,6 +35,8 @@ describe("GET /ai", () => {
     expect(t).toContain("https://w.test/b?room=Beta&date=");
     expect(t).toContain("行編一定要由使用者提供");
     expect(t).toContain("不要放編輯密碼");
+    expect(t).toContain("## 在同一個對話中再次預約");
+    expect(t).toContain("但每次都要重新開啟 https://w.test/ai");
   });
 
   it(`列出 ${OVERVIEW_DAYS} 個工作日的空檔與詳細網址（網址用請求的網域），不含預約者姓名與會議名稱`, async () => {

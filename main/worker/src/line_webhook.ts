@@ -9,6 +9,7 @@ import { type BookingRow, rowToBooking } from "./db.ts";
 import {
   AI_GUIDE_CONNECTOR,
   AI_GUIDE_FREE,
+  AI_TEMPLATE,
   BOOK_COMMAND,
   BOOK_INSTRUCTIONS,
   bookTemplate,
@@ -102,8 +103,8 @@ async function handleText(
     if (isTaipeiWeekend(now)) return { action: "template", texts: [WEEKEND_REPLY] };
     return { action: "template", texts: [BOOK_INSTRUCTIONS, bookTemplate(now)] };
   }
-  // 「ai」：兩種用 AI 預約的設定教學，分成兩則訊息
-  if (isAiCommand(command)) return { action: "ai-guide", texts: [AI_GUIDE_FREE, AI_GUIDE_CONNECTOR] };
+  // 「ai」：兩種用 AI 預約的設定教學；方法一之後接一則可以直接複製貼上的範本
+  if (isAiCommand(command)) return { action: "ai-guide", texts: [AI_GUIDE_FREE, AI_TEMPLATE, AI_GUIDE_CONNECTOR] };
   const booked = await bookFromForm(db, text, now);
   if (booked) return { action: "book", texts: [booked] };
   // 一對一聊天時說明可以用的指令；群組中的一般聊天不回覆
