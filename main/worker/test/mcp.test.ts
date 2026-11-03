@@ -160,18 +160,22 @@ describe("查詢", () => {
 });
 
 describe("新增預約", () => {
-  it("成功：寫入資料庫並回傳編輯密碼；會議室可用名稱、代碼或字母", async () => {
+  it("成功：寫入資料庫；編輯密碼不自動產生、不回傳；會議室可用名稱、代碼或字母", async () => {
     const { data, isError } = await call("create_booking", { ...BOOK, participants: 6 });
     expect(isError).toBe(false);
     expect(data).toMatchObject({ success: true, rooms: ["Beta"], time: "14:00–15:00", title: "MCP 測試", booked_by: "測試員", participants: 6 });
-    expect(data!.edit_password).toMatch(/^\d{4}$/);
+    // 沒有提供編輯密碼：不設密碼，並提醒
+    expect(data!.edit_password_set).toBe(false);
+    expect(data!.note).toContain("沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約，請提醒使用者");
     const [row] = await rows();
     expect(row).toMatchObject({ room: "A102", title: "MCP 測試", start_time: at(WED, "14:00"), end_time: at(WED, "15:00"), cancelled: 0 });
-    expect(row.edit_password).toBe(data!.edit_password);
+    expect(row.edit_password).toBe("");
 
     const multi = await call("create_booking", { ...BOOK, rooms: ["a", "A103"], start_time: "9:00", end_time: "10:30", edit_password: "pass1234" });
-    expect(multi.data).toMatchObject({ rooms: ["Alpha", "StartUp"], time: "09:00–10:30", edit_password: "pass1234" });
+    expect(multi.data).toMatchObject({ rooms: ["Alpha", "StartUp"], time: "09:00–10:30", edit_password_set: true });
+    expect(multi.text).not.toContain("pass1234");
     const group = await rows("start_time = ?", at(WED, "09:00"));
+    expect(group.map((r) => r.edit_password)).toEqual(["pass1234", "pass1234"]);
     expect(group.map((r) => r.room)).toEqual(["A101", "A103"]);
     expect(group[0].group_id).toBeTruthy();
     expect(group[0].group_id).toBe(group[1].group_id);

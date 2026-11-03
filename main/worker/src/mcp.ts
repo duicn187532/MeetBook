@@ -7,7 +7,7 @@ import type { Context } from "hono";
 import type { Env } from "./env.ts";
 import { logEvent } from "./logger.ts";
 import { createBooking } from "./bookings.ts";
-import { DAY_END, DAY_START, randomEditPassword, ROOMS, taipeiParts } from "./line_bot.ts";
+import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
 import { WEEKEND_MESSAGE } from "./booking_rules.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
@@ -45,7 +45,7 @@ const INSTRUCTIONS = [
   "規則：",
   ...RULES.map((r) => `- ${r}`),
   "建議流程：先用 find_free_slots 或 list_bookings 確認空檔；把會議室、日期、時間、會議名稱與行編跟使用者確認後，再呼叫 create_booking。",
-  "預約成功後，請把編輯密碼告訴使用者。目前不能透過這裡修改或取消預約。",
+  "編輯密碼不要主動詢問；使用者沒提供時不設密碼，預約後提醒使用者任何人都能修改。目前不能透過這裡修改或取消預約。",
 ].join("\n");
 
 // ===== 工具定義 =====
@@ -97,7 +97,7 @@ export const TOOLS = [
   {
     name: "create_booking",
     title: "預約會議室",
-    description: "預約一間或多間會議室。呼叫前請先跟使用者確認會議室、日期、時間、會議名稱與行編。成功時會回傳編輯密碼，請告訴使用者（在網站修改或取消時使用）。",
+    description: "預約一間或多間會議室。呼叫前請先跟使用者確認會議室、日期、時間、會議名稱與行編。",
     inputSchema: {
       type: "object",
       properties: {
@@ -114,7 +114,7 @@ export const TOOLS = [
         end_time: { type: "string", description: "結束時間，24 小時制 HH:mm，例如 15:30" },
         title: { type: "string", maxLength: 50, description: "會議名稱" },
         participants: { type: "integer", minimum: 0, maximum: 100, description: "與會人數" },
-        edit_password: { type: "string", description: "編輯密碼（4–20 個英數字）；省略時自動產生 4 位數字" },
+        edit_password: { type: "string", description: "編輯密碼（選填，4–20 個英數字）。只有使用者主動提供時才填，不要主動詢問；省略時不設密碼（與網站相同，任何人都能在網站修改或取消）" },
       },
       required: ["employee_id", "rooms", "date", "start_time", "end_time"],
       additionalProperties: false,
@@ -310,13 +310,13 @@ async function createBookingTool(db: D1Database, args: Record<string, unknown>, 
 
   const title = typeof args.title === "string" ? args.title.trim().slice(0, 50) : "";
   const participants = intArg(args.participants, "participants", 0, 100, 0);
-  let editPassword: string;
-  if (args.edit_password === undefined || args.edit_password === null || args.edit_password === "") {
-    editPassword = randomEditPassword();
-  } else if (typeof args.edit_password === "string" && /^[A-Za-z0-9]{4,20}$/.test(args.edit_password)) {
+  // 編輯密碼不自動產生：沒有提供時與網站相同不設密碼
+  let editPassword = "";
+  if (args.edit_password !== undefined && args.edit_password !== null && args.edit_password !== "") {
+    if (typeof args.edit_password !== "string" || !/^[A-Za-z0-9]{4,20}$/.test(args.edit_password)) {
+      throw new ToolInputError("編輯密碼請用 4–20 個英文字母或數字，或省略（不設密碼）");
+    }
     editPassword = args.edit_password;
-  } else {
-    throw new ToolInputError("編輯密碼請用 4–20 個英文字母或數字，或省略讓系統自動產生");
   }
 
   const result = await createBooking(db, {
@@ -356,9 +356,12 @@ async function createBookingTool(db: D1Database, args: Record<string, unknown>, 
     title: title || "（未命名）",
     booked_by: result.user.name || user,
     participants,
-    edit_password: editPassword,
+    // 不回傳密碼本身，避免重複出現在對話中
+    edit_password_set: editPassword !== "",
     note: [
-      "請把編輯密碼告訴使用者：之後要修改或取消時，在網站上輸入這組密碼",
+      editPassword
+        ? "已設定編輯密碼：之後要修改或取消時，在網站上輸入使用者提供的密碼"
+        : "沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約，請提醒使用者",
       `網站：${WEBSITE_URL}`,
       ...(participants > seats ? [`與會人數 ${participants} 人超過座位數 ${seats} 人`] : []),
     ],
