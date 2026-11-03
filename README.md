@@ -79,6 +79,25 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 - **公告**：新增、修改、刪除網站的公告與更新日誌（Cloudflare Worker 版才有；見前端說明的「公告與更新日誌」）。
 - **安全性**：登入後以 HttpOnly + SameSite=Strict cookie 維持 8 小時；同一來源 15 分鐘內失敗 5 次即暫停，全部來源合計 30 次也會暫停；修改資料的請求需帶 `X-Admin` 標頭；更換 `ADMIN_PASSWORD` 會讓所有已登入的裝置立即登出。
 
+### 用 AI 助理查詢與預約（/ai、/b）
+
+同事在 ChatGPT、Claude 等 AI 助理（免費版也可以）開一個新對話，貼上 `https://meetbook.pages.dev/ai`，就能請 AI 查空檔並產生預約連結；點開連結、在確認頁按一下就完成預約。
+
+- `GET /ai`（`main/worker/src/ai.ts`）：給 AI 讀的純文字說明，內容包括：
+  - 現在時間、會議室、預約規則
+  - 未來 10 個工作日的空檔（不含預約者與會議名稱）
+  - 之後 20 個工作日的詳細網址
+  - 如何產生預約連結
+- `GET /ai/day/YYYY-MM-DD`：某天各會議室的空檔與預約，資料與網站公開的相同（預約者只顯示姓名，沒有姓名時顯示行編後 4 碼），不含行編與編輯密碼。只能查 31 天前到 180 天後。
+- 免費版 ChatGPT 通常只能開啟使用者貼的網址，或已讀取頁面中出現的網址，所以每天的詳細網址都列在 `/ai` 上，空檔也直接寫在 `/ai`，只讀一頁就夠用。
+- 預約連結：`https://meetbook.pages.dev/b?room=Beta&date=2026-11-05&start=14:00&end=15:00&title=週會&people=6&user=5977`（`main/worker/src/book_page.ts`）。
+  - **打開連結不會預約**：連結預覽、資安掃描只會讀取頁面。確認頁只有幾 KB，外觀沿用網站，打開時先檢查時段與預約人。
+  - 使用者按「確認預約」才以網站相同的 `createBooking` 預約；成功後轉到 `/b/ok` 結果頁，重新整理不會重複送出。
+  - **編輯密碼不放在連結中**（會留在 AI 對話紀錄與瀏覽紀錄），由使用者在確認頁自行填寫；不填則與網站相同，任何人都能修改，結果頁會提醒。
+- 回應標頭為 `Cache-Control: no-store` 與 `X-Robots-Tag: noindex`；`/robots.txt` 只允許 `/ai`。
+
+使用範例：「請閱讀 https://meetbook.pages.dev/ai ，幫我找明天下午 Beta 一小時的空檔，並產生預約連結」。
+
 ### 測試
 
 ```bash
