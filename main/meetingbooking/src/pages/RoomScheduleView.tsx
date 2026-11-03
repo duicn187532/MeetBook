@@ -45,6 +45,7 @@ import {
 import useMeetingData from "../hooks/useMeetingData";
 import useSwipe from "../hooks/useSwipe";
 import useNow from "../hooks/useNow";
+import usePageVisible from "../hooks/usePageVisible";
 import { fetchNoticesApi, readResponseBody } from "../api/meetingApi";
 import {
   Alternatives,
@@ -59,6 +60,10 @@ import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../
 
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
+// LIVE 分頁自動重新取得資料的間隔（只在頁面看得到時）
+const LIVE_REFRESH_MS = 5 * 60_000;
+// 回到頁面時，資料超過這個時間沒更新就立即重新取得
+const STALE_AFTER_MS = 60_000;
 // 手動重新整理時進度線最短顯示的時間（毫秒）
 const MANUAL_REFRESH_MIN_MS = 800;
 
@@ -95,7 +100,9 @@ const RoomScheduleView = () => {
   // Today 分頁（實驗性功能）
   // 開啟網站一律從 LIVE 開始；會議室與檢視模式仍沿用上次的選擇
   const [todayMode, setTodayMode] = useState(true);
-  const now = useNow(todayMode);
+  // 頁面看不到時（背景分頁、縮到最小、手機切到其他 App）暫停自動更新，避免沒人在看時持續發請求
+  const page = usePageVisible();
+  const now = useNow(todayMode && page.visible);
   // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天；週末時為下週一）
   const [liveOffset, setLiveOffset] = useState(firstLiveOffset);
   // 公告與更新日誌（由管理後台維護）只給沒看過的人看一次：先顯示公告，關閉後再顯示更新日誌；一顯示就記為看過
@@ -217,18 +224,25 @@ const RoomScheduleView = () => {
   const reloadMeetings = () => setRefreshKey((key) => key + 1);
 
   // 查詢範圍改變或資料異動時取得會議資料（切換會議室不需重新讀取）
+  const lastFetchAt = useRef(0);
   useEffect(() => {
+    lastFetchAt.current = Date.now();
     fetchEvents({ from: rangeFrom, to: rangeTo });
   }, [rangeFrom, rangeTo, refreshKey]);
   // 畫面上的資料是否已涵蓋目前的區間；還沒涵蓋時以全畫面讀取遮住，避免誤以為沒有預約
   const rangeLoaded = loadedRange?.from === rangeFrom && loadedRange?.to === rangeTo;
 
-  // Today 分頁開著時每 5 分鐘重新取得資料，反映其他人的新預約
+  // LIVE 分頁開著、且頁面看得到時，每 5 分鐘重新取得資料，反映其他人的新預約
   useEffect(() => {
-    if (!todayMode) return;
-    const timer = setInterval(reloadMeetings, 5 * 60_000);
+    if (!todayMode || !page.visible) return;
+    const timer = setInterval(reloadMeetings, LIVE_REFRESH_MS);
     return () => clearInterval(timer);
-  }, [todayMode]);
+  }, [todayMode, page.visible]);
+
+  // 回到頁面時（切回分頁、手機切回瀏覽器），資料超過 1 分鐘沒更新就立即重新取得（各分頁皆同）
+  useEffect(() => {
+    if (page.resumes > 0 && Date.now() - lastFetchAt.current > STALE_AFTER_MS) reloadMeetings();
+  }, [page.resumes]);
 
   const todayDate = dayjs(now).tz("Asia/Taipei").add(liveOffset, "day").format("YYYY-MM-DD");
   const todayOverview = todayMode ? buildTodayOverview(meetings, ROOMS, todayDate, now) : null;
