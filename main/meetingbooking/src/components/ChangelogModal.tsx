@@ -1,6 +1,7 @@
 import { Megaphone } from "lucide-react";
 import { ChangelogEntry, slashDate } from "../config/notices";
 import NoticeDialog from "./NoticeDialog";
+import LinkifiedText from "./LinkifiedText";
 
 interface ChangelogModalProps {
   entries: ChangelogEntry[]; // 只傳入使用者還沒看過的
@@ -26,7 +27,9 @@ const ChangelogModal = ({ entries, onClose }: ChangelogModalProps) => (
                       實驗性功能
                     </span>
                   )}
-                  <span className="block whitespace-pre-line">{item.text}</span>
+                  <span className="block whitespace-pre-line break-words">
+                    <LinkifiedText text={item.text} />
+                  </span>
                 </li>
               ))}
             </ul>

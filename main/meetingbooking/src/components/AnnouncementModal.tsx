@@ -1,6 +1,7 @@
 import { Bell } from "lucide-react";
 import { Announcement } from "../config/notices";
 import NoticeDialog from "./NoticeDialog";
+import LinkifiedText from "./LinkifiedText";
 
 interface AnnouncementModalProps {
   announcements: Announcement[]; // 只傳入使用者還沒看過的
@@ -13,7 +14,9 @@ const AnnouncementModal = ({ announcements, onClose }: AnnouncementModalProps) =
     {announcements.map((a) => (
       <div key={a.id} className="bg-[#F7F7F7] rounded-xl px-3 py-2.5">
         <div className="text-sm font-bold text-[#C2410C]">{a.title}</div>
-        <p className="mt-1 text-sm text-gray-700 whitespace-pre-line break-words">{a.body}</p>
+        <p className="mt-1 text-sm text-gray-700 whitespace-pre-line break-words">
+          <LinkifiedText text={a.body} />
+        </p>
       </div>
     ))}
   </NoticeDialog>

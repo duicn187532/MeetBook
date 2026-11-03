@@ -2,7 +2,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../src/index.ts";
-import { WEEKEND_REPLY } from "../src/line_bot.ts";
+import { AI_PAGE_URL, HELP_REPLY, MCP_URL, WEEKEND_REPLY } from "../src/line_bot.ts";
 import { api, resetDb, rows, seedUser } from "./helpers.ts";
 
 async function sign(body: string, secret = "test-line-secret"): Promise<string> {
@@ -121,6 +121,36 @@ describe("LINE webhook", () => {
     const form = ["開始時間:14:00", "會議時長:1hr", "預約人:9999", "會議室:S"].join("\n");
     await webhook([textEvent(form)]);
     expect(replies[0].body.messages[0].text).toContain("4️⃣ 找不到這個行編，請確認後重新輸入");
+  });
+
+  it("ai：回覆兩則設定教學（免費版貼網址、付費版連接器）；大小寫、全形與「ai預約」都可以", async () => {
+    for (const text of ["ai", " AI ", "Ａｉ", "ai 預約", "AI教學"]) {
+      replies = [];
+      await webhook([textEvent(text)]);
+      expect(replies.length, text).toBe(1);
+      const [free, connector] = replies[0].body.messages;
+      expect(replies[0].body.messages.length).toBe(2);
+      expect(free.text).toContain("【用 AI 預約・方法一】");
+      expect(free.text).toContain(AI_PAGE_URL);
+      expect(free.text).toContain("編輯密碼請在確認頁自己設定，不要告訴 AI");
+      expect(connector.text).toContain("【用 AI 預約・方法二】");
+      expect(connector.text).toContain(MCP_URL);
+    }
+    replies = [];
+    await webhook([textEvent("aim")]);
+    expect(replies).toEqual([]);
+  });
+
+  it("一對一聊天收到看不懂的訊息時說明可用的指令（含 ai）；群組不回覆；預約表單照常處理", async () => {
+    await webhook([textEvent("你好", { source: { type: "user", userId: "U1" } })]);
+    expect(replies[0].body.messages).toEqual([{ type: "text", text: HELP_REPLY }]);
+    expect(HELP_REPLY).toContain("・ai：用 ChatGPT、Claude 預約的教學");
+    replies = [];
+    await webhook([textEvent("你好", { source: { type: "group", groupId: "G1" } })]);
+    expect(replies).toEqual([]);
+    const form = ["開始時間:14:00", "會議時長:1hr", "預約人:001234", "會議室:S"].join("\n");
+    await webhook([textEvent(form, { source: { type: "user", userId: "U1" } })]);
+    expect(replies[0].body.messages[0].text).toContain("✅ 預約成功！");
   });
 
   it("重送的事件、一般聊天與非文字訊息不回覆", async () => {
