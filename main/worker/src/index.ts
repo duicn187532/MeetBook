@@ -8,6 +8,7 @@ import { addBooking, getActiveBooked, updateBooking } from "./bookings.ts";
 import { lineWebhook } from "./line_webhook.ts";
 import { adminGuard, adminRouter } from "./admin.ts";
 import { getNotices } from "./notices.ts";
+import { mcpHandler } from "./mcp.ts";
 import { aiDay, aiGuide, robotsTxt } from "./ai.ts";
 import { bookDone, bookPage, bookSubmit } from "./book_page.ts";
 
@@ -68,6 +69,9 @@ app.patch("/api/bookings/:id/:editPassword?", updateBooking);
 
 // 前端開啟網站時讀取：目前在公告期間內的更新日誌與公告（由管理後台維護）
 app.get("/api/notices", getNotices);
+
+// MCP 伺服器：讓 AI 助理查詢與預約會議室（見 mcp.ts）
+app.all("/mcp", mcpHandler);
 
 // 給 AI 助理讀的說明與查詢頁（純文字，只能讀取）：使用者在 ChatGPT 等對話貼上 /ai 網址，AI 查空檔並產生預填預約連結
 app.get("/ai", aiGuide);
