@@ -11,6 +11,7 @@ import {
   DateRange,
   Meeting,
 } from "../types/common";
+import type { Notices } from "../config/notices";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -49,6 +50,18 @@ export async function fetchEventsApi(range: DateRange): Promise<Meeting[]> {
       TaipeiEndTime: end.format("HH:mm"),
     };
   });
+}
+
+// 公告與更新日誌（目前在公告期間內的項目）；與預約 API 同一台後端，網址為 /api/notices
+// 讀取失敗時不打擾使用者，視為沒有公告
+export async function fetchNoticesApi(): Promise<Notices> {
+  const res = await fetch(new URL("../notices", new URL(API_URL, window.location.href)));
+  if (!res.ok) throw new Error(`API 回應錯誤: ${res.status}`);
+  const body = await res.json();
+  return {
+    changelog: Array.isArray(body?.changelog) ? body.changelog : [],
+    announcements: Array.isArray(body?.announcements) ? body.announcements : [],
+  };
 }
 
 export async function submitBookingApi(bookingData: BookingPayload): Promise<BookingApiResponse> {

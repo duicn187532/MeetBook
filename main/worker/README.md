@@ -97,6 +97,14 @@ D1 執行查詢的時間不算在 Worker 的 CPU 時間裡；Worker 本身逐筆
 - `status`：1／0／NULL，NULL 視為啟用。
 - `disabled`：早期後台留下的停用標記，1 代表停用。
 
+### `changelog`、`announcements`（Worker 新增，Deno 版沒有）
+
+網站的更新日誌與公告，由管理後台維護（`src/notices.ts`）。原本寫在前端 `src/config/changelog.ts` 的 v2.1.0～v2.3.0 已由 `0003_notices.sql` 帶入。
+
+- `GET /api/notices`：目前在公告期間內的項目（台北時間）。更新日誌為改版日起 7 天內，公告為開始日到結束日（含當天）。
+- 管理後台 API（需登入；修改需 `X-Admin`）：`GET/POST /admin/api/changelog`、`PUT/DELETE /admin/api/changelog/:version`、`GET/POST /admin/api/announcements`、`PUT/DELETE /admin/api/announcements/:id`。
+- 管理後台頁面與 Deno 版共用；Deno 版沒有這些 API，打開「公告」分頁會顯示錯誤（Deno 版已停用，不影響）。
+
 ### `admin_login_attempts`
 
 管理後台登入失敗次數。原本存在記憶體，Workers 沒有共享記憶體，所以改存 D1。
