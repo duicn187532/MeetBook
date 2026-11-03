@@ -32,7 +32,7 @@ describe("GET /ai", () => {
     expect(t).toContain(`現在時間：${taipeiDate(Date.now())}`);
     expect(t).toContain("- Alpha（代碼 A101）：10 人，投影機、白板");
     expect(t).toContain("只能預約週一到週五 08:45–18:15");
-    expect(t).toContain("https://duicn187532.github.io/MeetBook/?book=1&room=Beta&date=");
+    expect(t).toContain("https://w.test/b?room=Beta&date=");
     expect(t).toContain("行編一定要由使用者提供");
     expect(t).toContain("不要放編輯密碼");
   });

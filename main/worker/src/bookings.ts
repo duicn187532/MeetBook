@@ -147,7 +147,7 @@ export interface NewBookingInput {
 type ConflictGroup = { room: string; conflicts: ReturnType<typeof summarizeConflict>[] };
 
 export type CreateBookingResult =
-  | { ok: true; user: UserInfo; rooms: string[]; startTime: Date; endTime: Date }
+  | { ok: true; ids: string[]; user: UserInfo; rooms: string[]; startTime: Date; endTime: Date }
   | { ok: false; status: number; error: string; conflicts?: ConflictGroup[] };
 
 const INSERT_IF_FREE = `
@@ -243,7 +243,7 @@ export async function createBooking(db: D1Database, input: NewBookingInput): Pro
       function: "createBooking",
       details: { ids, rooms: roomList, startTime, endTime },
     });
-    return { ok: true, user: userInfo, rooms: roomList, startTime, endTime };
+    return { ok: true, ids, user: userInfo, rooms: roomList, startTime, endTime };
   }
   throw new Error("同時寫入的請求過多，重試後仍無法完成");
 }
@@ -496,7 +496,8 @@ export function userProbes(userIdRaw: string): { field: "id" | "extension"; valu
   return probes;
 }
 
-async function findUserStrict(db: D1Database, userIdRaw: string): Promise<UserDoc | null> {
+/** 以行編或分機找出可預約的使用者（未停用）；預約連結的確認頁也用來顯示預約人姓名 */
+export async function findUserStrict(db: D1Database, userIdRaw: string): Promise<UserDoc | null> {
   const probes = userProbes(userIdRaw);
   if (probes.length === 0) return null;
   const ids = probes.filter((p) => p.field === "id").map((p) => p.value);

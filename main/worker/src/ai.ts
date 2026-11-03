@@ -105,8 +105,8 @@ function nowLine(now: number): string {
 }
 
 // 範例連結不做 URL 編碼，方便 AI 與人閱讀（瀏覽器開啟時會自動處理中文與冒號）
-function exampleLink(date: string): string {
-  return `${WEBSITE_URL}?book=1&room=Beta&date=${date}&start=14:00&end=15:00&title=週會&people=6&user=5977`;
+function exampleLink(origin: string, date: string): string {
+  return `${origin}/b?room=Beta&date=${date}&start=14:00&end=15:00&title=週會&people=6&user=5977`;
 }
 
 function textResponse(c: Ctx, body: string, status = 200) {
@@ -133,7 +133,7 @@ export async function aiGuide(c: Ctx) {
     nowLine(now),
     "",
     "你是協助同事查詢與預約會議室的助理，請用繁體中文回答。所有時間都是台北時間。",
-    "這一頁只能讀取，不能直接預約：請依照最後的「如何幫使用者預約」產生預約連結，讓使用者點開後在網站上確認送出。",
+    "這一頁只能讀取，不能直接預約：請依照最後的「如何幫使用者預約」產生預約連結，讓使用者點開後在確認頁按一下送出。",
     "",
     "## 會議室（11F）",
     ...ROOMS.map((r) => `- ${r.name}（代碼 ${r.key}）：${ROOM_DETAILS[r.key].seats} 人，${ROOM_DETAILS[r.key].equipment}`),
@@ -163,12 +163,12 @@ export async function aiGuide(c: Ctx) {
     "1. 跟使用者確認會議室、日期、開始與結束時間，並確認那段時間有空（看上面的空檔或該日的詳細網址）。",
     "2. 詢問會議名稱、與會人數，以及預約人的行編。行編一定要由使用者提供，不要猜測或自己編。",
     "3. 依下面的格式產生連結，並以可點擊的連結給使用者（會議名稱有空白或 & 等符號時要做 URL 編碼）：",
-    `   ${exampleLink(overview[0])}`,
+    `   ${exampleLink(origin, overview[0])}`,
     "   - room：Alpha／Beta／StartUp；一次預約多間時用逗號分隔，例如 room=Alpha,Beta",
     "   - date：YYYY-MM-DD；start、end：HH:mm",
-    "   - title：會議名稱；people：與會人數；user：行編（不知道的參數可以省略，使用者會在網站上補填）",
-    "   - 不要放編輯密碼",
-    "4. 請使用者點開連結：網站會打開已填好的預約視窗，使用者確認內容（可自行設定編輯密碼）後按「預定」才算完成。若剛好被別人訂走，網站會提示。",
+    "   - room、date、start、end 必填；title：會議名稱；people：與會人數；user：行編（不知道的可以省略，使用者會在確認頁補填）",
+    "   - 不要放編輯密碼，也不要詢問使用者的編輯密碼",
+    "4. 請使用者點開連結：確認頁會顯示預約內容並先檢查時段，使用者可在頁面上自行設定編輯密碼，按「確認預約」才算完成。若剛好被別人訂走，確認頁會提示。",
     "",
     `修改或取消預約：請使用者到網站 ${WEBSITE_URL} 點選該筆預約，輸入預約時設定的編輯密碼。`,
   );

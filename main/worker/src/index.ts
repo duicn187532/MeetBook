@@ -9,6 +9,7 @@ import { lineWebhook } from "./line_webhook.ts";
 import { adminGuard, adminRouter } from "./admin.ts";
 import { getNotices } from "./notices.ts";
 import { aiDay, aiGuide, robotsTxt } from "./ai.ts";
+import { bookDone, bookPage, bookSubmit } from "./book_page.ts";
 
 // strict: false：/api/bookings 與 /api/bookings/ 視為相同（前端送出的網址結尾有 /）
 const app = new Hono<{ Bindings: Env }>({ strict: false });
@@ -72,6 +73,10 @@ app.get("/api/notices", getNotices);
 app.get("/ai", aiGuide);
 app.get("/ai/day/:date", aiDay);
 app.get("/robots.txt", robotsTxt);
+// 預約連結的確認頁：打開不會預約，使用者按「確認預約」才送出（見 book_page.ts）
+app.get("/b", bookPage);
+app.post("/b", bookSubmit);
+app.get("/b/ok", bookDone);
 
 // LINE 官方帳號 webhook（在 LINE Developers 設定為 https://<網域>/line/webhook）
 app.post("/line/webhook", lineWebhook);
