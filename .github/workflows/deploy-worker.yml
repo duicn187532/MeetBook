@@ -1,5 +1,6 @@
-# 部署 Cloudflare Worker（新後端）：main 上的 Worker 相關檔案有變動時自動部署，也可以手動執行
-# 部署到 *.workers.dev，與 Deno Deploy 並行；在正式切換（修改前端的 VITE_API_URL）之前沒有人會用到它
+# 部署 Cloudflare Worker（後端）：main 上的 Worker 相關檔案有變動時自動部署，也可以手動執行
+# Worker 部署到 *.workers.dev（LINE webhook 使用）；另外部署 Cloudflare Pages 入口 *.pages.dev，
+# 把請求轉給同一個 Worker（公司網路擋 workers.dev，但可以連 pages.dev），見 main/pages-entry
 name: 部署 Worker
 
 on:
@@ -8,6 +9,7 @@ on:
     paths:
       - "main/worker/**"
       - "main/project/admin/index.html"
+      - "main/pages-entry/**"
       - ".github/workflows/deploy-worker.yml"
   workflow_dispatch:
 
@@ -113,3 +115,65 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           cat "$GITHUB_STEP_SUMMARY"
           [ "$code" = "200" ]
+
+      # ===== Cloudflare Pages 入口（*.pages.dev）=====
+      # API token 需要 Account → Cloudflare Pages → Edit 權限
+      - name: 建立 Pages 專案（已存在就略過）
+        if: steps.check.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if out="$(npx wrangler pages project create meetbook --production-branch main 2>&1)"; then
+            echo "$out"
+          elif echo "$out" | grep -qi "already exists"; then
+            echo "Pages 專案 meetbook 已存在"
+          else
+            echo "$out"
+            echo "::error::無法建立 Pages 專案。若訊息是權限不足（Authentication error），請到 Cloudflare 編輯 API token，加上 Account → Cloudflare Pages → Edit 後重新執行"
+            exit 1
+          fi
+
+      - name: 部署 Pages 入口
+        if: steps.check.outputs.ready == 'true'
+        working-directory: main/pages-entry
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          ../worker/node_modules/.bin/wrangler pages deploy --project-name meetbook --branch main --commit-dirty=true \
+            | tee "$RUNNER_TEMP/pages.log"
+          # 部署網址為 https://<代碼>.<專案子網域>.pages.dev；去掉第一段就是正式網址
+          deployment="$(grep -oE 'https://[a-z0-9-]+\.[a-z0-9-]+\.pages\.dev' "$RUNNER_TEMP/pages.log" | tail -1)"
+          if [ -z "$deployment" ]; then
+            echo "::error::找不到 pages.dev 網址"
+            exit 1
+          fi
+          echo "PAGES_URL=https://${deployment#https://*.}" >> "$GITHUB_ENV"
+
+      - name: Pages 入口檢查
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          # 第一次建立專案時，網址可能要幾分鐘才生效
+          code=000
+          for i in $(seq 1 30); do
+            code="$(curl -s -o "$RUNNER_TEMP/pages-healthz.json" -w '%{http_code}' --max-time 10 "$PAGES_URL/healthz")" || code=000
+            [ "$code" = "200" ] && break
+            sleep 10
+          done
+          notices="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$PAGES_URL/api/notices")" || notices=000
+          {
+            echo "## Pages 入口已部署"
+            echo ""
+            echo "- 網址：$PAGES_URL（公司網路可以連線）"
+            echo "- 前端用的 API 網址：\`$PAGES_URL/api/bookings/\`"
+            echo "- 管理後台：$PAGES_URL/admin"
+            echo "- 健康檢查：HTTP $code；公告 API：HTTP $notices"
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
+          if [ "$code" = "000" ]; then
+            echo "::warning::$PAGES_URL 還連不上；第一次建立時可能要再等幾分鐘，稍後開啟 $PAGES_URL/healthz 確認"
+          elif [ "$code" != "200" ] || [ "$notices" != "200" ]; then
+            echo "::error::Pages 入口回應不正確（healthz HTTP $code、notices HTTP $notices）"
+            exit 1
+          fi

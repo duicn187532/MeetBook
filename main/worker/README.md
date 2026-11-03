@@ -11,9 +11,11 @@
 | `compare/` | 新舊後端比對與 CPU 時間報告（GitHub Actions 執行） |
 | `wrangler.jsonc` | Worker 與 D1 設定 |
 
+**網址**：公司網路擋 `*.workers.dev`，所以另有 Cloudflare Pages 入口 `https://meetbook.pages.dev`（見 `main/pages-entry`），請求在 Cloudflare 內部轉給這個 Worker，前端與管理後台用這個網址；LINE webhook 直接使用 `https://meetbook.duicn187532.workers.dev/line/webhook`。
+
 相關 workflow：
 
-- `.github/workflows/deploy-worker.yml`：部署。main 上的 Worker 有變動時自動執行，也可以手動執行。
+- `.github/workflows/deploy-worker.yml`：部署 Worker 與 Pages 入口。main 上的 Worker 有變動時自動執行，也可以手動執行。
 - `.github/workflows/atlas-to-d1.yml`：轉檔。
 - `.github/workflows/ci.yml` 的 `worker` job：測試。
 

@@ -1,0 +1,10 @@
+// Cloudflare Pages 入口（https://meetbook.pages.dev）
+// 公司網路擋 *.workers.dev，但可以連 *.pages.dev；這個 Pages 專案只負責把請求原封不動轉給 Worker（service binding），
+// 程式與資料都只有 Worker（meetbook）一份。部署見 .github/workflows/deploy-worker.yml 的 pages job（使用 main/worker 安裝的 wrangler）
+{
+  "$schema": "../worker/node_modules/wrangler/config-schema.json",
+  "name": "meetbook",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-11-01",
+  "services": [{ "binding": "API", "service": "meetbook" }]
+}
