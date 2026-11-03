@@ -36,6 +36,56 @@ export const BOOK_INSTRUCTIONS = [
   "⚠️ 請確認資料填寫完整，否則無法成功預約喔！",
 ].join("\n");
 
+// ===== AI 預約教學（傳送「ai」）=====
+
+export const AI_PAGE_URL = "https://meetbook.pages.dev/ai";
+export const MCP_URL = "https://meetbook.pages.dev/mcp";
+export const WEBSITE_URL = "https://duicn187532.github.io/MeetBook/";
+
+/** 「ai」「AI」「Ａｉ」「ai預約」「AI 教學」等都算 */
+export function isAiCommand(text: string): boolean {
+  const s = text.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, "");
+  return ["ai", "ai預約", "ai教學", "ai設定"].includes(s);
+}
+
+export const AI_GUIDE_FREE = [
+  "🤖【用 AI 預約・方法一】",
+  "適合：免費或付費的 ChatGPT、Claude，不用任何設定",
+  "",
+  "1️⃣ 打開 ChatGPT 或 Claude，開一個新對話",
+  "2️⃣ 貼上這個網址，並說出你的需求：",
+  AI_PAGE_URL,
+  "例如：「請閱讀這個網址，幫我找明天下午 Beta 一小時的空檔，行編 5977」",
+  "3️⃣ AI 會查空檔並給你一個預約連結，點開後確認內容",
+  "4️⃣ 按「確認預約」就完成",
+  "",
+  "🔑 編輯密碼請在確認頁自己設定，不要告訴 AI",
+].join("\n");
+
+export const AI_GUIDE_CONNECTOR = [
+  "🔌【用 AI 預約・方法二】",
+  "適合：可以新增自訂連接器的 Claude（依方案而定），設定一次之後直接在對話中預約",
+  "",
+  "1️⃣ Claude 網頁版或 App → 設定 → 連接器（Connectors）",
+  "2️⃣ 新增自訂連接器，名稱填「MeetBook」，網址填：",
+  MCP_URL,
+  "（不需要驗證）",
+  "3️⃣ 在對話中開啟這個連接器，直接說：「幫我訂明天 14:00–15:00 的 Beta，行編 5977」",
+  "",
+  "💡 其他支援 MCP 連接器的 AI 工具也能使用同一個網址；不確定能不能新增的話，用方法一就可以",
+  "⚠️ 目前只能查詢與預約，修改或取消請到網站",
+].join("\n");
+
+// 一對一聊天收到看不懂的訊息時的說明（群組中不回覆，避免打擾）
+export const HELP_REPLY = [
+  "👋 可以傳送以下文字：",
+  `・${QUERY_COMMAND}：查看今天各會議室的預約`,
+  `・${BOOK_COMMAND}：預約今天的會議室`,
+  "・ai：用 ChatGPT、Claude 預約的教學",
+  "",
+  `也可以到網站預約：${WEBSITE_URL}`,
+].join("\n");
+
 // ===== 時間 =====
 
 // epoch 毫秒 → 台北 YYYY-MM-DD / HH:mm

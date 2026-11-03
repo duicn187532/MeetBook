@@ -26,18 +26,30 @@ async function insertAnnouncement(id: string, start: string, end: string) {
   ).bind(id, `標題 ${id}`, `內容 ${id}`, start, end).run();
 }
 
-describe("migration 帶入原本前端的更新日誌", () => {
-  it("v2.1.0～v2.3.0 都在，內容格式正確", async () => {
+describe("migration 帶入的更新日誌與公告", () => {
+  it("v2.1.0～v2.4.0 都在，內容格式正確", async () => {
     const { results } = await env.DB.prepare("SELECT * FROM changelog").all<{ version: string; date: string; sections: string }>();
     const list = sortChangelog(results);
     expect(list.map((r) => [r.version, r.date])).toEqual([
+      ["v2.4.0", "2026-11-04"],
       ["v2.3.0", "2026-11-02"],
       ["v2.2.0", "2026-10-30"],
       ["v2.1.0", "2026-10-30"],
     ]);
     for (const r of list) expect(parseSections(JSON.parse(r.sections))).toEqual(JSON.parse(r.sections));
     // 實驗性功能標籤也保留
-    expect(list[2].sections).toContain('"experimental":true');
+    expect(list[3].sections).toContain('"experimental":true');
+    expect(list[0].sections).toContain("https://meetbook.pages.dev/ai");
+  });
+});
+
+describe("migration 帶入的公告", () => {
+  it("「用 AI 預約」公告：11/4–11/17，內容有網址與 LINE 教學", async () => {
+    const a = await env.DB.prepare("SELECT * FROM announcements WHERE id = 'ai-booking-2026-11'").first<Record<string, string>>();
+    expect(a).toMatchObject({ title: "可以用 AI 預約會議室了", start_date: "2026-11-04", end_date: "2026-11-17" });
+    expect(a!.body).toContain("https://meetbook.pages.dev/ai");
+    expect(a!.body).toContain("在 LINE 官方帳號傳送「ai」");
+    expect(a!.body.split("\n").length).toBe(7);
   });
 });
 

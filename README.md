@@ -48,7 +48,7 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 - 多會議室預約共用 `groupId`：修改時間／名稱／人數會同步到同組所有會議室並一起檢查衝突；取消只取消該間。
 - 新增與修改的「衝突檢查 + 寫入」在 MongoDB 交易中進行，並對每間相關會議室的 `roomLocks` 文件寫入一次，讓同時操作同一間會議室的請求互斥，避免重複預約。
 
-### LINE 官方帳號（快速查詢／快速預約）
+### LINE 官方帳號（快速查詢／快速預約／ai）
 
 使用者在官方帳號（含群組）傳送：
 
@@ -57,7 +57,10 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
   - 欄位：會議名稱（空白為「臨時會議」）、開始時間（24 小時制，接受 `14:30`、`14：30`、`1430`）、會議時長（半小時為單位，`0.5hr`、`1hr`、`1.5小時`、`30分`）、預約人（行編，檢查碼可省略）、會議室（`A`／`B`／`S`，大小寫皆可，可填多間如 `A S`）。
   - 只能預約今天 08:45–18:15 之間；開始時間可比現在早 15 分鐘內（模板帶入的是傳送時間）。
   - 成功時回覆一組隨機 4 位數編輯密碼，供在網頁修改或取消；衝突時列出占用的預約。
-- 其他訊息不回覆。LINE 重送（redelivery）的事件會略過，避免重複預約。
+- `ai`（也接受 `AI`、全形 `Ａｉ`、`ai預約`、`ai教學`、`ai設定`）：回覆兩則用 AI 預約的設定教學（Worker 版才有）。
+  - 方法一：在 ChatGPT、Claude（免費版也可以）貼上 `https://meetbook.pages.dev/ai`。
+  - 方法二：把 `https://meetbook.pages.dev/mcp` 加為連接器。
+- 其他訊息：一對一聊天時回覆可用的指令（含 `ai`）；群組中不回覆，避免打擾（Worker 版）。LINE 重送（redelivery）的事件會略過，避免重複預約。
 
 解析與回覆文字在 `line_bot.ts`（有單元測試），webhook 在 `line_webhook.ts`，寫入沿用網頁的 `createBooking`（同一套衝突檢查與交易）。
 
@@ -66,7 +69,7 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 1. LINE Developers → 該官方帳號的 Messaging API channel：取得 Channel secret（Basic settings）與 Channel access token（Messaging API，long-lived）。
 2. Deno Deploy → Environment Variables 新增 `LINE_CHANNEL_SECRET`、`LINE_CHANNEL_ACCESS_TOKEN`（設為 secret，Production 與 Development 都勾選）。
 3. LINE Developers → Messaging API → Webhook URL 設為 `https://meetbook.duicn187532.workers.dev/line/webhook`（Cloudflare Worker；切換前為 `https://meetingbooking.duicn187532.deno.net/line/webhook`），按 Verify，並開啟 Use webhook。
-4. LINE Official Account Manager → 關閉「自動回應訊息」（否則會多一則預設回覆）；圖文選單的按鈕設為傳送文字 `快速查詢`／`快速預約`。
+4. LINE Official Account Manager → 關閉「自動回應訊息」（否則會多一則預設回覆）；圖文選單的按鈕設為傳送文字 `快速查詢`／`快速預約`／`ai`。
 
 ### 管理後台（/admin）
 

@@ -1,4 +1,4 @@
-// LINE Messaging API webhook：驗證簽章後處理「快速查詢」「快速預約」與填好的預約表單
+// LINE Messaging API webhook：驗證簽章後處理「快速查詢」「快速預約」「ai」與填好的預約表單
 // 行為與 Deno 版 line_webhook.ts 相同
 import type { Context } from "hono";
 import type { Env } from "./env.ts";
@@ -7,6 +7,8 @@ import { toPublicBooking, toPublicUser } from "./booking_rules.ts";
 import { createBooking } from "./bookings.ts";
 import { type BookingRow, rowToBooking } from "./db.ts";
 import {
+  AI_GUIDE_CONNECTOR,
+  AI_GUIDE_FREE,
   BOOK_COMMAND,
   BOOK_INSTRUCTIONS,
   bookTemplate,
@@ -15,6 +17,8 @@ import {
   formatBookingErrors,
   formatBookingSuccess,
   formatTodayBookings,
+  HELP_REPLY,
+  isAiCommand,
   isTaipeiWeekend,
   parseBookingFields,
   QUERY_COMMAND,
@@ -34,6 +38,8 @@ interface LineEvent {
   type: string;
   replyToken?: string;
   message?: { type: string; text?: string };
+  // user：一對一聊天；group／room：群組
+  source?: { type?: string };
   deliveryContext?: { isRedelivery?: boolean };
 }
 
@@ -80,8 +86,13 @@ async function bookFromForm(db: D1Database, text: string, now: number): Promise<
   return formatBookingErrors([result.error]);
 }
 
-// 回傳要回覆的訊息；不需要回覆（一般聊天、群組中的其他訊息）時回傳空陣列
-async function handleText(db: D1Database, text: string, now: number): Promise<{ action: string; texts: string[] }> {
+// 回傳要回覆的訊息；不需要回覆（群組中的一般聊天）時回傳空陣列
+async function handleText(
+  db: D1Database,
+  text: string,
+  now: number,
+  direct: boolean,
+): Promise<{ action: string; texts: string[] }> {
   const command = text.trim();
   if (command === QUERY_COMMAND) {
     return { action: "query", texts: [await todayBookingsText(db, now)] };
@@ -91,8 +102,12 @@ async function handleText(db: D1Database, text: string, now: number): Promise<{ 
     if (isTaipeiWeekend(now)) return { action: "template", texts: [WEEKEND_REPLY] };
     return { action: "template", texts: [BOOK_INSTRUCTIONS, bookTemplate(now)] };
   }
+  // 「ai」：兩種用 AI 預約的設定教學，分成兩則訊息
+  if (isAiCommand(command)) return { action: "ai-guide", texts: [AI_GUIDE_FREE, AI_GUIDE_CONNECTOR] };
   const booked = await bookFromForm(db, text, now);
-  return booked ? { action: "book", texts: [booked] } : { action: "ignore", texts: [] };
+  if (booked) return { action: "book", texts: [booked] };
+  // 一對一聊天時說明可以用的指令；群組中的一般聊天不回覆
+  return direct ? { action: "help", texts: [HELP_REPLY] } : { action: "ignore", texts: [] };
 }
 
 async function handleEvent(env: Env, event: LineEvent): Promise<void> {
@@ -102,7 +117,7 @@ async function handleEvent(env: Env, event: LineEvent): Promise<void> {
 
   let result: { action: string; texts: string[] };
   try {
-    result = await handleText(env.DB, event.message.text, Date.now());
+    result = await handleText(env.DB, event.message.text, Date.now(), event.source?.type === "user");
   } catch (error) {
     const err = error as Error;
     logEvent("error", "LINE 訊息處理失敗", {
