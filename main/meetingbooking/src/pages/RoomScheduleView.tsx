@@ -55,6 +55,7 @@ import {
   findAlternatives,
 } from "../utils/bookingHelpers";
 import { loadPref, savePref } from "../utils/storage";
+import { parseBookingLink, stripBookingLink } from "../utils/bookingLink";
 import { buildTodayOverview } from "../utils/todayStatus";
 import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../utils/workdays";
 
@@ -93,13 +94,21 @@ const liveOffsetAfter = (offset: number, delta: number) =>
   daysFromToday(addWorkdays(dayjs().add(offset, "day"), delta));
 
 const RoomScheduleView = () => {
+  // 預填預約連結（例如 AI 助理產生的網址）：開啟時切到該會議室與日期，並打開填好的預約視窗；
+  // 使用者確認後按「預定」才會送出（utils/bookingLink.ts）
+  const [bookingLink] = useState(() => parseBookingLink(window.location.search, Date.now()));
+  const link = bookingLink?.link;
+  useEffect(() => {
+    // 讀取後從網址移除，重新整理或分享網址時不會再打開預約視窗
+    if (bookingLink) window.history.replaceState(window.history.state, "", stripBookingLink(window.location.href));
+  }, [bookingLink]);
   // UI 狀態管理
   // 會議室、檢視模式與行編會記在瀏覽器，下次開啟沿用
-  const [selectedRoom, setSelectedRoom] = useState<RoomKey>(() => loadPref("room", ROOMS) ?? "A101");
+  const [selectedRoom, setSelectedRoom] = useState<RoomKey>(() => link?.rooms?.[0] ?? loadPref("room", ROOMS) ?? "A101");
   const [selectedView, setSelectedView] = useState<ViewMode>(() => loadPref("view", VIEWS) ?? "Week");
   // Today 分頁（實驗性功能）
-  // 開啟網站一律從 LIVE 開始；會議室與檢視模式仍沿用上次的選擇
-  const [todayMode, setTodayMode] = useState(true);
+  // 開啟網站一律從 LIVE 開始（預約連結除外）；會議室與檢視模式仍沿用上次的選擇
+  const [todayMode, setTodayMode] = useState(!bookingLink);
   // 頁面看不到時（背景分頁、縮到最小、手機切到其他 App）暫停自動更新，避免沒人在看時持續發請求
   const page = usePageVisible();
   const now = useNow(todayMode && page.visible);
@@ -110,6 +119,8 @@ const RoomScheduleView = () => {
   const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
   const [noticeStep, setNoticeStep] = useState<"announcements" | "changelog" | "done">("announcements");
   useEffect(() => {
+    // 從預約連結開啟時先不顯示，避免蓋住預約視窗（沒有記為看過，下次開啟再顯示）
+    if (bookingLink) return;
     let cancelled = false;
     fetchNoticesApi()
       .then((notices) => {
@@ -130,26 +141,30 @@ const RoomScheduleView = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [bookingLink]);
   // 週末開啟時從下一個工作日開始（週六、週日不上班）
-  const [currentDate, setCurrentDate] = useState(() => rollToWorkday(dayjs()));
-  const [viewStartDate, setViewStartDate] = useState(() => rollToWorkday(dayjs()));
+  const [currentDate, setCurrentDate] = useState(() => (link?.date ? dayjs(link.date) : rollToWorkday(dayjs())));
+  const [viewStartDate, setViewStartDate] = useState(() => (link?.date ? dayjs(link.date) : rollToWorkday(dayjs())));
   const [editPassword, setEditPassword] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   // 最近一次自動帶入的預設時間；使用者沒改過時，開啟預約視窗會換成最新的預設值
-  const defaultTimes = useRef(defaultBookingTimes(new Date()));
+  const defaultTimes = useRef(
+    link?.startTime && link.endTime ? { startTime: link.startTime, endTime: link.endTime } : defaultBookingTimes(new Date()),
+  );
   const [bookingForm, setBookingForm] = useState<BookingForm>(() => ({
-    title: "",
-    user: loadPref("userId") ?? "",
-    room: [selectedRoom],
-    participantsNum: 0,
+    title: link?.title ?? "",
+    user: link?.user ?? loadPref("userId") ?? "",
+    room: link?.rooms ?? [selectedRoom],
+    participantsNum: link?.participants ?? 0,
     selectedDate: currentDate.format("YYYY-MM-DD"),
     ...defaultTimes.current,
     editPassword: "",
   }));
   const [editError, setEditError] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(() =>
+    bookingLink?.errors.length ? `連結中的部分內容有誤（${bookingLink.errors.join("、")}），請確認後再送出` : ""
+  );
+  const [showBookingModal, setShowBookingModal] = useState(!!bookingLink);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
