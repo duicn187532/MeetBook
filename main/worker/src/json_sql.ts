@@ -82,7 +82,8 @@ export const ADMIN_RECORD_JSON = `json_object(
   'updatedTime', ${isoSql("updated_time")},
   'updatedCount', updated_count,
   'cancelled', json(CASE WHEN cancelled = 1 THEN 'true' ELSE 'false' END),
-  'multi', (SELECT json_group_array(${roomNameSql("value")}) FROM json_each(is_multi))
+  'multi', (SELECT json_group_array(${roomNameSql("value")}) FROM json_each(is_multi)),
+  'source', COALESCE(source, '')
 )`;
 
 /** 把每一列的 JSON 文字接成陣列 */

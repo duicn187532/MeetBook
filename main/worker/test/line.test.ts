@@ -157,6 +157,8 @@ describe("LINE webhook", () => {
     const form = ["開始時間:14:00", "會議時長:1hr", "預約人:001234", "會議室:S"].join("\n");
     await webhook([textEvent(form, { source: { type: "user", userId: "U1" } })]);
     expect(replies[0].body.messages[0].text).toContain("✅ 預約成功！");
+    // 管理後台顯示的來源
+    expect((await env.DB.prepare("SELECT source FROM bookings").first<{ source: string }>())!.source).toBe("line");
   });
 
   it("重送的事件、一般聊天與非文字訊息不回覆", async () => {

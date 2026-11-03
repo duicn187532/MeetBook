@@ -327,6 +327,7 @@ async function createBookingTool(db: D1Database, args: Record<string, unknown>, 
     endTime: new Date(endMs),
     participantsNum: participants,
     editPassword,
+    source: "mcp",
   });
   if (!result.ok) {
     if (result.status === 404) {

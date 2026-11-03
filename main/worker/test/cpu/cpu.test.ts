@@ -52,6 +52,7 @@ function makeRows(n: number, fromMs: number): BookingRow[] {
       updated_count: i % 3,
       date: new Date(start + 8 * 3_600_000).toISOString().slice(0, 10),
       is_multi: i % 5 === 0 ? '["A102"]' : "[]",
+      source: i % 4 === 0 ? null : "web",
     };
   });
 }

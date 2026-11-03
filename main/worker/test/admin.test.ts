@@ -213,6 +213,7 @@ describe("預約紀錄與統計", () => {
       updatedCount: 1,
       cancelled: false,
       multi: [],
+      source: "",
     });
     expect(byMeeting.json.rooms).toEqual([
       { key: "A101", name: "Alpha" },

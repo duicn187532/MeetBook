@@ -253,7 +253,7 @@ describe("資料庫層的保證", () => {
         };
       },
     }) as D1Database;
-    const input = { title: "t", user: "1234", rooms: ["A101"], startTime: T("10:00"), endTime: T("11:00"), editPassword: "" };
+    const input = { title: "t", user: "1234", rooms: ["A101"], startTime: T("10:00"), endTime: T("11:00"), editPassword: "", source: "web" as const };
     expect((await createBooking(staleDb, input)).ok).toBe(true);
     await expect(createBooking(staleDb, input)).rejects.toThrow("重試後仍無法完成");
     expect((await rows("cancelled = 0")).length).toBe(1);

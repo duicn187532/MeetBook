@@ -311,6 +311,7 @@ export async function bookSubmit(c: Ctx) {
     endTime: new Date(taipeiMs(slot.date, slot.end)),
     participantsNum: participants,
     editPassword: input.password,
+    source: "ai-link",
   });
   if (!result.ok) {
     // 衝突會在重新顯示的確認頁中列出；找不到使用者時提示確認行編

@@ -29,8 +29,8 @@ beforeAll(async () => {
       env.DB.prepare(
         `INSERT INTO bookings (id, group_id, created_time, updated_time, title, user_id, user_name, user_extension,
            user_department_code, user_department_label, user_group_code, user_group_label, user_raw, room,
-           participants_num, cancelled, start_time, end_time, edit_password, updated_count, date, is_multi)
-         VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'secret', ?, ?, ?)`,
+           participants_num, cancelled, start_time, end_time, edit_password, updated_count, date, is_multi, source)
+         VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'secret', ?, ?, ?, ?)`,
       ).bind(
         `id-${i}-${pick(TRICKY)}`,
         pick([null, start - 5000, 0]),
@@ -52,6 +52,7 @@ beforeAll(async () => {
         Math.floor(r() * 5),
         pick(["2026-12-01", ""]),
         pick(["[]", '["A102"]', '["A101","A103"]', '["Z9"]']),
+        pick([null, "web", "line", "ai-link", "mcp"]),
       ),
     );
   }
