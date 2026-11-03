@@ -64,7 +64,8 @@
 <script>
   const BACKENDS = {
     old: "https://meetingbooking.duicn187532.deno.net/api/bookings/",
-    new: "https://meetbook.duicn187532.workers.dev/api/bookings/",
+    // 網站使用的 Cloudflare Pages 入口（轉給 Worker；公司網路也連得到）
+    new: "https://meetbook.pages.dev/api/bookings/",
   };
   const ROUNDS = 21;
   const $ = (id) => document.getElementById(id);
