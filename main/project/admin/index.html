@@ -312,6 +312,8 @@ select.input:disabled { opacity: .55; }
 .search svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 18px; height: 18px; color: var(--text-3); }
 .search .input { padding-left: 38px; }
 .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.filters.three > :nth-child(3) { grid-column: 1 / -1; }
+.tag.ai { background: var(--accent-soft); color: var(--accent); }
 .select {
   width: 100%;
   min-height: 42px;
@@ -608,6 +610,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.5; }
   .custom-range { max-width: 520px; }
   .recs { gap: 12px; }
   .users { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .filters.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .filters.three > :nth-child(3) { grid-column: auto; }
 
   /* 公告與更新日誌 */
   #view-notices > .rec-by { max-width: 400px; }
@@ -697,7 +701,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.5; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input class="input" id="rec-q" type="search" placeholder="搜尋會議名稱、預約人、行編、分機" autocomplete="off" enterkeyhint="search">
       </div>
-      <div class="filters">
+      <div class="filters three">
         <select class="select" id="rec-room" aria-label="依會議室篩選"></select>
         <select class="select" id="rec-status" aria-label="依狀態篩選">
           <option value="">全部狀態</option>
@@ -705,6 +709,14 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.5; }
           <option value="cancelled">已取消</option>
           <option value="edited">修改過</option>
           <option value="multi">一次訂多間</option>
+        </select>
+        <select class="select" id="rec-source" aria-label="依來源篩選">
+          <option value="">全部來源</option>
+          <option value="web">網站</option>
+          <option value="line">LINE</option>
+          <option value="ai-link">AI 連結</option>
+          <option value="mcp">AI 連接器</option>
+          <option value="none">未記錄</option>
         </select>
       </div>
       <div class="list-meta">
@@ -1430,19 +1442,30 @@ const REC_STATUS = {
   multi: (r) => r.multi.length > 0,
 };
 
+// 預約來源（加上來源紀錄之前的預約為空字串）
+const SOURCE_LABELS = { web: "網站", line: "LINE", "ai-link": "AI 連結", mcp: "AI 連接器" };
+const SOURCE_DETAIL = {
+  web: "網站",
+  line: "LINE 快速預約",
+  "ai-link": "AI 連結（AI 助理產生的預約連結，在確認頁送出）",
+  mcp: "AI 連接器（AI 助理透過 MCP 直接預約）",
+};
+const sourceOf = (r) => r.source || "none";
 function renderRecords() {
   const q = norm($("rec-q").value.trim());
   const room = $("rec-room").value;
   const status = $("rec-status").value;
+  const source = $("rec-source").value;
   const list = records.filter((r) =>
-    (!room || r.room === room) && (REC_STATUS[status] || REC_STATUS[""])(r) &&
+    (!room || r.room === room) && (REC_STATUS[status] || REC_STATUS[""])(r) && (!source || sourceOf(r) === source) &&
     (!q || [r.title, r.name, r.userId, r.userId.replace(/^0+/, ""), r.extension, r.department, r.group].some((v) => norm(v).includes(q)))
   ).sort(REC_SORTS[$("rec-sort").value] || REC_SORTS["sent-desc"]);
   const cancelled = list.filter((r) => r.cancelled).length;
   $("rec-count").textContent = `${list.length} 筆${cancelled ? `（取消 ${cancelled}）` : ""}`;
-  $("rec-clear").hidden = !q && !room && !status;
+  $("rec-clear").hidden = !q && !room && !status && !source;
   $("rec-room").classList.toggle("on", !!room);
   $("rec-status").classList.toggle("on", !!status);
+  $("rec-source").classList.toggle("on", !!source);
 
   const box = $("recs");
   const nodes = [];
@@ -1457,6 +1480,9 @@ function renderRecords() {
     if (r.cancelled) tags.push(h("span", { class: "tag red", text: "已取消" }));
     if (r.updatedCount > 0) tags.push(h("span", { class: "tag", text: `改 ${r.updatedCount} 次` }));
     if (r.multi.length) tags.push(h("span", { class: "tag", text: `+${r.multi.join("、")}` }));
+    if (SOURCE_LABELS[r.source]) {
+      tags.push(h("span", { class: r.source === "ai-link" || r.source === "mcp" ? "tag ai" : "tag", text: SOURCE_LABELS[r.source] }));
+    }
     nodes.push(h("button", { class: r.cancelled ? "rec off" : "rec", type: "button", onclick: () => openRecord(r) },
       h("div", { class: "r1" },
         h("span", { class: "ttl" }, r.title || "（未填會議名稱）"),
@@ -1480,11 +1506,13 @@ const rerenderRecords = () => { recShown = REC_PAGE; renderRecords(); };
 $("rec-q").addEventListener("input", rerenderRecords);
 $("rec-room").addEventListener("change", rerenderRecords);
 $("rec-status").addEventListener("change", rerenderRecords);
+$("rec-source").addEventListener("change", rerenderRecords);
 $("rec-sort").addEventListener("change", () => { saveRecPref(); rerenderRecords(); });
 $("rec-clear").addEventListener("click", () => {
   $("rec-q").value = "";
   $("rec-room").value = "";
   $("rec-status").value = "";
+  $("rec-source").value = "";
   rerenderRecords();
 });
 
@@ -1498,6 +1526,7 @@ function openRecord(r) {
     ...row("人數", r.participants ? `${r.participants} 人` : "—"),
     ...row("預約人", [r.name || "（未填姓名）", r.userId ? `行編 ${r.userId.replace(/^0+(?=\d{4})/, "")}` : "", r.extension ? `#${r.extension}` : ""].filter(Boolean).join(" · ")),
     ...row("部門", [r.department, r.group].filter(Boolean).join(" · ") || "—"),
+    ...row("來源", SOURCE_DETAIL[r.source] || "未記錄（加上來源紀錄之前的預約）"),
     ...row("送出時間", fmtFull(r.createdTime)),
     ...row("最後修改", r.updatedTime ? `${fmtFull(r.updatedTime)}（共 ${r.updatedCount} 次）` : "沒有修改過"),
   );

@@ -32,6 +32,9 @@ export interface UserDoc {
   updatedTime?: Date;
 }
 
+// 預約來源（migrations/0005_booking_source.sql）
+export type BookingSource = "web" | "line" | "ai-link" | "mcp";
+
 export interface BookingDoc {
   id: string;
   // 同一次預約多間會議室時共用；舊資料沒有此欄位
@@ -54,6 +57,8 @@ export interface BookingDoc {
   date: string;
   // 同組其他會議室
   isMulti: string[];
+  // 新增時的來源；加上這個欄位之前的預約沒有
+  source?: BookingSource;
 }
 
 // 對外公開的使用者資訊：不含部門／組別代碼；沒有姓名時 name 為行編後 4 碼

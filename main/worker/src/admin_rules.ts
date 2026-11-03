@@ -190,6 +190,7 @@ export interface AdminBooking {
   updatedCount: number;
   cancelled: boolean;
   multi: string[]; // 同一次預約的其他會議室
+  source: string; // web／line／ai-link／mcp；空字串為未記錄（加上來源欄位之前的預約）
 }
 
 function iso(value: unknown): string {
@@ -223,6 +224,7 @@ export function toAdminBooking(doc: BookingDoc, rooms: { key: string; name: stri
     updatedCount: doc.updatedCount ?? 0,
     cancelled: doc.cancelled === true,
     multi: Array.isArray(doc.isMulti) ? doc.isMulti.map(roomName) : [],
+    source: doc.source ?? "",
   };
 }
 

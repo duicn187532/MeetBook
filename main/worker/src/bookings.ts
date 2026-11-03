@@ -17,7 +17,7 @@ import {
 } from "./booking_rules.ts";
 import { ACTIVE_USER_SQL } from "./admin_rules.ts";
 import { atomicWrites, type BookingRow, isWriteConflict, placeholders, rowToBooking, rowToUser, type UserRow } from "./db.ts";
-import type { BookingDoc, UserDoc, UserInfo } from "./types.ts";
+import type { BookingDoc, BookingSource, UserDoc, UserInfo } from "./types.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
@@ -142,6 +142,8 @@ export interface NewBookingInput {
   endTime: unknown;
   participantsNum?: unknown;
   editPassword: string;
+  // 預約來源，管理後台顯示用
+  source: BookingSource;
 }
 
 type ConflictGroup = { room: string; conflicts: ReturnType<typeof summarizeConflict>[] };
@@ -154,9 +156,9 @@ const INSERT_IF_FREE = `
 INSERT INTO bookings (
   id, group_id, created_time, updated_time, title,
   user_id, user_name, user_extension, user_department_code, user_department_label, user_group_code, user_group_label,
-  user_raw, room, participants_num, cancelled, start_time, end_time, edit_password, updated_count, date, is_multi
+  user_raw, room, participants_num, cancelled, start_time, end_time, edit_password, updated_count, date, is_multi, source
 )
-SELECT ?1, ?2, ?3, NULL, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, NULL, ?12, ?13, 0, ?14, ?15, ?16, 0, ?17, ?18
+SELECT ?1, ?2, ?3, NULL, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, NULL, ?12, ?13, 0, ?14, ?15, ?16, 0, ?17, ?18, ?19
 WHERE NOT EXISTS (
   SELECT 1 FROM bookings WHERE room = ?12 AND cancelled = 0 AND start_time < ?15 AND end_time > ?14
 )`;
@@ -211,6 +213,7 @@ export async function createBooking(db: D1Database, input: NewBookingInput): Pro
       editPassword,
       taipeiDate(startTime),
       JSON.stringify(roomList.filter((o) => o !== r)),
+      input.source,
     )
   );
 
@@ -279,6 +282,7 @@ export async function addBooking(c: Ctx) {
       endTime: rawEnd,
       participantsNum,
       editPassword: typeof editPassword === "string" ? editPassword : "",
+      source: "web",
     });
     if (!result.ok) {
       const { status, error, conflicts } = result;

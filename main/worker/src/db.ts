@@ -1,5 +1,5 @@
 // D1 資料存取：資料列與 Deno 版文件格式（types.ts）之間的轉換，以及原子寫入的輔助函式
-import type { BookingDoc, LabelCode, UserDoc, UserInfo } from "./types.ts";
+import type { BookingDoc, BookingSource, LabelCode, UserDoc, UserInfo } from "./types.ts";
 
 // ===== 資料列 =====
 
@@ -26,6 +26,7 @@ export interface BookingRow {
   updated_count: number;
   date: string;
   is_multi: string;
+  source: string | null;
 }
 
 export interface UserRow {
@@ -85,6 +86,7 @@ export function rowToBooking(r: BookingRow): BookingDoc {
     updatedCount: r.updated_count,
     date: r.date,
     isMulti: parseMulti(r.is_multi),
+    ...(r.source ? { source: r.source as BookingSource } : {}),
   };
 }
 
