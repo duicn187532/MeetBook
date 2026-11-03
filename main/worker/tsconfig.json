@@ -19,7 +19,8 @@
   },
   "include": [
     "src",
-    "test"
+    "test",
+    "../pages-entry/functions"
   ],
   "exclude": [
     "test/cpu"
