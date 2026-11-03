@@ -8,6 +8,7 @@ import { addBooking, getActiveBooked, updateBooking } from "./bookings.ts";
 import { lineWebhook } from "./line_webhook.ts";
 import { adminGuard, adminRouter } from "./admin.ts";
 import { getNotices } from "./notices.ts";
+import { mcpHandler } from "./mcp.ts";
 
 // strict: false：/api/bookings 與 /api/bookings/ 視為相同（前端送出的網址結尾有 /）
 const app = new Hono<{ Bindings: Env }>({ strict: false });
@@ -66,6 +67,9 @@ app.patch("/api/bookings/:id/:editPassword?", updateBooking);
 
 // 前端開啟網站時讀取：目前在公告期間內的更新日誌與公告（由管理後台維護）
 app.get("/api/notices", getNotices);
+
+// MCP 伺服器：讓 AI 助理查詢與預約會議室（見 mcp.ts）
+app.all("/mcp", mcpHandler);
 
 // LINE 官方帳號 webhook（在 LINE Developers 設定為 https://<網域>/line/webhook）
 app.post("/line/webhook", lineWebhook);

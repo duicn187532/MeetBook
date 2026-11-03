@@ -99,6 +99,10 @@ D1 執行查詢的時間不算在 Worker 的 CPU 時間裡；Worker 本身逐筆
 - `status`：1／0／NULL，NULL 視為啟用。
 - `disabled`：早期後台留下的停用標記，1 代表停用。
 
+### MCP 伺服器（`src/mcp.ts`，Worker 新增）
+
+`POST /mcp`：讓 AI 助理查詢與預約，說明見根目錄 README 的「AI 助理預約」。手寫的 JSON-RPC（沒有使用 SDK，Worker 保持精簡），新增預約直接呼叫 `createBooking`，與網站共用條件式寫入。測試：`test/mcp.test.ts`。
+
 ### `changelog`、`announcements`（Worker 新增，Deno 版沒有）
 
 網站的更新日誌與公告，由管理後台維護（`src/notices.ts`）。原本寫在前端 `src/config/changelog.ts` 的 v2.1.0～v2.3.0 已由 `0003_notices.sql` 帶入。

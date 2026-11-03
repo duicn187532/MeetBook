@@ -79,6 +79,19 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 - **公告**：新增、修改、刪除網站的公告與更新日誌（Cloudflare Worker 版才有；見前端說明的「公告與更新日誌」）。
 - **安全性**：登入後以 HttpOnly + SameSite=Strict cookie 維持 8 小時；同一來源 15 分鐘內失敗 5 次即暫停，全部來源合計 30 次也會暫停；修改資料的請求需帶 `X-Admin` 標頭；更換 `ADMIN_PASSWORD` 會讓所有已登入的裝置立即登出。
 
+### AI 助理預約（MCP 伺服器，/mcp）
+
+讓支援 MCP（Model Context Protocol）的 AI 助理（例如 Claude）用對話查詢與預約會議室。網址：`https://meetbook.pages.dev/mcp`（Cloudflare Worker 版才有，程式在 `main/worker/src/mcp.ts`）。
+
+- **第一階段只能查詢與預約**，不能修改或取消（請到網站，用預約時取得的編輯密碼）。
+- 工具：`list_rooms`（會議室、座位、設備與規則）、`list_bookings`（某天或連續幾天的預約）、`find_free_slots`（空檔）、`create_booking`（預約）。
+- 與網站相同不需登入；預約一樣要提供已登記、未停用的行編（檢查碼可省略），沿用網站的防止重複預約。查詢結果與網站公開的資料相同（預約者只顯示姓名，沒有姓名時顯示行編後 4 碼），不含編輯密碼。
+- 另外檢查：只能預約週一到週五 08:45–18:15、時間以 5 分鐘為單位、不能預約已經過去的時段、180 天內。沒指定編輯密碼時自動產生 4 位數字並回傳。
+- 連線方式：
+  - Claude（網頁版或 App）：設定 → Connectors（連接器）→ 新增自訂連接器，網址填 `https://meetbook.pages.dev/mcp`，不需要驗證；能否新增自訂連接器依 Claude 方案而定。
+  - Claude Code：`claude mcp add --transport http meetbook https://meetbook.pages.dev/mcp`
+- 協定：Streamable HTTP 的無狀態模式（每個 POST 回一個 JSON，不使用 session 與 SSE；GET 回 405）。
+
 ### 測試
 
 ```bash
