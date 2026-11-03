@@ -2,7 +2,7 @@
 
 會議室預約系統：前端 React + Vite（部署在 GitHub Pages），後端 Deno + Oak + MongoDB Atlas（部署在 Deno Deploy）。
 
-> **後端正在遷移到 Cloudflare Workers + D1**（`main/worker`，網址 `https://meetbook.duicn187532.workers.dev`）。
+> **後端已遷移到 Cloudflare Workers + D1**（`main/worker`）。網站與管理後台使用 `https://meetbook.pages.dev`（Cloudflare Pages 入口，轉給 Worker；公司網路擋 `*.workers.dev`，見 `main/pages-entry`），LINE webhook 使用 `https://meetbook.duicn187532.workers.dev/line/webhook`。
 > 正式切換的步驟與回復方式見 [`main/worker/README.md` 的「正式切換」](main/worker/README.md#正式切換)。
 > 切換完成並穩定後，會移除下方 Deno 後端的說明與程式。
 
