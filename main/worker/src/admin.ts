@@ -30,6 +30,16 @@ import {
 import { rowToUser, type UserRow } from "./db.ts";
 import { statsFromDb } from "./stats.ts";
 import { ADMIN_RECORD_JSON, joinJsonRows } from "./json_sql.ts";
+import {
+  adminCreateAnnouncement,
+  adminCreateChangelog,
+  adminDeleteAnnouncement,
+  adminDeleteChangelog,
+  adminListAnnouncements,
+  adminListChangelog,
+  adminUpdateAnnouncement,
+  adminUpdateChangelog,
+} from "./notices.ts";
 import type { UserDoc } from "./types.ts";
 // 管理後台頁面：與 Deno 版共用同一個檔案（wrangler 以文字匯入）
 import ADMIN_PAGE from "../../project/admin/index.html";
@@ -346,4 +356,13 @@ adminRouter
   .post("/admin/api/users", createUser)
   .patch("/admin/api/users/:id", updateUser)
   .get("/admin/api/bookings", listBookings)
-  .get("/admin/api/stats", stats);
+  .get("/admin/api/stats", stats)
+  // 更新日誌與公告（見 notices.ts）
+  .get("/admin/api/changelog", adminListChangelog)
+  .post("/admin/api/changelog", adminCreateChangelog)
+  .put("/admin/api/changelog/:version", adminUpdateChangelog)
+  .delete("/admin/api/changelog/:version", adminDeleteChangelog)
+  .get("/admin/api/announcements", adminListAnnouncements)
+  .post("/admin/api/announcements", adminCreateAnnouncement)
+  .put("/admin/api/announcements/:id", adminUpdateAnnouncement)
+  .delete("/admin/api/announcements/:id", adminDeleteAnnouncement);

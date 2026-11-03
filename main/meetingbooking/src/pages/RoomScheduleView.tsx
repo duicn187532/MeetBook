@@ -19,8 +19,15 @@ import MeetingInfoModal from "../components/MeetingInfoModal";
 import EditMeetingModal from "../components/EditMeetingModal";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ChangelogModal from "../components/ChangelogModal";
+import AnnouncementModal from "../components/AnnouncementModal";
 import TodayOverview, { TodayHeader } from "../components/TodayOverview";
-import { changelog, isAnnouncing } from "../config/changelog";
+import {
+  Announcement,
+  ChangelogEntry,
+  seenAnnouncementIds,
+  unseenAnnouncements,
+  unseenChangelog,
+} from "../config/notices";
 
 // Types
 import {
@@ -38,7 +45,7 @@ import {
 import useMeetingData from "../hooks/useMeetingData";
 import useSwipe from "../hooks/useSwipe";
 import useNow from "../hooks/useNow";
-import { readResponseBody } from "../api/meetingApi";
+import { fetchNoticesApi, readResponseBody } from "../api/meetingApi";
 import {
   Alternatives,
   conflictMessage,
@@ -53,18 +60,19 @@ import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
 
-// 還沒看過的更新日誌（記錄的是看過的最新一筆 id）
 // 以某天為準的查詢範圍：前 1 個月初 ~ 後 3 個月底（約 5 個月，前後都留有好幾週的空檔）
 function anchorRange(base: dayjs.Dayjs) {
   return { from: base.startOf("month").subtract(1, "month"), to: base.add(3, "month").endOf("month") };
 }
 
-// 沒看過、且還在公告期間內（改版日起 7 天，台北時間）的更新日誌
-function unseenChangelog() {
-  const seen = loadPref("changelogSeen");
-  const index = changelog.findIndex((entry) => entry.id === seen);
-  const unseen = index === -1 ? changelog : changelog.slice(0, index);
-  return unseen.filter((entry) => isAnnouncing(entry.date, Date.now()));
+// 看過的公告 id（JSON 陣列）；格式不正確時視為都沒看過
+function loadSeenAnnouncements(): string[] {
+  try {
+    const list = JSON.parse(loadPref("announcementsSeen") ?? "[]");
+    return Array.isArray(list) ? list.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 dayjs.extend(utc);
@@ -88,11 +96,32 @@ const RoomScheduleView = () => {
   const now = useNow(todayMode);
   // LIVE 分頁顯示的日期：與今天相差幾天（每次進入 LIVE 回到今天；週末時為下週一）
   const [liveOffset, setLiveOffset] = useState(firstLiveOffset);
-  // 更新日誌只給沒看過的人看一次：一顯示就記為看過
-  const [changelogEntries, setChangelogEntries] = useState(unseenChangelog);
+  // 公告與更新日誌（由管理後台維護）只給沒看過的人看一次：先顯示公告，關閉後再顯示更新日誌；一顯示就記為看過
+  const [announcementQueue, setAnnouncementQueue] = useState<Announcement[]>([]);
+  const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
+  const [noticeStep, setNoticeStep] = useState<"announcements" | "changelog" | "done">("announcements");
   useEffect(() => {
-    if (changelog.length > 0 && changelogEntries.length > 0) savePref("changelogSeen", changelog[0].id);
-  }, [changelogEntries.length]);
+    let cancelled = false;
+    fetchNoticesApi()
+      .then((notices) => {
+        if (cancelled) return;
+        const now = Date.now();
+        const seen = loadSeenAnnouncements();
+        const announcements = unseenAnnouncements(notices.announcements, seen, now);
+        const entries = unseenChangelog(notices.changelog, loadPref("changelogSeen"), now);
+        if (announcements.length > 0) {
+          savePref("announcementsSeen", JSON.stringify(seenAnnouncementIds(notices.announcements, seen, announcements, now)));
+        }
+        // 記錄顯示的最新一筆（不是清單第一筆，避免把還沒顯示的記為看過）
+        if (entries.length > 0) savePref("changelogSeen", entries[0].version);
+        setAnnouncementQueue(announcements);
+        setChangelogEntries(entries);
+      })
+      .catch((err) => console.error("取得公告失敗:", err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // 週末開啟時從下一個工作日開始（週六、週日不上班）
   const [currentDate, setCurrentDate] = useState(() => rollToWorkday(dayjs()));
   const [viewStartDate, setViewStartDate] = useState(() => rollToWorkday(dayjs()));
@@ -720,9 +749,13 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           }}
         />
       )}
-      {changelogEntries.length > 0 && (
-        <ChangelogModal entries={changelogEntries} onClose={() => setChangelogEntries([])} />
+      {noticeStep === "announcements" && announcementQueue.length > 0 && (
+        <AnnouncementModal announcements={announcementQueue} onClose={() => setNoticeStep("changelog")} />
       )}
+      {noticeStep !== "done" && (noticeStep === "changelog" || announcementQueue.length === 0) &&
+        changelogEntries.length > 0 && (
+          <ChangelogModal entries={changelogEntries} onClose={() => setNoticeStep("done")} />
+        )}
     </div>
   );
 };
