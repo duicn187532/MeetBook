@@ -79,6 +79,18 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 - **公告**：新增、修改、刪除網站的公告與更新日誌（Cloudflare Worker 版才有；見前端說明的「公告與更新日誌」）。
 - **安全性**：登入後以 HttpOnly + SameSite=Strict cookie 維持 8 小時；同一來源 15 分鐘內失敗 5 次即暫停，全部來源合計 30 次也會暫停；修改資料的請求需帶 `X-Admin` 標頭；更換 `ADMIN_PASSWORD` 會讓所有已登入的裝置立即登出。
 
+### 用 AI 助理查詢與預約（/ai）
+
+同事在 ChatGPT、Claude 等 AI 助理（免費版也可以）開一個新對話，貼上 `https://meetbook.pages.dev/ai`，就能請 AI 查空檔並產生預約連結。程式在 `main/worker/src/ai.ts`，只能讀取。
+
+- `GET /ai`：給 AI 讀的純文字說明，包含現在時間、會議室、預約規則、未來 10 個工作日的空檔（不含預約者與會議名稱），以及之後 20 個工作日的詳細網址，最後說明如何產生預填預約連結（見前端的「預填預約連結」）。
+- `GET /ai/day/YYYY-MM-DD`：某天各會議室的空檔與預約，資料與網站公開的相同（預約者只顯示姓名，沒有姓名時顯示行編後 4 碼），不含行編與編輯密碼。只能查 31 天前到 180 天後。
+- AI 不能直接預約：只產生連結，使用者點開後在網站上確認並按「預定」才算完成。
+- 免費版 ChatGPT 通常只能開啟使用者貼的網址，或已讀取頁面中出現的網址，所以每天的詳細網址都列在 `/ai` 上，空檔也直接寫在 `/ai`，只讀一頁就夠用。
+- 回應標頭為 `Cache-Control: no-store` 與 `X-Robots-Tag: noindex`；`/robots.txt` 只允許 `/ai`。
+
+使用範例：「請閱讀 https://meetbook.pages.dev/ai ，幫我找明天下午 Beta 一小時的空檔，並產生預約連結」。
+
 ### 測試
 
 ```bash
