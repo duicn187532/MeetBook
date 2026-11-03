@@ -130,16 +130,17 @@ describe("LINE webhook", () => {
       expect(replies.length, text).toBe(1);
       const [free, template, connector] = replies[0].body.messages;
       expect(replies[0].body.messages.length).toBe(3);
-      expect(free.text).toContain("✨ 為什麼用 AI 預約？");
-      expect(free.text).toContain("同一個對話會記得你的行編和習慣");
-      expect(free.text).toContain("長按複製下一則訊息（範本）");
+      expect(free.text).toContain("【好處】");
+      expect(free.text).toContain("・同一個對話會記得你");
+      expect(free.text).toContain("2. 複製下一則訊息，貼上");
       expect(template.text).toBe(AI_TEMPLATE);
-      expect(template.text.startsWith(`請閱讀 ${AI_PAGE_URL} `)).toBe(true);
-      expect(template.text).toContain("我的行編：");
-      expect(template.text).toContain("這次想預約：");
-      expect(free.text).toContain("【用 AI 預約・方法一】");
-      expect(free.text).toContain("編輯密碼請在確認頁自己設定，不要告訴 AI");
-      expect(connector.text).toContain("【用 AI 預約・方法二】");
+      // 網址自成一行
+      expect(template.text.split("\n").slice(0, 2)).toEqual(["請讀這個網址：", AI_PAGE_URL]);
+      expect(template.text).toContain("\n行編：\n");
+      expect(template.text).toContain("這次要訂：");
+      expect(free.text).toContain("用 AI 預約｜方法一");
+      expect(free.text).toContain("・不要把密碼告訴 AI");
+      expect(connector.text).toContain("用 AI 預約｜方法二");
       expect(connector.text).toContain(MCP_URL);
     }
     replies = [];
@@ -150,7 +151,7 @@ describe("LINE webhook", () => {
   it("一對一聊天收到看不懂的訊息時說明可用的指令（含 ai）；群組不回覆；預約表單照常處理", async () => {
     await webhook([textEvent("你好", { source: { type: "user", userId: "U1" } })]);
     expect(replies[0].body.messages).toEqual([{ type: "text", text: HELP_REPLY }]);
-    expect(HELP_REPLY).toContain("・ai：用 ChatGPT、Claude 預約的教學");
+    expect(HELP_REPLY).toContain("・ai｜用 AI 預約的教學");
     replies = [];
     await webhook([textEvent("你好", { source: { type: "group", groupId: "G1" } })]);
     expect(replies).toEqual([]);
