@@ -14,7 +14,7 @@ import { createBooking, findUserStrict } from "./bookings.ts";
 import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
 import { WEEKEND_MESSAGE } from "./booking_rules.ts";
 import { site } from "./site.ts";
-import { bookingEvent, googleCalendarUrl, icsFile, icsFileName } from "./calendar.ts";
+import { bookingEvent, icsFile, icsFileName } from "./calendar.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
@@ -387,7 +387,6 @@ function calendarSection(rooms: string[], row: BookedRow, booker: string) {
   return `<div class="cal">
 <h3>加到行事曆</h3>
 <div class="buttons">
-<a class="btn btn-outline" href="${escapeHtml(googleCalendarUrl(eventOf(rooms, row, booker)))}" target="_blank" rel="noopener">Google</a>
 <button class="btn btn-outline" type="button" id="ics">分享 ics</button>
 </div>
 </div>`;

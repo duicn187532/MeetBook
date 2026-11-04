@@ -1,4 +1,4 @@
-// 加到行事曆：Google 行事曆一鍵連結，與 .ics 行事曆檔（Outlook、Notes、Apple、Google 都能讀）。
+// 加到行事曆：產生 .ics 行事曆檔（Outlook、Notes、Apple 都能讀）。
 // 時間一律以 UTC（結尾 Z）表示，不需附時區定義，各家行事曆都會換成使用者自己的時區顯示。
 // 前端 meetingbooking/src/utils/calendar.ts 有相同的邏輯，修改時請一併調整。
 
@@ -42,18 +42,6 @@ export function bookingEvent(b: BookingForCalendar): CalendarEvent {
     start: b.start,
     end: b.end,
   };
-}
-
-export function googleCalendarUrl(e: CalendarEvent): string {
-  const params = new URLSearchParams({
-    action: "TEMPLATE",
-    text: e.title,
-    dates: `${utcStamp(e.start)}/${utcStamp(e.end)}`,
-    ctz: "Asia/Taipei",
-    location: e.location,
-    details: e.details,
-  });
-  return `https://calendar.google.com/calendar/render?${params}`;
 }
 
 // RFC 5545 文字跳脫

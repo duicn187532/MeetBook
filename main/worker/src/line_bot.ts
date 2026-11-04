@@ -320,7 +320,7 @@ export function formatBookingSuccess(
     `🕒 時間：${start.date} ${start.hhmm} - ${taipeiParts(request.endTime.getTime()).hhmm}`,
     `👤 預約人：${userName}`,
     `🔑 編輯密碼：${editPassword}（在網頁修改或取消時使用）`,
-    ...(bookingId ? ["", `📅 加到行事曆（Google／公司）：`, calendarPageUrl(bookingId)] : []),
+    ...(bookingId ? ["", `📅 加到行事曆：`, calendarPageUrl(bookingId)] : []),
   ].join("\n");
 }
 
