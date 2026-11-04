@@ -6,9 +6,12 @@ import "@fontsource/dm-sans/latin-400.css";
 import "@fontsource/dm-sans/latin-500.css";
 import "@fontsource/dm-sans/latin-700.css";
 import { applyDisplaySettings, loadDisplaySettings } from "./config/display";
+import { startVersionCheck } from "./utils/appVersion";
 
 // 先套用字體大小與風格，避免畫面先以預設大小顯示再跳動
 applyDisplaySettings(loadDisplaySettings());
+// 內建瀏覽器快取到舊版時自動更新
+startVersionCheck();
 
 // Import MUI LocalizationProvider
 import { LocalizationProvider } from "@mui/x-date-pickers";
