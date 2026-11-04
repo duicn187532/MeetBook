@@ -126,7 +126,6 @@ input:focus{border-color:#f08b42}
 .cal{margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb}
 .cal h3{margin:0 0 8px;font-size:14px;font-weight:700;text-align:center;color:#374151}
 .cal .buttons{flex-direction:column;gap:8px;margin-top:0}
-.cal .hint{margin-top:8px;line-height:1.5}
 .btn-outline{background:#fff;border:2px solid #dfbb00;color:#374151}
 `;
 
@@ -389,9 +388,8 @@ function calendarSection(rooms: string[], row: BookedRow, booker: string) {
 <h3>加到行事曆</h3>
 <div class="buttons">
 <a class="btn btn-outline" href="${escapeHtml(googleCalendarUrl(eventOf(rooms, row, booker)))}" target="_blank" rel="noopener">加到 Google 行事曆</a>
-<button class="btn btn-outline" type="button" id="ics">寄到公司信箱</button>
+<button class="btn btn-outline" type="button" id="ics">匯出 ics</button>
 </div>
-<p class="hint" id="ics-hint">會開啟手機的分享選單：選信箱 App 寄給自己的公司信箱，在公司信箱點開附件就能加入行事曆。</p>
 </div>`;
 }
 
@@ -402,13 +400,8 @@ function calendarScript(rooms: string[], row: BookedRow, booker: string) {
   return `const ICS = ${json(icsFile(eventOf(rooms, row, booker)))};
 const NAME = ${json(icsFileName(row.start_time))};
 const icsButton = document.getElementById("ics");
-const icsHint = document.getElementById("ics-hint");
 const icsFileOf = () => new File([ICS], NAME, { type: "text/calendar" });
 const canShareIcs = () => { try { return !!navigator.canShare && navigator.canShare({ files: [icsFileOf()] }); } catch { return false; } };
-if (icsButton && !canShareIcs()) {
-  icsButton.textContent = "下載 .ics 檔";
-  icsHint.textContent = "下載後在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
-}
 if (icsButton) icsButton.addEventListener("click", async () => {
   const file = icsFileOf();
   if (canShareIcs()) {
@@ -421,6 +414,5 @@ if (icsButton) icsButton.addEventListener("click", async () => {
   document.body.append(a);
   a.click();
   a.remove();
-  icsHint.textContent = "已下載行事曆檔：在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
 });`;
 }

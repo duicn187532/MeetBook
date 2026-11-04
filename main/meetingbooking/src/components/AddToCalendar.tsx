@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarPlus, Mail } from "lucide-react";
+import { CalendarPlus, Download } from "lucide-react";
 import { BookingForCalendar, bookingEvent, googleCalendarUrl, icsFile, icsFileName } from "../utils/calendar";
 
-// 加到行事曆（日曆圖示）：Google 行事曆用一鍵連結；公司行事曆用手機的分享選單把 .ics 行事曆檔寄到公司信箱。
+// 加到行事曆（日曆圖示）：Google 行事曆用一鍵連結；「匯出 ics」以手機的分享選單送出 .ics 行事曆檔（可寄到公司信箱加入公司行事曆）。
 // 不支援分享檔案時（電腦、部分 Android 瀏覽器）改為下載檔案，由使用者自行附加到信件。
 // 只顯示圖示，不加文字說明。
 
@@ -81,8 +81,8 @@ const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCa
             加到 Google 行事曆
           </a>
           <button type="button" className={itemClass} onClick={sendToWork}>
-            <Mail size={16} className="shrink-0" />
-            {shareable ? "寄到公司信箱" : "下載行事曆檔（.ics）"}
+            <Download size={16} className="shrink-0" />
+            匯出 ics
           </button>
         </div>
       )}
