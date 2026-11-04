@@ -1,11 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarPlus, Mail } from "lucide-react";
 import { BookingForCalendar, bookingEvent, googleCalendarUrl, icsFile, icsFileName } from "../utils/calendar";
 
-// 加到行事曆：Google 行事曆用一鍵連結；公司行事曆用手機的分享選單把 .ics 行事曆檔寄到公司信箱。
+// 加到行事曆（日曆圖示）：Google 行事曆用一鍵連結；公司行事曆用手機的分享選單把 .ics 行事曆檔寄到公司信箱。
 // 不支援分享檔案時（電腦、部分 Android 瀏覽器）改為下載檔案，由使用者自行附加到信件。
 
-const SHARE_HINT = "會開啟手機的分享選單：選信箱 App 寄給自己的公司信箱，在公司信箱點開附件就能加入行事曆。";
 const DOWNLOAD_HINT = "下載後在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
 const DOWNLOADED_HINT = "已下載行事曆檔：在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
 
@@ -30,17 +29,33 @@ function download(file: File) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-const AddToCalendar = ({ booking }: { booking: Omit<BookingForCalendar, "website"> }) => {
+const SHORT_SHARE_HINT = "選信箱 App 寄給自己的公司信箱，點開附件即可加入行事曆。";
+
+// 一個小日曆圖示；點了才展開兩個選項。className 用來決定圖示在視窗中的位置
+const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCalendar, "website">; className?: string }) => {
   const event = useMemo(() => bookingEvent({ ...booking, website: websiteUrl() }), [booking]);
   const makeFile = () => new File([icsFile(event)], icsFileName(event.start), { type: "text/calendar" });
   const shareable = useMemo(() => canShareFile(new File([""], "meeting.ics", { type: "text/calendar" })), []);
-  const [hint, setHint] = useState(shareable ? SHARE_HINT : DOWNLOAD_HINT);
+  const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState(shareable ? SHORT_SHARE_HINT : DOWNLOAD_HINT);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 點選單外面就收起
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [open]);
 
   async function sendToWork() {
     const file = makeFile();
     if (shareable && canShareFile(file)) {
       try {
         await navigator.share({ files: [file] });
+        setOpen(false);
         return;
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") return; // 使用者關閉分享選單
@@ -50,22 +65,32 @@ const AddToCalendar = ({ booking }: { booking: Omit<BookingForCalendar, "website
     setHint(DOWNLOADED_HINT);
   }
 
-  const buttonClass =
-    "flex flex-1 items-center justify-center gap-1 border-2 border-[#DFBB00] bg-white rounded-xl py-2 text-sm text-gray-700";
+  const itemClass = "flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 text-left hover:bg-gray-50";
   return (
-    <div className="mt-4 pt-3 border-t border-gray-200 text-center">
-      <div className="text-sm font-semibold text-gray-600 mb-2">加到行事曆</div>
-      <div className="flex gap-2">
-        <a className={buttonClass} href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer">
-          <CalendarPlus size={16} />
-          Google 行事曆
-        </a>
-        <button type="button" className={buttonClass} onClick={sendToWork}>
-          <Mail size={16} />
-          {shareable ? "寄到公司信箱" : "下載 .ics 檔"}
-        </button>
-      </div>
-      <p className="text-xs text-gray-500 mt-2 text-left">{hint}</p>
+    <div ref={menuRef} className={`absolute z-20 ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+        aria-label="加到行事曆"
+        aria-expanded={open}
+        title="加到行事曆"
+      >
+        <CalendarPlus size={20} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 w-60 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left">
+          <a className={itemClass} href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
+            <CalendarPlus size={16} className="shrink-0" />
+            加到 Google 行事曆
+          </a>
+          <button type="button" className={itemClass} onClick={sendToWork}>
+            <Mail size={16} className="shrink-0" />
+            {shareable ? "寄到公司信箱" : "下載行事曆檔（.ics）"}
+          </button>
+          <p className="px-3 pb-2 pt-1 text-xs text-gray-500 leading-relaxed">{hint}</p>
+        </div>
+      )}
     </div>
   );
 };

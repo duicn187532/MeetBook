@@ -40,6 +40,19 @@ const MeetingInfoModal = ({
 
       {/* Modal 主體 */}
       <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full max-w-sm m-8 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
+        {/* 加到行事曆（同組的其他會議室也一起列在地點） */}
+        <AddToCalendar
+          className="top-3 left-3"
+          booking={{
+            rooms: [...new Set([meetingInfo.room, ...meetingInfo.isMulti])]
+              .sort()
+              .map((r) => roomNames[r as RoomKey] ?? r),
+            title: meetingInfo.title,
+            start: Date.parse(meetingInfo.startTime),
+            end: Date.parse(meetingInfo.endTime),
+            booker: meetingInfo.user.name,
+          }}
+        />
         {/* 關閉按鈕 */}
         <button
           onClick={onClose}
@@ -135,19 +148,6 @@ const MeetingInfoModal = ({
             <span>修改</span>
           </button>
         </div>
-
-        {/* 加到行事曆（同組的其他會議室也一起列在地點） */}
-        <AddToCalendar
-          booking={{
-            rooms: [...new Set([meetingInfo.room, ...meetingInfo.isMulti])]
-              .sort()
-              .map((r) => roomNames[r as RoomKey] ?? r),
-            title: meetingInfo.title,
-            start: Date.parse(meetingInfo.startTime),
-            end: Date.parse(meetingInfo.endTime),
-            booker: meetingInfo.user.name,
-          }}
-        />
       </div>
     </div>
   );

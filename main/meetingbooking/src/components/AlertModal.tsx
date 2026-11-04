@@ -38,6 +38,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ type, title, message, onClose, 
 
       {/* Modal 本體 */}
       <div className="relative bg-white p-6 rounded-2xl shadow-lg z-10 w-full max-w-sm m-10 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain text-center">
+        {calendar && <AddToCalendar booking={calendar} className="top-3 left-3" />}
         {/* 圖示區域 */}
         <div className={` rounded-xl flex items-center justify-center mx-auto ${styles[type].iconStyle}`}>
           {styles[type].icon}
@@ -48,8 +49,6 @@ const AlertModal: React.FC<AlertModalProps> = ({ type, title, message, onClose, 
 
         {/* 訊息 */}
         {message && <p className="text-gray-500 text-sm mt-1 whitespace-pre-line">{message}</p>}
-
-        {calendar && <AddToCalendar booking={calendar} />}
 
         {/* 按鈕 */}
         <button
