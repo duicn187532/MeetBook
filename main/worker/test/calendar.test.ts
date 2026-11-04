@@ -105,7 +105,10 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     const [first] = await rows();
     const html = (await api("GET", location)).text;
     expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics?openExternalBrowser=1">加入行事曆</a>`);
-    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}/google?openExternalBrowser=1">Google</a>`);
+    // Google 直接連到 calendar.google.com（iPhone 才會開 Google 日曆 App）
+    const google = /<a class="btn btn-outline" href="(https:\/\/calendar\.google\.com\/calendar\/render\?[^"]+)">Google<\/a>/.exec(html);
+    expect(google).not.toBeNull();
+    expect(new URL(google![1].replace(/&amp;/g, "&")).searchParams.get("text")).toBe("週會");
     expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">分享 ics</button>');
     // 分享用的 .ics 放在有 nonce 的 script 中，與 /cal 回傳的內容相同（DTSTAMP 除外）
     // nonce 每次請求都不同，同一個回應中讀取
@@ -163,6 +166,11 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     expect(url.searchParams.get("details")).toContain("預約人：測試員");
     expect(url.searchParams.get("details")).not.toContain("001234");
     expect((await api("GET", "/cal/nope/google")).status).toBe(404);
+    // format=json：回傳同一個網址（網站用來直接連到 Google）
+    const json = await api("GET", `/cal/${first.id}/google?format=json`);
+    expect(json.status).toBe(200);
+    expect(json.json).toEqual({ url: res.headers.get("location") });
+    expect((await api("GET", "/cal/nope/google?format=json")).status).toBe(404);
     // 連結帶的 openExternalBrowser=1 不影響轉址
     const withParam = await app.fetch(new Request(`https://w.test/cal/${first.id}/google?openExternalBrowser=1`, { redirect: "manual" }), env);
     expect(withParam.status).toBe(302);

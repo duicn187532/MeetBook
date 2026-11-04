@@ -370,16 +370,17 @@ ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
 <div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
-${first.cancelled ? "" : calendarButtons(first.id)}
+${first.cancelled ? "" : calendarButtons(first.id, googleCalendarUrl(eventOf(group.map((r) => r.room), first, booker)))}
 </div>`, 200, first.cancelled ? "" : calendarScript(icsFile(eventOf(group.map((r) => r.room), first, booker)), icsFileName(first.start_time)));
 }
 
 // 加入行事曆、Google、分享 ics 三個按鈕（同一頁開啟；openExternalBrowser=1 讓 LINE 內建瀏覽器改用手機預設瀏覽器）
-function calendarButtons(id: string) {
+// Google 直接連到 calendar.google.com：iPhone 有安裝 Google 日曆 App 時會直接開 App
+function calendarButtons(id: string, googleUrl: string) {
   const path = `/cal/${encodeURIComponent(id)}`;
   return `<div class="cal"><div class="buttons">
 <a class="btn btn-outline" href="${path}.ics?openExternalBrowser=1">加入行事曆</a>
-<a class="btn btn-outline" href="${path}/google?openExternalBrowser=1">Google</a>
+<a class="btn btn-outline" href="${escapeHtml(googleUrl)}">Google</a>
 <button class="btn btn-outline" type="button" id="ics">分享 ics</button>
 </div></div>`;
 }
@@ -421,16 +422,22 @@ function eventOf(rooms: string[], row: BookedRow, booker: string) {
   });
 }
 
-/** GET /cal/:id/google：轉到 Google 行事曆的新增活動頁（已取消或找不到時回 404） */
+/**
+ * GET /cal/:id/google：轉到 Google 行事曆的新增活動頁（已取消或找不到時回 404）。
+ * ?format=json 時回傳 { url }：網站直接連到 Google 的網址，iPhone 才會開啟 Google 日曆 App
+ * （iOS 只在點擊的連結本身就是 calendar.google.com 時開 App，經過轉址只會開網頁）。
+ */
 export async function calendarGoogle(c: Ctx) {
   const found = await loadBooking(c.env.DB, c.req.param("id") ?? "");
   if (!found || found.first.cancelled) {
     return c.text("找不到這筆預約（可能已取消）", 404, { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" });
   }
   const { first, group, booker } = found;
+  const url = googleCalendarUrl(eventOf(group.map((r) => r.room), first, booker));
   c.header("Cache-Control", "no-store");
   c.header("X-Robots-Tag", "noindex");
-  return c.redirect(googleCalendarUrl(eventOf(group.map((r) => r.room), first, booker)), 302);
+  if (c.req.query("format") === "json") return c.json({ url });
+  return c.redirect(url, 302);
 }
 
 /**
