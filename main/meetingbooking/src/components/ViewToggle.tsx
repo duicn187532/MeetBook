@@ -98,7 +98,7 @@ const ViewToggle = ({
   const displayedWeekDates = weekWorkdays(currentDate);
 
   return (
-    <div className={`p-2 flex flex-col ${backgroundColor} items-center rounded-t-2xl h-[150px]`}>
+    <div className={`p-2 flex flex-col ${backgroundColor} items-center rounded-t-2xl min-h-[150px]`}>
       <div className="flex rounded-full bg-white w-fit p-0.5 shadow-lg">
         {["Day", "Week", "Month"].map((view) => (
           <button

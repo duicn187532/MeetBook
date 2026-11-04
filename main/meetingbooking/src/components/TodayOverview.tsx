@@ -88,16 +88,16 @@ export const TodayHeader = ({ overview, now, offset, updatedAt, onChangeDay }: L
       <div className="flex items-center justify-between w-[300px] max-w-[calc(100%-32px)]">
         <ArrowButton dir="prev" onClick={() => onChangeDay(-1)} />
         <div className="font-system flex items-baseline gap-4 text-[#4D4D4D]">
-          <span className="text-[1.0625rem] tabular-nums">
+          <span className="text-[length:calc(1.0625rem*var(--text-scale,1))] tabular-nums">
             {d.format("YYYY.MM.DD")} ({WEEK[d.day()]})
           </span>
-          <span className={`text-[0.8125rem] ${offset === 0 ? "" : "text-[#C77700] font-semibold"}`}>
+          <span className={`text-[length:calc(0.8125rem*var(--text-scale,1))] ${offset === 0 ? "" : "text-[#C77700] font-semibold"}`}>
             {relativeDay(d, offset)}
           </span>
         </div>
         <ArrowButton dir="next" onClick={() => onChangeDay(1)} />
       </div>
-      <div className="live-pill mt-[17px] min-w-[275px] h-[27px] px-6 rounded-full bg-[#FFEB83] flex items-center justify-center text-[0.875rem] text-[#484848] tabular-nums">
+      <div className="live-pill mt-[17px] min-w-[275px] h-[27px] px-6 rounded-full bg-[#FFEB83] flex items-center justify-center text-[length:calc(0.875rem*var(--text-scale,1))] text-[#484848] tabular-nums">
         {parts.join(" · ")}
       </div>
     </div>
@@ -133,23 +133,23 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
         />
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-[13px]">
           <div className="flex items-center gap-[13px]">
-            <span className={`h-5 px-4 rounded-full inline-flex items-center text-[0.8125rem] font-medium text-[#222222] ${style.chip}`}>
+            <span className={`h-5 px-4 rounded-full inline-flex items-center text-[length:calc(0.8125rem*var(--text-scale,1))] font-medium text-[#222222] ${style.chip}`}>
               {roomNames[room.room]}
             </span>
-            <span className="inline-flex items-center gap-1 text-[0.8125rem] text-[#212529]">
+            <span className="inline-flex items-center gap-1 text-[length:calc(0.8125rem*var(--text-scale,1))] text-[#212529]">
               <Users className="w-[15px] h-[15px]" strokeWidth={1.75} aria-hidden="true" />
               <span className="tabular-nums">{roomSeats[room.room]}</span>
               <span className="sr-only">人</span>
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="flex-1 min-w-0 text-[0.8125rem] text-[#1E293B] tabular-nums leading-snug">{room.availability}</span>
+            <span className="flex-1 min-w-0 text-[length:calc(0.8125rem*var(--text-scale,1))] text-[#1E293B] tabular-nums leading-snug">{room.availability}</span>
             {room.quickBook && (
               <button
                 type="button"
                 onClick={() => onQuickBook(room.room, room.quickBook!)}
                 aria-label={`立即預約 ${roomNames[room.room]}（${room.quickBook.startTime}–${room.quickBook.endTime}）`}
-                className="pointer-events-auto relative shrink-0 w-[87px] h-[29px] inline-flex items-center justify-center gap-1 rounded-full bg-[#FF9114] text-white text-[0.8125rem] font-medium shadow-[0_3px_6px_rgba(255,145,20,0.30)] active:scale-95"
+                className="pointer-events-auto relative shrink-0 min-w-[87px] min-h-[29px] px-2 whitespace-nowrap inline-flex items-center justify-center gap-1 rounded-full bg-[#FF9114] text-white text-[length:calc(0.8125rem*var(--text-scale,1))] font-medium shadow-[0_3px_6px_rgba(255,145,20,0.30)] active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" strokeWidth={2.5} aria-hidden="true" />
                 立即預約
@@ -179,7 +179,7 @@ const RoomCard = ({ room, overview, now, onOpenRoom, onQuickBook }: { room: Toda
             );
           })}
         </div>
-        <div className="flex justify-between mt-[10px] pl-1.5 pr-2.5 text-[0.75rem] leading-none text-[#999999] tabular-nums">
+        <div className="flex justify-between mt-[10px] pl-1.5 pr-2.5 text-[length:calc(0.75rem*var(--text-scale,1))] leading-none text-[#999999] tabular-nums">
           <span>09</span>
           <span>12</span>
           <span>15</span>

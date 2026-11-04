@@ -9,7 +9,7 @@ import {
   saveDisplaySettings,
 } from "../config/display";
 
-// 右上角的齒輪：打開小視窗調整字體大小（五級）與字體風格（三種），立即套用並記在這台裝置
+// 右上角的齒輪：打開小視窗調整字體大小（標準、大、特大）與字體風格（三種），立即套用並記在這台裝置
 const DisplaySettings = () => {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<Settings_>(loadDisplaySettings);
@@ -70,12 +70,11 @@ const DisplaySettings = () => {
                 type="button"
                 role="radio"
                 aria-checked={settings.fontSize === s.key}
-                aria-label={`字體大小第 ${i + 1} 級`}
                 onClick={() => update({ fontSize: s.key })}
                 className={`${option(settings.fontSize === s.key)} p-0 shadow-none h-9`}
               >
                 {/* 以固定像素顯示，按鈕大小不隨設定改變 */}
-                <span style={{ fontSize: `${11 + i * 2}px` }} className="leading-none font-semibold">A</span>
+                <span style={{ fontSize: `${13 + i * 2}px` }} className="leading-none">{s.label}</span>
               </button>
             ))}
           </div>
