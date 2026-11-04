@@ -68,24 +68,21 @@ export async function fetchNoticesApi(): Promise<Notices> {
 // 行事曆相關網址（API_URL 為 <後端>/api/bookings/）
 const backendUrl = (path: string) => new URL(`../../${path}`, new URL(API_URL, window.location.href));
 
-// 這筆預約的 .ics 行事曆檔（<後端>/cal/<id>.ics）
-export const calendarFileUrl = (bookingId: string) => backendUrl(`cal/${encodeURIComponent(bookingId)}.ics`).toString();
-
-// 轉到 Google 行事曆新增活動頁（<後端>/cal/<id>/google）
-export const calendarGoogleUrl = (bookingId: string) => backendUrl(`cal/${encodeURIComponent(bookingId)}/google`).toString();
-
-// 預約資訊頁（有「加入行事曆」等按鈕）；openExternalBrowser=1 讓 LINE 內建瀏覽器改用手機預設瀏覽器開啟
-export function calendarPageUrl(bookingId: string): string {
-  const url = backendUrl("b/ok");
-  url.searchParams.set("id", bookingId);
-  url.searchParams.set("v", "info");
+// openExternalBrowser=1：在 LINE 內建瀏覽器中改用手機預設瀏覽器直接開啟（LINE 內建瀏覽器打不開 .ics，也沒有登入 Google）；其他瀏覽器會忽略
+function withExternal(url: URL): string {
   url.searchParams.set("openExternalBrowser", "1");
   return url.toString();
 }
 
+// 這筆預約的 .ics 行事曆檔（<後端>/cal/<id>.ics）
+export const calendarFileUrl = (bookingId: string) => withExternal(backendUrl(`cal/${encodeURIComponent(bookingId)}.ics`));
+
+// 轉到 Google 行事曆新增活動頁（<後端>/cal/<id>/google）
+export const calendarGoogleUrl = (bookingId: string) => withExternal(backendUrl(`cal/${encodeURIComponent(bookingId)}/google`));
+
 // 讀取 .ics 行事曆檔，給「分享 ics」使用；檔名依開始時間（台北時間）命名，例如 meeting-20261111-1400.ics
 export async function fetchCalendarFile(bookingId: string): Promise<File> {
-  const res = await fetch(calendarFileUrl(bookingId));
+  const res = await fetch(backendUrl(`cal/${encodeURIComponent(bookingId)}.ics`));
   if (!res.ok) throw new Error(`行事曆檔讀取失敗: ${res.status}`);
   const text = await res.text();
   const m = /DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})\d{2}Z/.exec(text);

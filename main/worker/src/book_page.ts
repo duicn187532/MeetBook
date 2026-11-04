@@ -374,40 +374,22 @@ ${first.cancelled ? "" : calendarButtons(first.id)}
 </div>`, 200, first.cancelled ? "" : calendarScript(icsFile(eventOf(group.map((r) => r.room), first, booker)), icsFileName(first.start_time)));
 }
 
-// 加入行事曆、Google、分享 ics 三個按鈕
+// 加入行事曆、Google、分享 ics 三個按鈕（同一頁開啟；openExternalBrowser=1 讓 LINE 內建瀏覽器改用手機預設瀏覽器）
 function calendarButtons(id: string) {
   const path = `/cal/${encodeURIComponent(id)}`;
   return `<div class="cal"><div class="buttons">
-<a class="btn btn-outline" id="add" href="${path}.ics">加入行事曆</a>
-<a class="btn btn-outline" href="${path}/google" target="_blank" rel="noopener">Google</a>
+<a class="btn btn-outline" href="${path}.ics?openExternalBrowser=1">加入行事曆</a>
+<a class="btn btn-outline" href="${path}/google?openExternalBrowser=1">Google</a>
 <button class="btn btn-outline" type="button" id="ics">分享 ics</button>
 </div></div>`;
 }
 
-// .ics 內容直接放在頁面中：
-// - 加入行事曆：iPhone 以頁面中的檔案內容開啟（網址形式的 .ics 會被 iOS 當成「訂閱行事曆」）；
-//   在 LINE 內建瀏覽器中改用手機預設瀏覽器重新開啟這一頁；其他裝置照連結下載 .ics
-// - 分享 ics：以手機的分享選單送出（點擊當下就能分享）；不支援分享檔案時改為下載
+// 「分享 ics」：.ics 內容直接放在頁面中，點擊當下就能以手機的分享選單送出；不支援分享檔案時改為下載
 function calendarScript(ics: string, name: string) {
   // JSON 中的 < 轉成 \u003c，避免內容提前結束 <script>
   const json = (v: string) => JSON.stringify(v).replace(/</g, "\\u003c");
   return `const ICS = ${json(ics)};
 const NAME = ${json(name)};
-const UA = navigator.userAgent;
-const IN_LINE = / Line[/]/i.test(UA);
-const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-const addButton = document.getElementById("add");
-if (addButton) addButton.addEventListener("click", (e) => {
-  if (IN_LINE) {
-    e.preventDefault();
-    const u = new URL(location.href);
-    u.searchParams.set("openExternalBrowser", "1");
-    location.href = u.toString();
-  } else if (IS_IOS) {
-    e.preventDefault();
-    location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ICS);
-  }
-});
 const shareButton = document.getElementById("ics");
 if (shareButton) shareButton.addEventListener("click", async () => {
   const file = new File([ICS], NAME, { type: "text/calendar" });
