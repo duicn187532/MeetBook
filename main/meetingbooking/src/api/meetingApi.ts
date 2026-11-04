@@ -66,8 +66,11 @@ export async function fetchNoticesApi(): Promise<Notices> {
 }
 
 // 這筆預約的 .ics 行事曆檔網址（API_URL 為 <後端>/api/bookings/，行事曆檔在 <後端>/cal/<id>.ics）
+// openExternalBrowser=1：在 LINE 內建瀏覽器中改用手機預設瀏覽器開啟（LINE 內建瀏覽器打不開 .ics）；其他瀏覽器會忽略
 export function calendarFileUrl(bookingId: string): string {
-  return new URL(`../../cal/${encodeURIComponent(bookingId)}.ics`, new URL(API_URL, window.location.href)).toString();
+  const url = new URL(`../../cal/${encodeURIComponent(bookingId)}.ics`, new URL(API_URL, window.location.href));
+  url.searchParams.set("openExternalBrowser", "1");
+  return url.toString();
 }
 
 export async function submitBookingApi(bookingData: BookingPayload): Promise<BookingApiResponse> {

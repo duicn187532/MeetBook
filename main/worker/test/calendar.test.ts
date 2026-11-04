@@ -104,7 +104,7 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     const location = await book({ room: "A101,A102", date: nextWednesday(), start: "14:00", end: "15:00", title: "週會", people: "6", user: "001234", password: "" });
     const [first] = await rows();
     const html = (await api("GET", location)).text;
-    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics">加入行事曆</a>`);
+    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics?openExternalBrowser=1">加入行事曆</a>`);
     expect(html).not.toContain("calendar.google.com");
     expect(html).not.toContain("navigator.share");
   });
@@ -115,7 +115,8 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     const list = await rows();
     // 用任一間的 id 都能取得整組
     for (const r of list) {
-      const res = await api("GET", `/cal/${r.id}.ics`);
+      // 連結帶的 openExternalBrowser=1 不影響結果
+      const res = await api("GET", `/cal/${r.id}.ics?openExternalBrowser=1`);
       expect(res.status).toBe(200);
       expect(res.headers.get("content-type")).toBe("text/calendar; charset=utf-8");
       expect(res.headers.get("content-disposition")).toBe(`inline; filename="meeting-${date.replace(/-/g, "")}-1400.ics"`);

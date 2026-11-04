@@ -368,7 +368,7 @@ ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
 <div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
-${first.cancelled ? "" : `<div class="cal"><div class="buttons"><a class="btn btn-outline" href="/cal/${encodeURIComponent(first.id)}.ics">加入行事曆</a></div></div>`}
+${first.cancelled ? "" : `<div class="cal"><div class="buttons"><a class="btn btn-outline" href="/cal/${encodeURIComponent(first.id)}.ics?openExternalBrowser=1">加入行事曆</a></div></div>`}
 </div>`);
 }
 
