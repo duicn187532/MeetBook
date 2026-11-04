@@ -81,10 +81,10 @@ const AddToCalendar = ({
         <CalendarPlus size={20} />
       </button>
       {open && (
-        <div className={`absolute ${position === "top-left" ? "left-0" : "right-0"} top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left`}>
+        <div className={`absolute ${position === "top-left" ? "left-0" : "right-0"} top-full mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left`}>
           <a className={itemClass} href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
             <CalendarPlus size={16} className="shrink-0" />
-            加到 Google 行事曆
+            Google
           </a>
           <button type="button" className={itemClass} onClick={sendToWork}>
             <Share2 size={16} className="shrink-0" />

@@ -112,7 +112,7 @@ describe("預約結果頁 /b/ok 的「加到行事曆」", () => {
     const done = await bookAndOpen({ room: "A101,A102", date, start: "14:00", end: "15:00", title: "</script><b>週會", people: "6", user: "001234", password: "" });
     const html = done.text;
     expect(html).toContain("<h3>加到行事曆</h3>");
-    const href = /<a class="btn btn-outline" href="([^"]+)" target="_blank" rel="noopener">加到 Google 行事曆<\/a>/.exec(html)![1];
+    const href = /<a class="btn btn-outline" href="([^"]+)" target="_blank" rel="noopener">Google<\/a>/.exec(html)![1];
     const google = new URL(href.replace(/&amp;/g, "&"));
     expect(google.searchParams.get("text")).toBe("</script><b>週會");
     expect(google.searchParams.get("location")).toBe("數金部 11F Alpha、Beta 會議室");

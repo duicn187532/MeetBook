@@ -387,7 +387,7 @@ function calendarSection(rooms: string[], row: BookedRow, booker: string) {
   return `<div class="cal">
 <h3>加到行事曆</h3>
 <div class="buttons">
-<a class="btn btn-outline" href="${escapeHtml(googleCalendarUrl(eventOf(rooms, row, booker)))}" target="_blank" rel="noopener">加到 Google 行事曆</a>
+<a class="btn btn-outline" href="${escapeHtml(googleCalendarUrl(eventOf(rooms, row, booker)))}" target="_blank" rel="noopener">Google</a>
 <button class="btn btn-outline" type="button" id="ics">分享 ics</button>
 </div>
 </div>`;
