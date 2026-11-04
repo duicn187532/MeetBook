@@ -73,6 +73,21 @@ export function calendarFileUrl(bookingId: string): string {
   return url.toString();
 }
 
+// 讀取 .ics 行事曆檔，給「分享 ics」使用；檔名依開始時間（台北時間）命名，例如 meeting-20261111-1400.ics
+export async function fetchCalendarFile(bookingId: string): Promise<File> {
+  const url = new URL(`../../cal/${encodeURIComponent(bookingId)}.ics`, new URL(API_URL, window.location.href));
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`行事曆檔讀取失敗: ${res.status}`);
+  const text = await res.text();
+  const m = /DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})\d{2}Z/.exec(text);
+  let name = "meeting.ics";
+  if (m) {
+    const t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) + 8 * 3600_000).toISOString();
+    name = `meeting-${t.slice(0, 10).replace(/-/g, "")}-${t.slice(11, 16).replace(":", "")}.ics`;
+  }
+  return new File([text], name, { type: "text/calendar" });
+}
+
 export async function submitBookingApi(bookingData: BookingPayload): Promise<BookingApiResponse> {
   try {
     const res = await apiFetch("", {

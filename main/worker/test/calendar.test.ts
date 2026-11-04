@@ -100,13 +100,24 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     return res.headers.get("location")!;
   }
 
-  it("/b/ok 只有「加入行事曆」連結（連到 .ics）；沒有 Google 連結、沒有額外 script", async () => {
+  it("/b/ok 有「加入行事曆」連結（連到 .ics）與「分享 ics」按鈕；沒有 Google 連結", async () => {
     const location = await book({ room: "A101,A102", date: nextWednesday(), start: "14:00", end: "15:00", title: "週會", people: "6", user: "001234", password: "" });
     const [first] = await rows();
     const html = (await api("GET", location)).text;
     expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics?openExternalBrowser=1">加入行事曆</a>`);
     expect(html).not.toContain("calendar.google.com");
-    expect(html).not.toContain("navigator.share");
+    expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">分享 ics</button>');
+    // 分享用的 .ics 放在有 nonce 的 script 中，與 /cal 回傳的內容相同（DTSTAMP 除外）
+    // nonce 每次請求都不同，同一個回應中讀取
+    const res2 = await api("GET", location);
+    const nonce = /script-src 'nonce-([0-9a-f]{32})'/.exec(res2.headers.get("content-security-policy")!)![1];
+    const page2 = res2.text;
+    const script = page2.split(`<script nonce="${nonce}">`)[1]?.split("</script>")[0] ?? "";
+    const embedded = JSON.parse(/const ICS = (".*?");\n/.exec(script)![1]) as string;
+    const served = (await api("GET", `/cal/${first.id}.ics`)).text;
+    const noStamp = (t: string) => t.replace(/DTSTAMP:\d{8}T\d{6}Z/, "");
+    expect(noStamp(embedded)).toBe(noStamp(served));
+    expect(script).toContain("navigator.share({ files: [file] })");
   });
 
   it("回傳 .ics：標頭正確；多間會議室列在地點；會議名稱與預約人；不含行編與編輯密碼", async () => {

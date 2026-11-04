@@ -1,18 +1,109 @@
-import { CalendarPlus } from "lucide-react";
-import { calendarFileUrl } from "../api/meetingApi";
+import { useEffect, useRef, useState } from "react";
+import { CalendarPlus, Share2 } from "lucide-react";
+import { calendarFileUrl, fetchCalendarFile } from "../api/meetingApi";
 
-// 加入行事曆：一個日曆小圖示，點一下開啟這筆預約的 .ics 行事曆檔（由後端 /cal/:id.ics 產生）。
-// iPhone 會顯示「加入行事曆」；電腦下載後點開即可加入 Outlook 等公司行事曆；部分 Android 內建行事曆可直接開啟。
-// 只顯示圖示，不加文字說明；position 決定圖示在視窗左上角或右上角。
-const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "top-left" | "top-right" }) => (
-  <a
-    href={calendarFileUrl(bookingId)}
-    className={`absolute z-20 top-3 ${position === "top-left" ? "left-3" : "right-3"} w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100`}
-    aria-label="加入行事曆"
-    title="加入行事曆"
-  >
-    <CalendarPlus size={20} />
-  </a>
-);
+// 加入行事曆：一個日曆小圖示，點了展開兩個選項（只顯示圖示與選項名稱，不加文字說明）
+// - 加入行事曆：開啟這筆預約的 .ics（iPhone 顯示「加入行事曆」；電腦下載後點開即可加入 Outlook 等公司行事曆）
+// - 分享 ics：以手機的分享選單送出 .ics（例如寄到公司信箱）；不支援分享檔案時（電腦、部分 Android）改為下載
+// position 決定圖示在視窗左上角或右上角，選單也跟著靠左或靠右。
+
+function canShareFile(file: File): boolean {
+  try {
+    return typeof navigator.canShare === "function" && navigator.canShare({ files: [file] });
+  } catch {
+    return false;
+  }
+}
+
+function download(file: File) {
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = file.name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "top-left" | "top-right" }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  // 展開選單時先讀好 .ics：分享必須在點擊當下呼叫，等網路回應再分享會被瀏覽器擋下
+  const fileRef = useRef<Promise<File> | null>(null);
+  const ready = useRef<File | null>(null);
+
+  useEffect(() => {
+    fileRef.current = null;
+    ready.current = null;
+  }, [bookingId]);
+
+  function preload() {
+    if (fileRef.current) return;
+    fileRef.current = fetchCalendarFile(bookingId);
+    fileRef.current.then((f) => (ready.current = f)).catch(() => (fileRef.current = null));
+  }
+
+  // 點選單外面就收起
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [open]);
+
+  async function share() {
+    try {
+      const file = ready.current ?? (await (fileRef.current ?? fetchCalendarFile(bookingId)));
+      if (canShareFile(file)) {
+        try {
+          await navigator.share({ files: [file] });
+          setOpen(false);
+          return;
+        } catch (e) {
+          if (e instanceof DOMException && e.name === "AbortError") return; // 使用者關閉分享選單
+        }
+      }
+      download(file);
+      setOpen(false);
+    } catch {
+      // 讀取失敗時改為直接開啟行事曆檔
+      window.location.href = calendarFileUrl(bookingId);
+    }
+  }
+
+  const itemClass = "flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 text-left hover:bg-gray-50";
+  return (
+    <div ref={menuRef} className={`absolute z-20 top-3 ${position === "top-left" ? "left-3" : "right-3"}`}>
+      <button
+        type="button"
+        onClick={() => {
+          preload();
+          setOpen((v) => !v);
+        }}
+        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+        aria-label="加入行事曆"
+        aria-expanded={open}
+        title="加入行事曆"
+      >
+        <CalendarPlus size={20} />
+      </button>
+      {open && (
+        <div className={`absolute ${position === "top-left" ? "left-0" : "right-0"} top-full mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left`}>
+          <a className={itemClass} href={calendarFileUrl(bookingId)} onClick={() => setOpen(false)}>
+            <CalendarPlus size={16} className="shrink-0" />
+            加入行事曆
+          </a>
+          <button type="button" className={itemClass} onClick={share}>
+            <Share2 size={16} className="shrink-0" />
+            分享 ics
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default AddToCalendar;

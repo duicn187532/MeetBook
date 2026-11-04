@@ -129,7 +129,7 @@ input:focus{border-color:#f08b42}
 
 const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 
-function page(c: Ctx, title: string, body: string, status = 200) {
+function page(c: Ctx, title: string, body: string, status = 200, script = "") {
   const nonce = crypto.randomUUID().replace(/-/g, "");
   const html = `<!doctype html>
 <html lang="zh-Hant">
@@ -150,6 +150,7 @@ for (const f of document.querySelectorAll("form")) f.addEventListener("submit", 
   const b = f.querySelector("button[type=submit]");
   if (b) { b.disabled = true; b.textContent = "預約中…"; }
 });
+${script}
 </script>
 </body>
 </html>`;
@@ -368,8 +369,32 @@ ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
 <div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
-${first.cancelled ? "" : `<div class="cal"><div class="buttons"><a class="btn btn-outline" href="/cal/${encodeURIComponent(first.id)}.ics?openExternalBrowser=1">加入行事曆</a></div></div>`}
-</div>`);
+${first.cancelled ? "" : `<div class="cal"><div class="buttons"><a class="btn btn-outline" href="/cal/${encodeURIComponent(first.id)}.ics?openExternalBrowser=1">加入行事曆</a><button class="btn btn-outline" type="button" id="ics">分享 ics</button></div></div>`}
+</div>`, 200, first.cancelled ? "" : shareScript(icsFile(eventOf(group.map((r) => r.room), first, booker)), icsFileName(first.start_time)));
+}
+
+// 「分享 ics」：以手機的分享選單送出 .ics（檔案內容直接放在頁面中，點擊當下就能分享）；不支援分享檔案時改為下載
+function shareScript(ics: string, name: string) {
+  // JSON 中的 < 轉成 \u003c，避免內容提前結束 <script>
+  const json = (v: string) => JSON.stringify(v).replace(/</g, "\\u003c");
+  return `const ICS = ${json(ics)};
+const NAME = ${json(name)};
+const shareButton = document.getElementById("ics");
+if (shareButton) shareButton.addEventListener("click", async () => {
+  const file = new File([ICS], NAME, { type: "text/calendar" });
+  let canShare = false;
+  try { canShare = !!navigator.canShare && navigator.canShare({ files: [file] }); } catch {}
+  if (canShare) {
+    try { await navigator.share({ files: [file] }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(file);
+  a.download = NAME;
+  document.body.append(a);
+  a.click();
+  a.remove();
+});`;
 }
 
 // ===== 加到行事曆 =====
