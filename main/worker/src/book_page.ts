@@ -14,7 +14,7 @@ import { createBooking, findUserStrict } from "./bookings.ts";
 import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
 import { WEEKEND_MESSAGE } from "./booking_rules.ts";
 import { site } from "./site.ts";
-import { bookingEvent, icsFile, icsFileName } from "./calendar.ts";
+import { bookingEvent, googleCalendarUrl, icsFile, icsFileName } from "./calendar.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
@@ -350,16 +350,17 @@ async function loadBooking(db: D1Database, id: string): Promise<{ first: BookedR
   return { first, group, booker: first.user_name || first.user_id?.slice(-4) || "" };
 }
 
-/** GET /b/ok：預約結果（以預約 id 查詢） */
+/** GET /b/ok：預約結果（以預約 id 查詢）；v=info 時標題為「預約資訊」（從網站或 LINE 開啟某筆預約時） */
 export async function bookDone(c: Ctx) {
   const found = await loadBooking(c.env.DB, c.req.query("id") ?? "");
   if (!found) return errorPage(c, ["找不到這筆預約"]);
   const { first, group, booker } = found;
   const { date, hhmm: start } = taipeiParts(first.start_time);
   const noPassword = first.edit_password === "";
-  return page(c, "預約成功", `<div class="card">
+  const heading = c.req.query("v") === "info" ? "預約資訊" : "預約成功";
+  return page(c, heading, `<div class="card">
 <div class="icon ok">${CHECK_SVG}</div>
-<h2>${first.cancelled ? "這筆預約已取消" : "預約成功"}</h2>
+<h2>${first.cancelled ? "這筆預約已取消" : heading}</h2>
 <div class="summary">
 <div>${roomPills(group.map((r) => r.room))}</div>
 <div class="when">${escapeHtml(whenText(date, start, hhmm(first.end_time)))}</div>
@@ -369,16 +370,44 @@ ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
 <div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
-${first.cancelled ? "" : `<div class="cal"><div class="buttons"><a class="btn btn-outline" href="/cal/${encodeURIComponent(first.id)}.ics?openExternalBrowser=1">加入行事曆</a><button class="btn btn-outline" type="button" id="ics">分享 ics</button></div></div>`}
-</div>`, 200, first.cancelled ? "" : shareScript(icsFile(eventOf(group.map((r) => r.room), first, booker)), icsFileName(first.start_time)));
+${first.cancelled ? "" : calendarButtons(first.id)}
+</div>`, 200, first.cancelled ? "" : calendarScript(icsFile(eventOf(group.map((r) => r.room), first, booker)), icsFileName(first.start_time)));
 }
 
-// 「分享 ics」：以手機的分享選單送出 .ics（檔案內容直接放在頁面中，點擊當下就能分享）；不支援分享檔案時改為下載
-function shareScript(ics: string, name: string) {
+// 加入行事曆、Google、分享 ics 三個按鈕
+function calendarButtons(id: string) {
+  const path = `/cal/${encodeURIComponent(id)}`;
+  return `<div class="cal"><div class="buttons">
+<a class="btn btn-outline" id="add" href="${path}.ics">加入行事曆</a>
+<a class="btn btn-outline" href="${path}/google" target="_blank" rel="noopener">Google</a>
+<button class="btn btn-outline" type="button" id="ics">分享 ics</button>
+</div></div>`;
+}
+
+// .ics 內容直接放在頁面中：
+// - 加入行事曆：iPhone 以頁面中的檔案內容開啟（網址形式的 .ics 會被 iOS 當成「訂閱行事曆」）；
+//   在 LINE 內建瀏覽器中改用手機預設瀏覽器重新開啟這一頁；其他裝置照連結下載 .ics
+// - 分享 ics：以手機的分享選單送出（點擊當下就能分享）；不支援分享檔案時改為下載
+function calendarScript(ics: string, name: string) {
   // JSON 中的 < 轉成 \u003c，避免內容提前結束 <script>
   const json = (v: string) => JSON.stringify(v).replace(/</g, "\\u003c");
   return `const ICS = ${json(ics)};
 const NAME = ${json(name)};
+const UA = navigator.userAgent;
+const IN_LINE = / Line[/]/i.test(UA);
+const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const addButton = document.getElementById("add");
+if (addButton) addButton.addEventListener("click", (e) => {
+  if (IN_LINE) {
+    e.preventDefault();
+    const u = new URL(location.href);
+    u.searchParams.set("openExternalBrowser", "1");
+    location.href = u.toString();
+  } else if (IS_IOS) {
+    e.preventDefault();
+    location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ICS);
+  }
+});
 const shareButton = document.getElementById("ics");
 if (shareButton) shareButton.addEventListener("click", async () => {
   const file = new File([ICS], NAME, { type: "text/calendar" });
@@ -410,9 +439,21 @@ function eventOf(rooms: string[], row: BookedRow, booker: string) {
   });
 }
 
+/** GET /cal/:id/google：轉到 Google 行事曆的新增活動頁（已取消或找不到時回 404） */
+export async function calendarGoogle(c: Ctx) {
+  const found = await loadBooking(c.env.DB, c.req.param("id") ?? "");
+  if (!found || found.first.cancelled) {
+    return c.text("找不到這筆預約（可能已取消）", 404, { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" });
+  }
+  const { first, group, booker } = found;
+  c.header("Cache-Control", "no-store");
+  c.header("X-Robots-Tag", "noindex");
+  return c.redirect(googleCalendarUrl(eventOf(group.map((r) => r.room), first, booker)), 302);
+}
+
 /**
  * GET /cal/:id.ics：這筆預約的 .ics 行事曆檔。
- * iPhone 打開後顯示「加入行事曆」；電腦下載後點開即加入 Outlook 等行事曆；部分 Android 內建行事曆可直接開啟。
+ * 電腦下載後點開即加入 Outlook 等行事曆；部分 Android 內建行事曆可直接開啟（iPhone 由頁面以檔案內容開啟，見 calendarScript）。
  * 內容與網站公開的資料相同（會議名稱、會議室、時間、預約人），不含行編與編輯密碼；已取消的預約回 404。
  */
 export async function calendarFile(c: Ctx) {

@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CalendarPlus, Share2 } from "lucide-react";
-import { calendarFileUrl, fetchCalendarFile } from "../api/meetingApi";
+import { calendarFileUrl, calendarGoogleUrl, calendarPageUrl, fetchCalendarFile } from "../api/meetingApi";
 
-// 加入行事曆：一個日曆小圖示，點了展開兩個選項（只顯示圖示與選項名稱，不加文字說明）
-// - 加入行事曆：開啟這筆預約的 .ics（iPhone 顯示「加入行事曆」；電腦下載後點開即可加入 Outlook 等公司行事曆）
+// 加入行事曆：一個日曆小圖示，點了展開三個選項（只顯示圖示與選項名稱，不加文字說明）
+// - 加入行事曆：iPhone 以檔案內容開啟（網址形式的 .ics 會被 iOS 當成「訂閱行事曆」）；
+//   LINE 內建瀏覽器打不開 .ics，改用手機預設瀏覽器開啟這筆預約的資訊頁；電腦等其他裝置下載 .ics 後點開
+// - Google：Google 行事曆新增活動頁（一定是新增單一活動）
 // - 分享 ics：以手機的分享選單送出 .ics（例如寄到公司信箱）；不支援分享檔案時（電腦、部分 Android）改為下載
 // position 決定圖示在視窗左上角或右上角，選單也跟著靠左或靠右。
+
+const UA = navigator.userAgent;
+const IN_LINE = / Line[/]/i.test(UA);
+const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 function canShareFile(file: File): boolean {
   try {
@@ -25,6 +31,14 @@ function download(file: File) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
+
+// Google 行事曆選項的圖示（單色 G，與其他圖示風格一致）
+const GoogleIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
+    <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+    <path d="M20 12h-8" />
+  </svg>
+);
 
 const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "top-left" | "top-right" }) => {
   const [open, setOpen] = useState(false);
@@ -53,6 +67,25 @@ const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "
     document.addEventListener("pointerdown", close);
     return () => document.removeEventListener("pointerdown", close);
   }, [open]);
+
+  async function addToCalendar(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!IN_LINE && !IS_IOS) {
+      setOpen(false); // 照連結下載 .ics
+      return;
+    }
+    e.preventDefault();
+    setOpen(false);
+    if (IN_LINE) {
+      window.location.href = calendarPageUrl(bookingId);
+      return;
+    }
+    try {
+      const file = ready.current ?? (await (fileRef.current ?? fetchCalendarFile(bookingId)));
+      window.location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(await file.text());
+    } catch {
+      window.location.href = calendarFileUrl(bookingId);
+    }
+  }
 
   async function share() {
     try {
@@ -92,9 +125,13 @@ const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "
       </button>
       {open && (
         <div className={`absolute ${position === "top-left" ? "left-0" : "right-0"} top-full mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left`}>
-          <a className={itemClass} href={calendarFileUrl(bookingId)} onClick={() => setOpen(false)}>
+          <a className={itemClass} href={calendarFileUrl(bookingId)} onClick={addToCalendar}>
             <CalendarPlus size={16} className="shrink-0" />
             加入行事曆
+          </a>
+          <a className={itemClass} href={calendarGoogleUrl(bookingId)} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
+            <GoogleIcon />
+            Google
           </a>
           <button type="button" className={itemClass} onClick={share}>
             <Share2 size={16} className="shrink-0" />

@@ -100,12 +100,12 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     return res.headers.get("location")!;
   }
 
-  it("/b/ok 有「加入行事曆」連結（連到 .ics）與「分享 ics」按鈕；沒有 Google 連結", async () => {
+  it("/b/ok 有「加入行事曆」「Google」「分享 ics」；iPhone 以頁面中的檔案內容開啟、LINE 中改用預設瀏覽器", async () => {
     const location = await book({ room: "A101,A102", date: nextWednesday(), start: "14:00", end: "15:00", title: "週會", people: "6", user: "001234", password: "" });
     const [first] = await rows();
     const html = (await api("GET", location)).text;
-    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics?openExternalBrowser=1">加入行事曆</a>`);
-    expect(html).not.toContain("calendar.google.com");
+    expect(html).toContain(`<a class="btn btn-outline" id="add" href="/cal/${first.id}.ics">加入行事曆</a>`);
+    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}/google" target="_blank" rel="noopener">Google</a>`);
     expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">分享 ics</button>');
     // 分享用的 .ics 放在有 nonce 的 script 中，與 /cal 回傳的內容相同（DTSTAMP 除外）
     // nonce 每次請求都不同，同一個回應中讀取
@@ -118,6 +118,8 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     const noStamp = (t: string) => t.replace(/DTSTAMP:\d{8}T\d{6}Z/, "");
     expect(noStamp(embedded)).toBe(noStamp(served));
     expect(script).toContain("navigator.share({ files: [file] })");
+    expect(script).toContain('location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ICS);');
+    expect(script).toContain('u.searchParams.set("openExternalBrowser", "1");');
   });
 
   it("回傳 .ics：標頭正確；多間會議室列在地點；會議名稱與預約人；不含行編與編輯密碼", async () => {
@@ -145,6 +147,32 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     }
   });
 
+  it("/cal/:id/google 轉到 Google 行事曆的新增活動頁", async () => {
+    const date = nextWednesday();
+    await book({ room: "A101,A102", date, start: "14:00", end: "15:00", title: "週會", people: "6", user: "001234", password: "" });
+    const [first] = await rows();
+    const res = await app.fetch(new Request(`https://w.test/cal/${first.id}/google`, { redirect: "manual" }), env);
+    expect(res.status).toBe(302);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    const url = new URL(res.headers.get("location")!);
+    expect(url.origin + url.pathname).toBe("https://calendar.google.com/calendar/render");
+    expect(url.searchParams.get("action")).toBe("TEMPLATE");
+    expect(url.searchParams.get("text")).toBe("週會");
+    expect(url.searchParams.get("dates")).toBe(`${date.replace(/-/g, "")}T060000Z/${date.replace(/-/g, "")}T070000Z`);
+    expect(url.searchParams.get("location")).toBe("數金部 11F Alpha、Beta 會議室");
+    expect(url.searchParams.get("details")).toContain("預約人：測試員");
+    expect(url.searchParams.get("details")).not.toContain("001234");
+    expect((await api("GET", "/cal/nope/google")).status).toBe(404);
+  });
+
+  it("/b/ok?v=info 的標題是「預約資訊」", async () => {
+    const location = await book({ room: "A103", date: nextWednesday(), start: "09:00", end: "10:00", title: "x", people: "1", user: "001234", password: "" });
+    expect((await api("GET", location)).text).toContain("<h2>預約成功</h2>");
+    const info = (await api("GET", `${location}&v=info`)).text;
+    expect(info).toContain("<h2>預約資訊</h2>");
+    expect(info).toContain("<title>預約資訊｜");
+  });
+
   it("找不到、已取消、格式不對的 id 都回 404", async () => {
     await book({ room: "A101", date: nextWednesday(), start: "10:00", end: "11:00", title: "x", people: "1", user: "001234", password: "" });
     const [row] = await rows();
@@ -154,6 +182,7 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     expect(cancelled.status).toBe(404);
     expect(cancelled.text).toContain("找不到這筆預約");
     expect((await api("GET", `/b/ok?id=${row.id}`)).text).not.toContain("加入行事曆");
+    expect((await api("GET", `/cal/${row.id}/google`)).status).toBe(404);
     expect((await api("GET", "/cal/nope.ics")).status).toBe(404);
     expect((await api("GET", `/cal/${"a".repeat(65)}.ics`)).status).toBe(404);
     expect((await api("GET", "/cal/a'b.ics")).status).toBe(404);
