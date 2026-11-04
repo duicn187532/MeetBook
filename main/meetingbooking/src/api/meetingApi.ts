@@ -80,6 +80,17 @@ export const calendarFileUrl = (bookingId: string) => withExternal(backendUrl(`c
 // 轉到 Google 行事曆新增活動頁（<後端>/cal/<id>/google）
 export const calendarGoogleUrl = (bookingId: string) => withExternal(backendUrl(`cal/${encodeURIComponent(bookingId)}/google`));
 
+// 取得 Google 行事曆新增活動頁的網址（calendar.google.com）。直接連到這個網址，iPhone 才會開 Google 日曆 App
+export async function fetchGoogleCalendarUrl(bookingId: string): Promise<string> {
+  const url = backendUrl(`cal/${encodeURIComponent(bookingId)}/google`);
+  url.searchParams.set("format", "json");
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Google 行事曆網址讀取失敗: ${res.status}`);
+  const body = await res.json();
+  if (typeof body?.url !== "string" || !body.url.startsWith("https://calendar.google.com/")) throw new Error("Google 行事曆網址格式不正確");
+  return body.url;
+}
+
 // 讀取 .ics 行事曆檔，給「分享 ics」使用；檔名依開始時間（台北時間）命名，例如 meeting-20261111-1400.ics
 export async function fetchCalendarFile(bookingId: string): Promise<File> {
   const res = await fetch(backendUrl(`cal/${encodeURIComponent(bookingId)}.ics`));

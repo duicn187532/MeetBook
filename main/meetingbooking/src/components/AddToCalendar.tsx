@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { CalendarPlus, Share2 } from "lucide-react";
-import { calendarFileUrl, calendarGoogleUrl, fetchCalendarFile } from "../api/meetingApi";
+import { calendarFileUrl, calendarGoogleUrl, fetchCalendarFile, fetchGoogleCalendarUrl } from "../api/meetingApi";
 
 // 加入行事曆：一個日曆小圖示，點了展開三個選項（只顯示圖示與選項名稱，不加文字說明）。不會另開本系統的網頁。
 // - 加入行事曆：在同一頁開啟這筆預約的 .ics（iPhone Safari 顯示行事曆畫面；電腦下載後點開）。
 //   網址帶 openExternalBrowser=1：在 LINE 內建瀏覽器中直接交給手機預設瀏覽器開啟 .ics
-// - Google：Google 行事曆新增活動頁；在 LINE 中同樣交給預設瀏覽器（才有已登入的 Google 帳號）
+// - Google：直接連到 calendar.google.com 的新增活動頁，iPhone 有安裝 Google 日曆 App 時會開 App
+//   （經過本系統轉址只會開網頁）；在 LINE 中加上 openExternalBrowser=1 交給手機處理，不在 LINE 裡登入 Google
 // - 分享 ics：以手機的分享選單送出 .ics（例如寄到公司信箱）；不支援分享檔案時（電腦、部分 Android）改為下載
 // position 決定圖示在視窗左上角或右上角，選單也跟著靠左或靠右。
 
-// LINE 內建瀏覽器只會攔截同一頁的網址切換；另開分頁（target=_blank）時改為同一頁開啟
+// LINE 內建瀏覽器只會攔截同一頁的網址切換；iPhone 在同一頁點 Google 連結才確定會交給 Google 日曆 App。
+// 這兩種情況 Google 不另開分頁，其他（電腦等）另開分頁
 const IN_LINE = / Line[/]/i.test(navigator.userAgent);
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 function canShareFile(file: File): boolean {
   try {
@@ -45,13 +48,17 @@ const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "
   // 展開選單時先讀好 .ics：分享必須在點擊當下呼叫，等網路回應再分享會被瀏覽器擋下
   const fileRef = useRef<Promise<File> | null>(null);
   const ready = useRef<File | null>(null);
+  // Google 新增活動頁的網址；讀到之前先用本系統的轉址連結
+  const [googleUrl, setGoogleUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fileRef.current = null;
     ready.current = null;
+    setGoogleUrl(null);
   }, [bookingId]);
 
   function preload() {
+    if (!googleUrl) fetchGoogleCalendarUrl(bookingId).then(setGoogleUrl).catch(() => {});
     if (fileRef.current) return;
     fileRef.current = fetchCalendarFile(bookingId);
     fileRef.current.then((f) => (ready.current = f)).catch(() => (fileRef.current = null));
@@ -111,8 +118,8 @@ const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "
           </a>
           <a
             className={itemClass}
-            href={calendarGoogleUrl(bookingId)}
-            {...(IN_LINE ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+            href={googleUrl ? (IN_LINE ? `${googleUrl}&openExternalBrowser=1` : googleUrl) : calendarGoogleUrl(bookingId)}
+            {...(IN_LINE || IS_IOS ? {} : { target: "_blank", rel: "noopener noreferrer" })}
             onClick={() => setOpen(false)}
           >
             <GoogleIcon />
