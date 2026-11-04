@@ -4,7 +4,7 @@ UPDATE changelog
 SET sections = json_insert(
       sections,
       '$[' || (SELECT key FROM json_each(changelog.sections) WHERE json_extract(value, '$.title') = '新功能' LIMIT 1) || '].items[#]',
-      json('{"text":"預約後可以加到行事曆：在預約成功視窗或預約資訊視窗點日曆圖示，選擇加到 Google 行事曆，或匯出 ics 行事曆檔（寄到自己的公司信箱，點開附件即可加入公司行事曆）。AI 預約完成頁與 LINE 預約成功回覆也有相同功能。"}')
+      json('{"text":"預約後可以加到行事曆：在預約成功視窗或預約資訊視窗點日曆圖示，選擇加到 Google 行事曆，或分享 ics 行事曆檔（寄到自己的公司信箱，點開附件即可加入公司行事曆）。AI 預約完成頁與 LINE 預約成功回覆也有相同功能。"}')
     ),
     updated_time = CAST(strftime('%s', 'now') AS INTEGER) * 1000
 WHERE version = 'v2.4.0'

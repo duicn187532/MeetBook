@@ -117,7 +117,7 @@ describe("預約結果頁 /b/ok 的「加到行事曆」", () => {
     expect(google.searchParams.get("text")).toBe("</script><b>週會");
     expect(google.searchParams.get("location")).toBe("數金部 11F Alpha、Beta 會議室");
     expect(google.searchParams.get("details")).toContain("預約人：測試員");
-    expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">匯出 ics</button>');
+    expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">分享 ics</button>');
     // 不顯示文字說明
     expect(html).not.toContain('id="ics-hint"');
     // 會議名稱只以跳脫後的形式出現，不會提早結束 <script> 或插入標籤
