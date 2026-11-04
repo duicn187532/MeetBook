@@ -123,15 +123,13 @@ input:focus{border-color:#f08b42}
 .btn-cancel{background:#d1d5db;color:#374151}
 .btn-ok{background:#87ca5a;color:#fff}
 .conflict{margin-bottom:12px}
-.cal{margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb}
-.cal h3{margin:0 0 8px;font-size:14px;font-weight:700;text-align:center;color:#374151}
-.cal .buttons{flex-direction:column;gap:8px;margin-top:0}
+.cal .buttons{margin-top:8px}
 .btn-outline{background:#fff;border:2px solid #dfbb00;color:#374151}
 `;
 
 const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 
-function page(c: Ctx, title: string, body: string, status = 200, script = "") {
+function page(c: Ctx, title: string, body: string, status = 200) {
   const nonce = crypto.randomUUID().replace(/-/g, "");
   const html = `<!doctype html>
 <html lang="zh-Hant">
@@ -152,7 +150,6 @@ for (const f of document.querySelectorAll("form")) f.addEventListener("submit", 
   const b = f.querySelector("button[type=submit]");
   if (b) { b.disabled = true; b.textContent = "預約中…"; }
 });
-${script}
 </script>
 </body>
 </html>`;
@@ -341,18 +338,23 @@ interface BookedRow {
   cancelled: number;
 }
 
-/** GET /b/ok：預約結果（以預約 id 查詢；id 為隨機 UUID） */
-export async function bookDone(c: Ctx) {
-  const id = c.req.query("id") ?? "";
-  const first = id
-    ? await c.env.DB.prepare("SELECT * FROM bookings WHERE id = ?").bind(id).first<BookedRow>()
-    : null;
-  if (!first) return errorPage(c, ["找不到這筆預約"]);
+// 以預約 id 讀取這筆預約與同時預約的其他會議室（id 為隨機 UUID，無法猜測）
+async function loadBooking(db: D1Database, id: string): Promise<{ first: BookedRow; group: BookedRow[]; booker: string } | null> {
+  if (!/^[A-Za-z0-9-]{1,64}$/.test(id)) return null;
+  const first = await db.prepare("SELECT * FROM bookings WHERE id = ?").bind(id).first<BookedRow>();
+  if (!first) return null;
   const group = first.group_id
-    ? (await c.env.DB.prepare("SELECT * FROM bookings WHERE group_id = ? ORDER BY rowid").bind(first.group_id).all<BookedRow>()).results
+    ? (await db.prepare("SELECT * FROM bookings WHERE group_id = ? ORDER BY rowid").bind(first.group_id).all<BookedRow>()).results
     : [first];
+  return { first, group, booker: first.user_name || first.user_id?.slice(-4) || "" };
+}
+
+/** GET /b/ok：預約結果（以預約 id 查詢） */
+export async function bookDone(c: Ctx) {
+  const found = await loadBooking(c.env.DB, c.req.query("id") ?? "");
+  if (!found) return errorPage(c, ["找不到這筆預約"]);
+  const { first, group, booker } = found;
   const { date, hhmm: start } = taipeiParts(first.start_time);
-  const booker = first.user_name || first.user_id?.slice(-4) || "";
   const noPassword = first.edit_password === "";
   return page(c, "預約成功", `<div class="card">
 <div class="icon ok">${CHECK_SVG}</div>
@@ -366,8 +368,8 @@ ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
 <div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
-${first.cancelled ? "" : calendarSection(group.map((r) => r.room), first, booker)}
-</div>`, 200, first.cancelled ? "" : calendarScript(group.map((r) => r.room), first, booker));
+${first.cancelled ? "" : `<div class="cal"><div class="buttons"><a class="btn btn-outline" href="/cal/${encodeURIComponent(first.id)}.ics">加入行事曆</a></div></div>`}
+</div>`);
 }
 
 // ===== 加到行事曆 =====
@@ -383,35 +385,23 @@ function eventOf(rooms: string[], row: BookedRow, booker: string) {
   });
 }
 
-function calendarSection(rooms: string[], row: BookedRow, booker: string) {
-  return `<div class="cal">
-<h3>加到行事曆</h3>
-<div class="buttons">
-<button class="btn btn-outline" type="button" id="ics">分享 ics</button>
-</div>
-</div>`;
-}
-
-// 手機：以分享選單附上 .ics 行事曆檔；不支援分享檔案時（電腦、部分 Android）改為下載
-function calendarScript(rooms: string[], row: BookedRow, booker: string) {
-  // JSON 中的 < 轉成 \u003c，避免內容提前結束 <script>
-  const json = (v: string) => JSON.stringify(v).replace(/</g, "\\u003c");
-  return `const ICS = ${json(icsFile(eventOf(rooms, row, booker)))};
-const NAME = ${json(icsFileName(row.start_time))};
-const icsButton = document.getElementById("ics");
-const icsFileOf = () => new File([ICS], NAME, { type: "text/calendar" });
-const canShareIcs = () => { try { return !!navigator.canShare && navigator.canShare({ files: [icsFileOf()] }); } catch { return false; } };
-if (icsButton) icsButton.addEventListener("click", async () => {
-  const file = icsFileOf();
-  if (canShareIcs()) {
-    try { await navigator.share({ files: [file] }); return; }
-    catch (e) { if (e && e.name === "AbortError") return; }
+/**
+ * GET /cal/:id.ics：這筆預約的 .ics 行事曆檔。
+ * iPhone 打開後顯示「加入行事曆」；電腦下載後點開即加入 Outlook 等行事曆；部分 Android 內建行事曆可直接開啟。
+ * 內容與網站公開的資料相同（會議名稱、會議室、時間、預約人），不含行編與編輯密碼；已取消的預約回 404。
+ */
+export async function calendarFile(c: Ctx) {
+  const id = (c.req.param("file") ?? "").replace(/\.ics$/i, "");
+  const found = await loadBooking(c.env.DB, id);
+  if (!found || found.first.cancelled) {
+    return c.text("找不到這筆預約（可能已取消）", 404, { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" });
   }
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(file);
-  a.download = NAME;
-  document.body.append(a);
-  a.click();
-  a.remove();
-});`;
+  const { first, group, booker } = found;
+  return c.body(icsFile(eventOf(group.map((r) => r.room), first, booker)), 200, {
+    "Content-Type": "text/calendar; charset=utf-8",
+    "Content-Disposition": `inline; filename="${icsFileName(first.start_time)}"`,
+    "Cache-Control": "no-store",
+    "X-Robots-Tag": "noindex",
+    "X-Content-Type-Options": "nosniff",
+  });
 }

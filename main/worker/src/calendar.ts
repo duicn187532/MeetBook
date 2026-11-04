@@ -1,6 +1,5 @@
 // 加到行事曆：產生 .ics 行事曆檔（Outlook、Notes、Apple 都能讀）。
 // 時間一律以 UTC（結尾 Z）表示，不需附時區定義，各家行事曆都會換成使用者自己的時區顯示。
-// 前端 meetingbooking/src/utils/calendar.ts 有相同的邏輯，修改時請一併調整。
 
 export interface CalendarEvent {
   uid: string;

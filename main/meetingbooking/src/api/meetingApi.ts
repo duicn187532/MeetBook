@@ -65,6 +65,11 @@ export async function fetchNoticesApi(): Promise<Notices> {
   };
 }
 
+// 這筆預約的 .ics 行事曆檔網址（API_URL 為 <後端>/api/bookings/，行事曆檔在 <後端>/cal/<id>.ics）
+export function calendarFileUrl(bookingId: string): string {
+  return new URL(`../../cal/${encodeURIComponent(bookingId)}.ics`, new URL(API_URL, window.location.href)).toString();
+}
+
 export async function submitBookingApi(bookingData: BookingPayload): Promise<BookingApiResponse> {
   try {
     const res = await apiFetch("", {
