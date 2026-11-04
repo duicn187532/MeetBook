@@ -4,9 +4,8 @@ import { BookingForCalendar, bookingEvent, googleCalendarUrl, icsFile, icsFileNa
 
 // 加到行事曆（日曆圖示）：Google 行事曆用一鍵連結；公司行事曆用手機的分享選單把 .ics 行事曆檔寄到公司信箱。
 // 不支援分享檔案時（電腦、部分 Android 瀏覽器）改為下載檔案，由使用者自行附加到信件。
+// 只顯示圖示，不加文字說明。
 
-const DOWNLOAD_HINT = "下載後在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
-const DOWNLOADED_HINT = "已下載行事曆檔：在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
 
 const websiteUrl = () => `${window.location.origin}${import.meta.env.BASE_URL}`;
 
@@ -29,15 +28,12 @@ function download(file: File) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-const SHORT_SHARE_HINT = "選信箱 App 寄給自己的公司信箱，點開附件即可加入行事曆。";
-
 // 一個小日曆圖示；點了才展開兩個選項。className 用來決定圖示在視窗中的位置
 const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCalendar, "website">; className?: string }) => {
   const event = useMemo(() => bookingEvent({ ...booking, website: websiteUrl() }), [booking]);
   const makeFile = () => new File([icsFile(event)], icsFileName(event.start), { type: "text/calendar" });
   const shareable = useMemo(() => canShareFile(new File([""], "meeting.ics", { type: "text/calendar" })), []);
   const [open, setOpen] = useState(false);
-  const [hint, setHint] = useState(shareable ? SHORT_SHARE_HINT : DOWNLOAD_HINT);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 點選單外面就收起
@@ -62,7 +58,7 @@ const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCa
       }
     }
     download(file);
-    setHint(DOWNLOADED_HINT);
+    setOpen(false);
   }
 
   const itemClass = "flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 text-left hover:bg-gray-50";
@@ -79,7 +75,7 @@ const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCa
         <CalendarPlus size={20} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-60 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left">
+        <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left">
           <a className={itemClass} href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
             <CalendarPlus size={16} className="shrink-0" />
             加到 Google 行事曆
@@ -88,7 +84,6 @@ const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCa
             <Mail size={16} className="shrink-0" />
             {shareable ? "寄到公司信箱" : "下載行事曆檔（.ics）"}
           </button>
-          <p className="px-3 pb-2 pt-1 text-xs text-gray-500 leading-relaxed">{hint}</p>
         </div>
       )}
     </div>
