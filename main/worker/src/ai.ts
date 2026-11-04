@@ -1,4 +1,4 @@
-// 給 AI 助理讀的說明頁與查詢頁（純文字）：使用者在 ChatGPT、Claude 等對話中貼上 https://meetbook.pages.dev/ai，
+// 給 AI 助理讀的說明頁與查詢頁（純文字）：使用者在 ChatGPT、Claude 等對話中貼上 <後端網址>/ai，
 // AI 讀取後就能查空檔，並產生「預填預約連結」讓使用者在網站上確認送出（見前端 src/utils/bookingLink.ts）。
 // - GET /ai：說明、預約規則、未來 10 個工作日的空檔（不含預約者姓名），以及每天的詳細頁網址
 // - GET /ai/day/:date：某天各會議室的預約與空檔（與網站公開的資料相同：預約者只顯示姓名，沒有姓名時顯示行編後 4 碼）
@@ -7,10 +7,10 @@
 import type { Context } from "hono";
 import type { Env } from "./env.ts";
 import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
+import { site } from "./site.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
-export const WEBSITE_URL = "https://duicn187532.github.io/MeetBook/";
 const MINUTE = 60_000;
 const DAY = 86_400_000;
 const STEP_MINUTES = 5;
@@ -106,7 +106,7 @@ function nowLine(now: number): string {
 
 // 範例連結不做 URL 編碼，方便 AI 與人閱讀（瀏覽器開啟時會自動處理中文與冒號）
 function exampleLink(origin: string, date: string): string {
-  return `${origin}/b?room=Beta&date=${date}&start=14:00&end=15:00&title=週會&people=6&user=5977`;
+  return `${origin}/b?room=Beta&date=${date}&start=14:00&end=15:00&title=週會&people=6&user=1234`;
 }
 
 function textResponse(c: Ctx, body: string, status = 200) {
@@ -175,7 +175,7 @@ export async function aiGuide(c: Ctx) {
     `- 但每次都要重新開啟 ${origin}/ai（或該日的詳細網址）確認最新的空檔，不要用之前讀到的舊資料，因為別人可能已經預約。`,
     "- 「今天」「明天」「下週三」等日期，以頁面最上面的「現在時間」換算。",
     "",
-    `修改或取消預約：請使用者到網站 ${WEBSITE_URL} 點選該筆預約，輸入預約時設定的編輯密碼。`,
+    `修改或取消預約：請使用者到網站 ${site().website} 點選該筆預約，輸入預約時設定的編輯密碼。`,
   );
   return textResponse(c, lines.join("\n") + "\n");
 }

@@ -150,12 +150,12 @@ Deno.test("LINE 簽章驗證", async () => {
 
 Deno.test("buildBookingRequest 週末不開放快速預約", () => {
   const saturday = Date.parse("2026-10-31T09:00:00+08:00");
-  const r = buildBookingRequest({ title: "會議", start: "10:00", duration: "1hr", user: "5977", room: "A" }, saturday);
+  const r = buildBookingRequest({ title: "會議", start: "10:00", duration: "1hr", user: "4321", room: "A" }, saturday);
   assert(!r.ok);
   assert(r.errors[0].includes("週末"));
   assert(isTaipeiWeekend(saturday));
   assert(!isTaipeiWeekend(Date.parse("2026-11-02T00:10:00+08:00"))); // 台北週一凌晨（UTC 仍是週日）
   assert(isTaipeiWeekend(Date.parse("2026-10-30T16:30:00Z"))); // UTC 週五、台北週六
   const friday = Date.parse("2026-10-30T09:00:00+08:00");
-  assert(buildBookingRequest({ title: "會議", start: "10:00", duration: "1hr", user: "5977", room: "A" }, friday).ok);
+  assert(buildBookingRequest({ title: "會議", start: "10:00", duration: "1hr", user: "4321", room: "A" }, friday).ok);
 });

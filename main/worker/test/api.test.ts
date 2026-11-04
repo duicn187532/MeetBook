@@ -68,7 +68,7 @@ describe("GET /api/bookings", () => {
     expect(data[0]).toEqual({
       id: expect.any(String),
       title: "週會",
-      user: { name: "測試員", extension: "51164", department: { label: "資訊部" }, group: { label: "開發組" } },
+      user: { name: "測試員", extension: "52001", department: { label: "資訊部" }, group: { label: "開發組" } },
       room: "A101",
       participantsNum: 3,
       startTime: "2026-12-01T02:00:00.000Z",
@@ -184,7 +184,7 @@ describe("POST /api/bookings", () => {
   });
 
   it("預約者可用行編（補零／不補零／含檢查碼）或分機查找", async () => {
-    for (const user of ["1234", "001234", "12345", "#51164", "王小明 1234"]) {
+    for (const user of ["1234", "001234", "12345", "#52001", "王小明 1234"]) {
       await resetDb();
       await seedUser();
       expect((await api("POST", "/api/bookings/", payload({ user }))).status, user).toBe(201);
@@ -236,14 +236,14 @@ describe("PATCH /api/bookings/:id/:editPassword", () => {
     return (await rows())[0];
   }
 
-  it("編輯密碼：錯誤 403、正確 200、萬用密碼 87878787 200", async () => {
+  it("編輯密碼：錯誤 403、正確 200、萬用密碼（MASTER_PASSWORD 設定）200", async () => {
     const r = await created();
     expect((await api("PATCH", `/api/bookings/${r.id}/wrong`, { title: "x" })).json).toEqual({
       error: "編輯密碼錯誤，無法更新資料",
     });
     expect((await api("PATCH", `/api/bookings/${r.id}/`, { title: "x" })).status).toBe(403);
     expect((await api("PATCH", `/api/bookings/${r.id}/pw12`, { title: "x" })).status).toBe(200);
-    const m = await api("PATCH", `/api/bookings/${r.id}/87878787`, { title: "y" });
+    const m = await api("PATCH", `/api/bookings/${r.id}/test-master-password`, { title: "y" });
     expect(m.status).toBe(200);
     expect(m.json).toEqual({ success: true, message: "更新成功", updatedIds: [r.id] });
   });

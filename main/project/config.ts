@@ -12,7 +12,8 @@ export const MONGODB_URI = Deno.env.get("MONGODB_URI") || "";
 export const DB_NAME = Deno.env.get("DB_NAME") || "todo_db";
 export const PORT = parseInt(Deno.env.get("PORT") || "8080");
 
-export const CORS_ORIGIN = ENV === "production" ? "https://duicn187532.github.io" : "*";
+// 預約網站的來源（repo 為公開，網址不寫在程式中）；正式環境未設定時不允許跨站請求
+export const CORS_ORIGIN = ENV === "production" ? Deno.env.get("FRONTEND_ORIGIN") || "" : "*";
 
 // LINE 官方帳號（Messaging API）；未設定時 /line/webhook 回 503
 export const LINE_CHANNEL_SECRET = Deno.env.get("LINE_CHANNEL_SECRET") || "";
@@ -25,3 +26,6 @@ export const ADMIN_PASSWORD = Deno.env.get("ADMIN_PASSWORD") || "";
 
 // 遷移切換期間設為 true：舊系統只能查詢，不能寫入（見 read_only.ts）
 export const READ_ONLY = Deno.env.get("READ_ONLY") === "true";
+
+// 萬用編輯密碼：可修改或取消任何預約；未設定或少於 8 個字元時不啟用
+export const MASTER_PASSWORD = Deno.env.get("MASTER_PASSWORD") || "";

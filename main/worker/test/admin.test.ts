@@ -127,25 +127,25 @@ describe("使用者", () => {
     const res = await api(
       "POST",
       "/admin/api/users",
-      { id: "5977", name: " 新同事 ", extension: "51164", department: { code: "strategy" }, group: { code: "company" } },
+      { id: "4321", name: " 新同事 ", extension: "52001", department: { code: "strategy" }, group: { code: "company" } },
       authed(cookie, true),
     );
     expect(res.status).toBe(201);
     expect(res.json.data).toEqual({
-      id: "005977",
+      id: "004321",
       name: "新同事",
-      extension: "51164",
+      extension: "52001",
       department: { code: "strategy", label: "數位策略部" },
       group: { code: "company", label: "法人產品" },
       disabled: false,
     });
-    expect(res.json.warning).toBe("分機 51164 也登記給 測試員（1234）；用分機預約時只會對應到其中一人，建議改用行編預約");
-    const row = await env.DB.prepare("SELECT * FROM users WHERE id = '005977'").first();
+    expect(res.json.warning).toBe("分機 52001 也登記給 測試員（1234）；用分機預約時只會對應到其中一人，建議改用行編預約");
+    const row = await env.DB.prepare("SELECT * FROM users WHERE id = '004321'").first();
     expect(row).toMatchObject({ status: 1, disabled: 0, role_code: "user", role_label: "使用者", email: null });
 
-    const dup = await api("POST", "/admin/api/users", { id: "005977" }, authed(cookie, true));
+    const dup = await api("POST", "/admin/api/users", { id: "004321" }, authed(cookie, true));
     expect(dup.status).toBe(409);
-    expect(dup.json).toEqual({ error: "行編 005977 已存在" });
+    expect(dup.json).toEqual({ error: "行編 004321 已存在" });
     const bad = await api("POST", "/admin/api/users", { id: "abc" }, authed(cookie, true));
     expect(bad.json).toEqual({ error: "行編只能是 1–6 位數字" });
   });

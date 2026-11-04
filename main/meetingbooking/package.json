@@ -3,7 +3,6 @@
   "private": true,
   "version": "2.4.0",
   "type": "module",
-  "homepage": "https://duicn187532.github.io/MeetBook",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

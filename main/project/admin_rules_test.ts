@@ -20,9 +20,9 @@ function booking(start: string, end: string, extra: Partial<BookingDoc> = {}): B
     createdTime: new Date(start),
     title: "t",
     user: {
-      id: "005977",
-      name: "祐晨",
-      extension: "51164",
+      id: "004321",
+      name: "小明",
+      extension: "52001",
       department: { code: "strategy", label: "數位策略部" },
       group: { code: "company", label: "法人產品" },
     },
@@ -40,29 +40,29 @@ function booking(start: string, end: string, extra: Partial<BookingDoc> = {}): B
 }
 
 Deno.test("normalizeUserId 補零成 6 碼並拒絕非數字", () => {
-  assertEquals(normalizeUserId("5977"), "005977");
+  assertEquals(normalizeUserId("4321"), "004321");
   assertEquals(normalizeUserId(" 6812 "), "006812");
   assertThrows(() => normalizeUserId("59a7"));
   assertThrows(() => normalizeUserId("1234567"));
 });
 
 Deno.test("normalizeUserInput 新增時只有行編必填，姓名可留空", () => {
-  assertEquals(normalizeUserInput({ id: "5977" }, false), {
-    id: "005977",
+  assertEquals(normalizeUserInput({ id: "4321" }, false), {
+    id: "004321",
     name: "",
     extension: "",
     department: { code: "", label: "" },
     group: { code: "", label: "" },
   });
   const user = normalizeUserInput(
-    { id: "5977", name: " 祐晨 ", extension: "51164", department: { code: "strategy" }, group: { code: "company" } },
+    { id: "4321", name: " 小明 ", extension: "52001", department: { code: "strategy" }, group: { code: "company" } },
     false,
   );
-  assertEquals(user.name, "祐晨");
+  assertEquals(user.name, "小明");
   assertEquals(user.department, { code: "strategy", label: "數位策略部" });
   assertEquals(user.group, { code: "company", label: "法人產品" });
   assertThrows(() => normalizeUserInput({ name: "a" }, false));
-  assertThrows(() => normalizeUserInput({ id: "5977", extension: "12" }, false), Error, "分機");
+  assertThrows(() => normalizeUserInput({ id: "4321", extension: "12" }, false), Error, "分機");
 });
 
 Deno.test("normalizeOrg 只接受對照表中的部門，且組別必須屬於該部門", () => {
@@ -121,7 +121,7 @@ Deno.test("computeStats 計算使用率、取消率與熱力圖", () => {
     }),
     booking("2026-10-28T09:00:00+08:00", "2026-10-28T10:00:00+08:00", { cancelled: true }),
     // 很舊的資料：user 是字串
-    booking("2026-10-29T10:00:00+08:00", "2026-10-29T10:30:00+08:00", { user: "59773 #51164", participantsNum: 0 }),
+    booking("2026-10-29T10:00:00+08:00", "2026-10-29T10:30:00+08:00", { user: "43219 #52001", participantsNum: 0 }),
     // 區間外
     booking("2026-11-02T09:00:00+08:00", "2026-11-02T10:00:00+08:00"),
   ];
@@ -148,8 +148,8 @@ Deno.test("computeStats 計算使用率、取消率與熱力圖", () => {
   // 週三那筆已取消，不計入
   assertEquals(stats.heatmap[2][nine], 0);
   assertEquals(stats.departments[0].name, "數位策略部");
-  // 筆數排行：祐晨 2 筆排第一；同筆數時以時數較多者在前
-  assertEquals(stats.topBookersByCount[0], { name: "祐晨", count: 2, hours: 3 });
+  // 筆數排行：小明 2 筆排第一；同筆數時以時數較多者在前
+  assertEquals(stats.topBookersByCount[0], { name: "小明", count: 2, hours: 3 });
   assertEquals(stats.topBookersByCount.length, 2);
   assert(stats.departments.some((d) => d.name === "（未分類）"));
 });
@@ -204,10 +204,10 @@ Deno.test("toAdminBooking 轉成後台紀錄，不帶編輯密碼，部門以代
   assert(!JSON.stringify(r).includes("secret"));
   // 舊資料：user 是字串、時間是字串
   const old = toAdminBooking(
-    { ...doc, user: "59773 #51164", startTime: "2026-10-27T01:00:00.000Z", updatedTime: undefined },
+    { ...doc, user: "43219 #52001", startTime: "2026-10-27T01:00:00.000Z", updatedTime: undefined },
     ROOMS,
   );
-  assertEquals(old.name, "59773 #51164");
+  assertEquals(old.name, "43219 #52001");
   assertEquals(old.startTime, "2026-10-27T01:00:00.000Z");
   assertEquals(old.updatedTime, null);
 });

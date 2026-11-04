@@ -55,6 +55,7 @@ import {
   findAlternatives,
 } from "../utils/bookingHelpers";
 import { loadPref, savePref } from "../utils/storage";
+import { CONTACT } from "../config/contact";
 import { buildTodayOverview } from "../utils/todayStatus";
 import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../utils/workdays";
 
@@ -361,7 +362,7 @@ const RoomScheduleView = () => {
     showAlert(
       "error",
       "載入失敗",
-      "預約資料載入失敗，畫面可能不完整，請勿依此判斷是否有空。\n按確定重新載入；若持續發生請通知祐晨 #51164",
+      `預約資料載入失敗，畫面可能不完整，請勿依此判斷是否有空。\n按確定重新載入；若持續發生請通知${CONTACT}`,
     );
     afterAlertClose.current = reloadMeetings;
   }, [loadFailures]);

@@ -1760,7 +1760,7 @@ function openSheet(user) {
   $("f-name").value = user?.name || "";
   $("f-id").value = user ? user.id : "";
   $("f-id").readOnly = !!user;
-  $("f-id-hint").textContent = user ? "行編建立後不能修改" : "不含檢查碼，例如 5977";
+  $("f-id-hint").textContent = user ? "行編建立後不能修改" : "不含檢查碼，例如 4321";
   $("f-ext").value = user?.extension || "";
   updateExtHint();
   fillDeptSelect(user);

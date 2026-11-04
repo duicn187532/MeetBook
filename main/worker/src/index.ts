@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { corsOrigin, type Env } from "./env.ts";
 import { logEvent, setLogLevel } from "./logger.ts";
+import { configureSite } from "./site.ts";
 import { addBooking, getActiveBooked, updateBooking } from "./bookings.ts";
 import { lineWebhook } from "./line_webhook.ts";
 import { adminGuard, adminRouter } from "./admin.ts";
@@ -17,6 +18,7 @@ const app = new Hono<{ Bindings: Env }>({ strict: false });
 
 app.use("*", async (c, next) => {
   setLogLevel(c.env.LOG_LEVEL);
+  configureSite(c.env, new URL(c.req.url).origin);
   await next();
 });
 

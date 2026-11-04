@@ -39,7 +39,7 @@ describe("migration 帶入的更新日誌與公告", () => {
     for (const r of list) expect(parseSections(JSON.parse(r.sections))).toEqual(JSON.parse(r.sections));
     // 實驗性功能標籤也保留
     expect(list[3].sections).toContain('"experimental":true');
-    expect(list[0].sections).toContain("https://meetbook.pages.dev/ai");
+    expect(list[0].sections).toContain("在 LINE 官方帳號傳送「ai」取得");
   });
 });
 
@@ -47,7 +47,7 @@ describe("migration 帶入的公告", () => {
   it("「用 AI 預約」公告：11/4–11/17，內容有網址與 LINE 教學", async () => {
     const a = await env.DB.prepare("SELECT * FROM announcements WHERE id = 'ai-booking-2026-11'").first<Record<string, string>>();
     expect(a).toMatchObject({ title: "可以用 AI 預約會議室了", start_date: "2026-11-04", end_date: "2026-11-17" });
-    expect(a!.body).toContain("https://meetbook.pages.dev/ai");
+    expect(a!.body).toContain("（網址：在 LINE 官方帳號傳送「ai」取得）");
     expect(a!.body).toContain("在 LINE 官方帳號傳送「ai」");
     expect(a!.body.split("\n").length).toBe(7);
   });
@@ -66,7 +66,7 @@ describe("GET /api/notices", () => {
     await insertChangelog("v9.0.0", day(1)); // 還沒到改版日
     const res = await api("GET", "/api/notices");
     expect(res.status).toBe(200);
-    expect(res.headers.get("access-control-allow-origin")).toBe("https://duicn187532.github.io");
+    expect(res.headers.get("access-control-allow-origin")).toBe("https://frontend.test");
     const list = res.json.changelog as { version: string; date: string; sections: unknown }[];
     expect(list.map((e) => e.version)).toEqual(["v3.0.0", "v2.10.0", "v2.9.0"]);
     expect(list[0]).toEqual({ version: "v3.0.0", date: day(0), sections: SECTIONS });

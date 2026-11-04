@@ -40,7 +40,7 @@ Deno.test({
     await db.collection("users").insertOne({
       id: "001234",
       name: "測試員",
-      extension: "51164",
+      extension: "52001",
       department: { code: "D", label: "資訊部" },
       group: { code: "G", label: "開發組" },
     });

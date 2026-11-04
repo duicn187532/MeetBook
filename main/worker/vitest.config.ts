@@ -29,6 +29,11 @@ export default defineConfig({
                 LINE_CHANNEL_SECRET: "test-line-secret",
                 LINE_CHANNEL_ACCESS_TOKEN: "test-line-token",
                 LINE_API_BASE: "https://line.test",
+                // 對外網址與萬用密碼：正式環境由部署時的設定提供，測試用假的值
+                FRONTEND_ORIGIN: "https://frontend.test",
+                WEBSITE_URL: "https://frontend.test/app/",
+                PUBLIC_BASE_URL: "https://public.test",
+                MASTER_PASSWORD: "test-master-password",
                 LOG_LEVEL: "error",
               },
             },

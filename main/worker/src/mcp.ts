@@ -9,10 +9,10 @@ import { logEvent } from "./logger.ts";
 import { createBooking } from "./bookings.ts";
 import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
 import { WEEKEND_MESSAGE } from "./booking_rules.ts";
+import { site } from "./site.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
-export const WEBSITE_URL = "https://duicn187532.github.io/MeetBook/";
 // 支援的協定版本（新的在前）；用戶端要求的版本在清單中就沿用，否則回傳最新的版本
 export const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_INFO = { name: "meetbook", title: "數位金融部會議室預約", version: "1.0.0" };
@@ -32,18 +32,18 @@ const ROOM_DETAILS: Record<string, { seats: number; equipment: string[] }> = {
   A103: { seats: 20, equipment: ["電視", "白板"] },
 };
 
-const RULES = [
+const rules = () => [
   `只能預約週一到週五（台北時間）${DAY_START}–${DAY_END} 之間的時段`,
   `時間以 ${STEP_MINUTES} 分鐘為單位，例如 14:00、14:05`,
   "同一間會議室同一時段只能有一筆預約；一次預約多間時，任一間衝突就整筆不預約",
   "預約人必須是已登記的使用者，請向使用者詢問行編（檢查碼可省略），不要自行猜測",
-  `修改或取消預約請到網站 ${WEBSITE_URL}，需要預約時取得的編輯密碼`,
+  `修改或取消預約請到網站 ${site().website}，需要預約時取得的編輯密碼`,
 ];
 
-const INSTRUCTIONS = [
+const instructions = () => [
   "這是數位金融部（11F）會議室預約系統，共三間會議室：Alpha（A101）、Beta（A102）、StartUp（A103）。所有時間都是台北時間。",
   "規則：",
-  ...RULES.map((r) => `- ${r}`),
+  ...rules().map((r) => `- ${r}`),
   "建議流程：先用 find_free_slots 或 list_bookings 確認空檔；把會議室、日期、時間、會議名稱與行編跟使用者確認後，再呼叫 create_booking。",
   "編輯密碼不要主動詢問；使用者沒提供時不設密碼，預約後提醒使用者任何人都能修改。目前不能透過這裡修改或取消預約。",
 ].join("\n");
@@ -214,7 +214,7 @@ function listRooms(now: number) {
     now: nowInfo(now),
     rooms: ROOMS.map((r) => ({ name: r.name, code: r.key, letter: r.letter, ...ROOM_DETAILS[r.key] })),
     booking_hours: `週一到週五 ${DAY_START}–${DAY_END}`,
-    rules: RULES,
+    rules: rules(),
   };
 }
 
@@ -363,7 +363,7 @@ async function createBookingTool(db: D1Database, args: Record<string, unknown>, 
       editPassword
         ? "已設定編輯密碼：之後要修改或取消時，在網站上輸入使用者提供的密碼"
         : "沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約，請提醒使用者",
-      `網站：${WEBSITE_URL}`,
+      `網站：${site().website}`,
       ...(participants > seats ? [`與會人數 ${participants} 人超過座位數 ${seats} 人`] : []),
     ],
   };
@@ -421,7 +421,7 @@ export async function handleMessage(db: D1Database, msg: JsonRpcRequest, now = D
         protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
-        instructions: INSTRUCTIONS,
+        instructions: instructions(),
       });
     }
     case "ping":

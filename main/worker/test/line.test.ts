@@ -2,7 +2,11 @@
 import { env } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../src/index.ts";
-import { AI_PAGE_URL, AI_TEMPLATE, HELP_REPLY, MCP_URL, WEEKEND_REPLY } from "../src/line_bot.ts";
+import { WEEKEND_REPLY } from "../src/line_bot.ts";
+
+// 測試設定的 PUBLIC_BASE_URL、WEBSITE_URL（vitest.config.ts）
+const AI_PAGE = "https://public.test/ai";
+const MCP = "https://public.test/mcp";
 import { api, resetDb, rows, seedUser } from "./helpers.ts";
 
 async function sign(body: string, secret = "test-line-secret"): Promise<string> {
@@ -133,15 +137,14 @@ describe("LINE webhook", () => {
       expect(free.text).toContain("【好處】");
       expect(free.text).toContain("・同一個對話會記得你");
       expect(free.text).toContain("2. 複製下一則訊息，貼上");
-      expect(template.text).toBe(AI_TEMPLATE);
       // 網址自成一行
-      expect(template.text.split("\n").slice(0, 2)).toEqual(["請讀這個網址：", AI_PAGE_URL]);
+      expect(template.text.split("\n").slice(0, 2)).toEqual(["請讀這個網址：", AI_PAGE]);
       expect(template.text).toContain("\n行編：\n");
       expect(template.text).toContain("這次要訂：");
       expect(free.text).toContain("用 AI 預約｜方法一");
       expect(free.text).toContain("・不要把密碼告訴 AI");
       expect(connector.text).toContain("用 AI 預約｜方法二");
-      expect(connector.text).toContain(MCP_URL);
+      expect(connector.text).toContain(MCP);
     }
     replies = [];
     await webhook([textEvent("aim")]);
@@ -150,8 +153,10 @@ describe("LINE webhook", () => {
 
   it("一對一聊天收到看不懂的訊息時說明可用的指令（含 ai）；群組不回覆；預約表單照常處理", async () => {
     await webhook([textEvent("你好", { source: { type: "user", userId: "U1" } })]);
-    expect(replies[0].body.messages).toEqual([{ type: "text", text: HELP_REPLY }]);
-    expect(HELP_REPLY).toContain("・ai｜用 AI 預約的教學");
+    const help = replies[0].body.messages;
+    expect(help.length).toBe(1);
+    expect(help[0].text).toContain("・ai｜用 AI 預約的教學");
+    expect(help[0].text).toContain("網站：\nhttps://frontend.test/app/");
     replies = [];
     await webhook([textEvent("你好", { source: { type: "group", groupId: "G1" } })]);
     expect(replies).toEqual([]);

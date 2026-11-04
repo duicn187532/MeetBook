@@ -37,8 +37,9 @@ jobs:
       run:
         working-directory: main/worker
     env:
-      OLD_API_BASE: ${{ vars.OLD_API_BASE || 'https://meetingbooking.duicn187532.deno.net' }}
-      NEW_API_BASE: ${{ vars.NEW_API_BASE || 'https://meetbook.duicn187532.workers.dev' }}
+      # 網址放在 GitHub Secrets（repo 為公開）
+      OLD_API_BASE: ${{ secrets.OLD_API_BASE }}
+      NEW_API_BASE: ${{ secrets.NEW_API_BASE }}
     steps:
       - uses: actions/checkout@v4
 

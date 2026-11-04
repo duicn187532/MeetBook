@@ -113,7 +113,7 @@ Deno.test("toPublicBooking 不帶出行編、密碼與代碼", () => {
     user: {
       id: "000123",
       name: "王小明",
-      extension: "51164",
+      extension: "52001",
       department: { code: "D1", label: "資訊部" },
       group: { code: "G1", label: "開發組" },
     },
@@ -130,7 +130,7 @@ Deno.test("toPublicBooking 不帶出行編、密碼與代碼", () => {
   const pub = toPublicBooking(doc);
   assertEquals(pub.user, {
     name: "王小明",
-    extension: "51164",
+    extension: "52001",
     department: { label: "資訊部" },
     group: { label: "開發組" },
   });
@@ -148,7 +148,7 @@ Deno.test("toPublicBooking 沒有姓名時以行編後 4 碼代替", () => {
     user: {
       id: "001234",
       name: "",
-      extension: "51164",
+      extension: "52001",
       department: { code: "D1", label: "資訊部" },
       group: { code: "G1", label: "開發組" },
     },
@@ -159,7 +159,7 @@ Deno.test("toPublicBooking 沒有姓名時以行編後 4 碼代替", () => {
 });
 
 Deno.test("toPublicBooking 處理舊格式的字串 user", () => {
-  const pub = toPublicBooking({ id: "b2", user: "王小明 1234 #51164" } as unknown as BookingDoc);
+  const pub = toPublicBooking({ id: "b2", user: "王小明 1234 #52001" } as unknown as BookingDoc);
   assertEquals(pub.user.name, "未具名");
   assert(!JSON.stringify(pub).includes("1234"));
 });
