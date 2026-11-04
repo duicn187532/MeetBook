@@ -28,8 +28,14 @@ function download(file: File) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-// 一個小日曆圖示；點了才展開兩個選項。className 用來決定圖示在視窗中的位置
-const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCalendar, "website">; className?: string }) => {
+// 一個小日曆圖示；點了才展開兩個選項。position 決定圖示在視窗左上角或右上角，選單也跟著靠左或靠右
+const AddToCalendar = ({
+  booking,
+  position,
+}: {
+  booking: Omit<BookingForCalendar, "website">;
+  position: "top-left" | "top-right";
+}) => {
   const event = useMemo(() => bookingEvent({ ...booking, website: websiteUrl() }), [booking]);
   const makeFile = () => new File([icsFile(event)], icsFileName(event.start), { type: "text/calendar" });
   const shareable = useMemo(() => canShareFile(new File([""], "meeting.ics", { type: "text/calendar" })), []);
@@ -63,7 +69,7 @@ const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCa
 
   const itemClass = "flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 text-left hover:bg-gray-50";
   return (
-    <div ref={menuRef} className={`absolute z-20 ${className}`}>
+    <div ref={menuRef} className={`absolute z-20 top-3 ${position === "top-left" ? "left-3" : "right-3"}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -75,7 +81,7 @@ const AddToCalendar = ({ booking, className = "" }: { booking: Omit<BookingForCa
         <CalendarPlus size={20} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left">
+        <div className={`absolute ${position === "top-left" ? "left-0" : "right-0"} top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left`}>
           <a className={itemClass} href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
             <CalendarPlus size={16} className="shrink-0" />
             加到 Google 行事曆
