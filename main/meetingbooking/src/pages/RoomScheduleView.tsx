@@ -58,7 +58,6 @@ import { loadPref, savePref } from "../utils/storage";
 import { CONTACT } from "../config/contact";
 import { buildTodayOverview } from "../utils/todayStatus";
 import { addWorkdays, rollToWorkday, workdaysFrom, WORKDAYS_PER_WEEK } from "../utils/workdays";
-import { BookingForCalendar } from "../utils/calendar";
 
 const ROOMS: RoomKey[] = ["A101", "A102", "A103"];
 const VIEWS: ViewMode[] = ["Day", "Week", "Month"];
@@ -168,7 +167,7 @@ const RoomScheduleView = () => {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState<"success" | "error">("success");
   // 預約成功視窗的「加到行事曆」內容；其他提示視窗為 null
-  const [alertCalendar, setAlertCalendar] = useState<Omit<BookingForCalendar, "website"> | null>(null);
+  const [alertCalendarId, setAlertCalendarId] = useState<string | null>(null);
 
   // 自訂 hook 提供的 API 與狀態
   const {
@@ -372,15 +371,15 @@ const RoomScheduleView = () => {
 
   // Alert 函式
   const showAlert = (type: "success" | "error", title: string, message = "") => {
-    setAlertCalendar(null);
+    setAlertCalendarId(null);
     setAlertType(type);
     setAlertTitle(title);
     setAlertMessage(message);
     setShowAlertModal(true);
   };
 
-  const showSuccessAlert = (calendar: Omit<BookingForCalendar, "website"> | null = null) => {
-    setAlertCalendar(calendar);
+  const showSuccessAlert = (calendarId: string | null = null) => {
+    setAlertCalendarId(calendarId);
     setAlertType("success");
     setAlertTitle("預約成功");
     setAlertMessage("");
@@ -478,7 +477,7 @@ async function handleSubmitBooking() {
         
       default:
         if (response.ok) {
-          handleSuccessfulBooking(bookingData);
+          handleSuccessfulBooking(bookingData, response.body.ids?.[0] ?? null);
         } else {
           console.error("預約失敗:", response.status);
           setErrorMessage("預約失敗，請稍後再試");
@@ -517,14 +516,9 @@ function openBookingModal() {
 }
 
 // 處理成功預約後的操作
-function handleSuccessfulBooking(bookingData: BookingPayload) {
+function handleSuccessfulBooking(bookingData: BookingPayload, bookingId: string | null) {
   savePref("userId", bookingData.user);
-  showSuccessAlert({
-    rooms: [...bookingData.room].sort().map((r) => roomNames[r as RoomKey] ?? r),
-    title: bookingData.title,
-    start: Date.parse(bookingData.startTime),
-    end: Date.parse(bookingData.endTime),
-  });
+  showSuccessAlert(bookingId);
   reloadMeetings();
   setCurrentDate(dayjs(bookingData.date));
   setViewStartDate(dayjs(bookingData.date));
@@ -790,10 +784,10 @@ function handleSuccessfulBooking(bookingData: BookingPayload) {
           type={alertType}
           title={alertTitle}
           message={alertMessage}
-          calendar={alertCalendar}
+          calendarId={alertCalendarId}
           onClose={() => {
             setShowAlertModal(false);
-            setAlertCalendar(null);
+            setAlertCalendarId(null);
             const next = afterAlertClose.current;
             afterAlertClose.current = null;
             next?.();

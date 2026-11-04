@@ -134,7 +134,9 @@ describe("POST /api/bookings", () => {
   it("成功時回 201，網址結尾有沒有 / 都可以", async () => {
     const a = await api("POST", "/api/bookings/", payload());
     expect(a.status).toBe(201);
-    expect(a.json).toEqual({ success: true, bookedRooms: ["A101"], message: "全部會議室預約成功 ✅" });
+    const [row] = await rows();
+    // ids：前端用來產生「加入行事曆」連結
+    expect(a.json).toEqual({ success: true, bookedRooms: ["A101"], ids: [row.id], message: "全部會議室預約成功 ✅" });
     const b = await api("POST", "/api/bookings", payload({ room: "A102" }));
     expect(b.status).toBe(201);
   });

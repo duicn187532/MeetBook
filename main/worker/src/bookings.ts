@@ -294,7 +294,7 @@ export async function addBooking(c: Ctx) {
     }
     return respond(c, {
       status: 201,
-      body: { success: true, bookedRooms: roomList, message: "全部會議室預約成功 ✅" },
+      body: { success: true, bookedRooms: roomList, ids: result.ids, message: "全部會議室預約成功 ✅" },
     });
   } catch (error) {
     return serverError(c, "addBooking", error, "插入數據失敗");

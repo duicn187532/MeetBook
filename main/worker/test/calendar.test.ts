@@ -80,13 +80,13 @@ describe("icsFile", () => {
   });
 });
 
-describe("預約結果頁 /b/ok 的「加到行事曆」", () => {
+describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事曆」", () => {
   beforeEach(async () => {
     await resetDb();
     await seedUser();
   });
 
-  async function bookAndOpen(fields: Record<string, string>) {
+  async function book(fields: Record<string, string>) {
     const res = await app.fetch(
       new Request("https://w.test/b", {
         method: "POST",
@@ -97,40 +97,53 @@ describe("預約結果頁 /b/ok 的「加到行事曆」", () => {
       env,
     );
     expect(res.status).toBe(303);
-    return api("GET", res.headers.get("location")!);
+    return res.headers.get("location")!;
   }
 
-  it("只有「分享 ics」按鈕（沒有 Google 連結、沒有說明文字）；檔案內容放在有 nonce 的 script 中，且 < 已跳脫", async () => {
-    const date = nextWednesday();
-    const done = await bookAndOpen({ room: "A101,A102", date, start: "14:00", end: "15:00", title: "</script><b>週會", people: "6", user: "001234", password: "" });
-    const html = done.text;
-    expect(html).toContain("<h3>加到行事曆</h3>");
+  it("/b/ok 只有「加入行事曆」連結（連到 .ics）；沒有 Google 連結、沒有額外 script", async () => {
+    const location = await book({ room: "A101,A102", date: nextWednesday(), start: "14:00", end: "15:00", title: "週會", people: "6", user: "001234", password: "" });
+    const [first] = await rows();
+    const html = (await api("GET", location)).text;
+    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics">加入行事曆</a>`);
     expect(html).not.toContain("calendar.google.com");
-    expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">分享 ics</button>');
-    // 不顯示文字說明
-    expect(html).not.toContain('id="ics-hint"');
-    // 會議名稱只以跳脫後的形式出現，不會提早結束 <script> 或插入標籤
-    expect(html).not.toContain("</script><b>");
-    expect(html).toContain("\\u003c/script>\\u003cb>週會");
-    const nonce = /script-src 'nonce-([0-9a-f]{32})'/.exec(done.headers.get("content-security-policy")!)![1];
-    const script = html.split(`<script nonce="${nonce}">`)[1].split("</script>")[0];
-    const ics = JSON.parse(/const ICS = (".*?");\n/.exec(script)![1]) as string;
-    expect(ics).toContain(`DTSTART:${date.replace(/-/g, "")}T060000Z\r\n`);
-    expect(ics).toContain("LOCATION:數金部 11F Alpha、Beta 會議室\r\n");
-    expect(ics).toContain("SUMMARY:</script><b>週會\r\n");
-    expect(ics.replace(/\r\n /g, "")).toContain("預約人：測試員");
-    expect(script).toContain(`const NAME = "meeting-${date.replace(/-/g, "")}-1400.ics";`);
-    expect(script).toContain("navigator.share({ files: [file] })");
+    expect(html).not.toContain("navigator.share");
   });
 
-  it("已取消的預約不顯示「加到行事曆」", async () => {
-    const done = await bookAndOpen({ room: "A101", date: nextWednesday(), start: "10:00", end: "11:00", title: "x", people: "1", user: "001234", password: "" });
-    expect(done.text).toContain("加到行事曆");
+  it("回傳 .ics：標頭正確；多間會議室列在地點；會議名稱與預約人；不含行編與編輯密碼", async () => {
+    const date = nextWednesday();
+    await book({ room: "A101,A102", date, start: "14:00", end: "15:00", title: "</script><b>週會", people: "6", user: "001234", password: "pw7788" });
+    const list = await rows();
+    // 用任一間的 id 都能取得整組
+    for (const r of list) {
+      const res = await api("GET", `/cal/${r.id}.ics`);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("content-type")).toBe("text/calendar; charset=utf-8");
+      expect(res.headers.get("content-disposition")).toBe(`inline; filename="meeting-${date.replace(/-/g, "")}-1400.ics"`);
+      expect(res.headers.get("cache-control")).toBe("no-store");
+      expect(res.headers.get("x-robots-tag")).toBe("noindex");
+      const ics = res.text.replace(/\r\n /g, "");
+      expect(ics).toContain(`DTSTART:${date.replace(/-/g, "")}T060000Z\r\n`);
+      expect(ics).toContain(`DTEND:${date.replace(/-/g, "")}T070000Z\r\n`);
+      expect(ics).toContain("LOCATION:數金部 11F Alpha、Beta 會議室\r\n");
+      expect(ics).toContain("SUMMARY:</script><b>週會\r\n");
+      expect(ics).toContain("預約人：測試員");
+      expect(ics).toContain("修改或取消：https://frontend.test/app/");
+      expect(ics).not.toContain("001234");
+      expect(ics).not.toContain("pw7788");
+    }
+  });
+
+  it("找不到、已取消、格式不對的 id 都回 404", async () => {
+    await book({ room: "A101", date: nextWednesday(), start: "10:00", end: "11:00", title: "x", people: "1", user: "001234", password: "" });
     const [row] = await rows();
+    expect((await api("GET", `/cal/${row.id}.ics`)).status).toBe(200);
     await env.DB.prepare("UPDATE bookings SET cancelled = 1 WHERE id = ?").bind(row.id).run();
-    const again = await api("GET", `/b/ok?id=${row.id}`);
-    expect(again.text).toContain("這筆預約已取消");
-    expect(again.text).not.toContain("加到行事曆");
-    expect(again.text).not.toContain("const ICS");
+    const cancelled = await api("GET", `/cal/${row.id}.ics`);
+    expect(cancelled.status).toBe(404);
+    expect(cancelled.text).toContain("找不到這筆預約");
+    expect((await api("GET", `/b/ok?id=${row.id}`)).text).not.toContain("加入行事曆");
+    expect((await api("GET", "/cal/nope.ics")).status).toBe(404);
+    expect((await api("GET", `/cal/${"a".repeat(65)}.ics`)).status).toBe(404);
+    expect((await api("GET", "/cal/a'b.ics")).status).toBe(404);
   });
 });
