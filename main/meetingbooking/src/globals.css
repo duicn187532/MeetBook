@@ -138,3 +138,17 @@ html body .font-style-serif {
 html body .font-style-kai {
   font-family: "LXGW WenKai TC", "Kaiti TC", "DFKai-SB", "BiauKai", serif !important;
 }
+
+/* 顯示設定的字體粗細（config/display.ts）：整體加粗，原本較粗的文字仍比內文粗
+   粗：一般 400→600、medium 500→700、semibold／bold→800
+   特粗：一般 400→700、medium 500→800、semibold／bold→900 */
+html[data-weight="bold"] body { font-weight: 600; }
+html[data-weight="bold"] body .font-normal { font-weight: 600 !important; }
+html[data-weight="bold"] body .font-medium { font-weight: 700 !important; }
+html[data-weight="bold"] body .font-semibold,
+html[data-weight="bold"] body .font-bold { font-weight: 800 !important; }
+html[data-weight="heavy"] body { font-weight: 700; }
+html[data-weight="heavy"] body .font-normal { font-weight: 700 !important; }
+html[data-weight="heavy"] body .font-medium { font-weight: 800 !important; }
+html[data-weight="heavy"] body .font-semibold,
+html[data-weight="heavy"] body .font-bold { font-weight: 900 !important; }

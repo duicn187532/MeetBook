@@ -4,12 +4,13 @@ import {
   DisplaySettings as Settings_,
   FONT_SIZES,
   FONT_STYLES,
+  FONT_WEIGHTS,
   loadDisplaySettings,
   preloadFontStyles,
   saveDisplaySettings,
 } from "../config/display";
 
-// 右上角的齒輪：打開小視窗調整字體大小（標準、大、特大）與字體風格（三種），立即套用並記在這台裝置
+// 右上角的齒輪：打開小視窗調整字體大小（標準、大、特大）、字體風格與字體粗細（各三種），立即套用並記在這台裝置
 const DisplaySettings = () => {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<Settings_>(loadDisplaySettings);
@@ -79,7 +80,7 @@ const DisplaySettings = () => {
             ))}
           </div>
           <div className="text-sm font-semibold text-gray-600 mb-2">字體風格</div>
-          <div className="flex gap-1.5" role="radiogroup" aria-label="字體風格">
+          <div className="flex gap-1.5 mb-3" role="radiogroup" aria-label="字體風格">
             {FONT_STYLES.map((s) => (
               <button
                 key={s.key}
@@ -90,6 +91,22 @@ const DisplaySettings = () => {
                 className={`${option(settings.fontStyle === s.key)} p-0 shadow-none h-9 text-sm font-style-${s.key}`}
               >
                 {s.label}
+              </button>
+            ))}
+          </div>
+          <div className="text-sm font-semibold text-gray-600 mb-2">字體粗細</div>
+          <div className="flex gap-1.5" role="radiogroup" aria-label="字體粗細">
+            {FONT_WEIGHTS.map((w, i) => (
+              <button
+                key={w.key}
+                type="button"
+                role="radio"
+                aria-checked={settings.fontWeight === w.key}
+                onClick={() => update({ fontWeight: w.key })}
+                className={`${option(settings.fontWeight === w.key)} p-0 shadow-none h-9`}
+              >
+                {/* 以各自的粗細與固定像素顯示，不受目前設定影響 */}
+                <span style={{ fontSize: "14px", fontWeight: [400, 600, 800][i] }} className="leading-none">{w.label}</span>
               </button>
             ))}
           </div>

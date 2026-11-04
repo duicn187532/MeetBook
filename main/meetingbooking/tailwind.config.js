@@ -6,7 +6,8 @@
 const scaled = (rem) => `calc(${rem}rem * var(--text-scale, 1))`;
 const fontSize = {
   "xs": [scaled(0.75), { lineHeight: "1.3333" }],
-  "sm": [scaled(0.875), { lineHeight: "1.4286" }],
+  // 內文：標準 16px、大 20px、特大 24px（原本為 14px）
+  "sm": [scaled(1), { lineHeight: "1.5" }],
   "base": [scaled(1), { lineHeight: "1.5" }],
   "lg": [scaled(1.125), { lineHeight: "1.5556" }],
   "xl": [scaled(1.25), { lineHeight: "1.4" }],
