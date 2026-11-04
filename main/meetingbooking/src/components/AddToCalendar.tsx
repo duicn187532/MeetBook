@@ -1,17 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarPlus, Share2 } from "lucide-react";
-import { calendarFileUrl, calendarGoogleUrl, calendarPageUrl, fetchCalendarFile } from "../api/meetingApi";
+import { calendarFileUrl, calendarGoogleUrl, fetchCalendarFile } from "../api/meetingApi";
 
-// 加入行事曆：一個日曆小圖示，點了展開三個選項（只顯示圖示與選項名稱，不加文字說明）
-// - 加入行事曆：iPhone 以檔案內容開啟（網址形式的 .ics 會被 iOS 當成「訂閱行事曆」）；
-//   LINE 內建瀏覽器打不開 .ics，改用手機預設瀏覽器開啟這筆預約的資訊頁；電腦等其他裝置下載 .ics 後點開
-// - Google：Google 行事曆新增活動頁（一定是新增單一活動）
+// 加入行事曆：一個日曆小圖示，點了展開三個選項（只顯示圖示與選項名稱，不加文字說明）。不會另開本系統的網頁。
+// - 加入行事曆：在同一頁開啟這筆預約的 .ics（iPhone Safari 顯示行事曆畫面；電腦下載後點開）。
+//   網址帶 openExternalBrowser=1：在 LINE 內建瀏覽器中直接交給手機預設瀏覽器開啟 .ics
+// - Google：Google 行事曆新增活動頁；在 LINE 中同樣交給預設瀏覽器（才有已登入的 Google 帳號）
 // - 分享 ics：以手機的分享選單送出 .ics（例如寄到公司信箱）；不支援分享檔案時（電腦、部分 Android）改為下載
 // position 決定圖示在視窗左上角或右上角，選單也跟著靠左或靠右。
 
-const UA = navigator.userAgent;
-const IN_LINE = / Line[/]/i.test(UA);
-const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+// LINE 內建瀏覽器只會攔截同一頁的網址切換；另開分頁（target=_blank）時改為同一頁開啟
+const IN_LINE = / Line[/]/i.test(navigator.userAgent);
 
 function canShareFile(file: File): boolean {
   try {
@@ -68,25 +67,6 @@ const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "
     return () => document.removeEventListener("pointerdown", close);
   }, [open]);
 
-  async function addToCalendar(e: React.MouseEvent<HTMLAnchorElement>) {
-    if (!IN_LINE && !IS_IOS) {
-      setOpen(false); // 照連結下載 .ics
-      return;
-    }
-    e.preventDefault();
-    setOpen(false);
-    if (IN_LINE) {
-      window.location.href = calendarPageUrl(bookingId);
-      return;
-    }
-    try {
-      const file = ready.current ?? (await (fileRef.current ?? fetchCalendarFile(bookingId)));
-      window.location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(await file.text());
-    } catch {
-      window.location.href = calendarFileUrl(bookingId);
-    }
-  }
-
   async function share() {
     try {
       const file = ready.current ?? (await (fileRef.current ?? fetchCalendarFile(bookingId)));
@@ -125,11 +105,16 @@ const AddToCalendar = ({ bookingId, position }: { bookingId: string; position: "
       </button>
       {open && (
         <div className={`absolute ${position === "top-left" ? "left-0" : "right-0"} top-full mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden text-left`}>
-          <a className={itemClass} href={calendarFileUrl(bookingId)} onClick={addToCalendar}>
+          <a className={itemClass} href={calendarFileUrl(bookingId)} onClick={() => setOpen(false)}>
             <CalendarPlus size={16} className="shrink-0" />
             加入行事曆
           </a>
-          <a className={itemClass} href={calendarGoogleUrl(bookingId)} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
+          <a
+            className={itemClass}
+            href={calendarGoogleUrl(bookingId)}
+            {...(IN_LINE ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+            onClick={() => setOpen(false)}
+          >
             <GoogleIcon />
             Google
           </a>

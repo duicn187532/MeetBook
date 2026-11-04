@@ -100,12 +100,12 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     return res.headers.get("location")!;
   }
 
-  it("/b/ok 有「加入行事曆」「Google」「分享 ics」；iPhone 以頁面中的檔案內容開啟、LINE 中改用預設瀏覽器", async () => {
+  it("/b/ok 有「加入行事曆」「Google」「分享 ics」；連結在同一頁開啟並帶 openExternalBrowser=1", async () => {
     const location = await book({ room: "A101,A102", date: nextWednesday(), start: "14:00", end: "15:00", title: "週會", people: "6", user: "001234", password: "" });
     const [first] = await rows();
     const html = (await api("GET", location)).text;
-    expect(html).toContain(`<a class="btn btn-outline" id="add" href="/cal/${first.id}.ics">加入行事曆</a>`);
-    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}/google" target="_blank" rel="noopener">Google</a>`);
+    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}.ics?openExternalBrowser=1">加入行事曆</a>`);
+    expect(html).toContain(`<a class="btn btn-outline" href="/cal/${first.id}/google?openExternalBrowser=1">Google</a>`);
     expect(html).toContain('<button class="btn btn-outline" type="button" id="ics">分享 ics</button>');
     // 分享用的 .ics 放在有 nonce 的 script 中，與 /cal 回傳的內容相同（DTSTAMP 除外）
     // nonce 每次請求都不同，同一個回應中讀取
@@ -118,8 +118,8 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     const noStamp = (t: string) => t.replace(/DTSTAMP:\d{8}T\d{6}Z/, "");
     expect(noStamp(embedded)).toBe(noStamp(served));
     expect(script).toContain("navigator.share({ files: [file] })");
-    expect(script).toContain('location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ICS);');
-    expect(script).toContain('u.searchParams.set("openExternalBrowser", "1");');
+    // 不再使用 data: 網址（iPhone Safari 會擋下）
+    expect(script).not.toContain("data:text/calendar");
   });
 
   it("回傳 .ics：標頭正確；多間會議室列在地點；會議名稱與預約人；不含行編與編輯密碼", async () => {
@@ -163,6 +163,9 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     expect(url.searchParams.get("details")).toContain("預約人：測試員");
     expect(url.searchParams.get("details")).not.toContain("001234");
     expect((await api("GET", "/cal/nope/google")).status).toBe(404);
+    // 連結帶的 openExternalBrowser=1 不影響轉址
+    const withParam = await app.fetch(new Request(`https://w.test/cal/${first.id}/google?openExternalBrowser=1`, { redirect: "manual" }), env);
+    expect(withParam.status).toBe(302);
   });
 
   it("/b/ok?v=info 的標題是「預約資訊」", async () => {
