@@ -41,6 +41,16 @@ describe("migration 帶入的更新日誌與公告", () => {
     expect(list[3].sections).toContain('"experimental":true');
     expect(list[0].sections).toContain("在 LINE 官方帳號傳送「ai」取得");
   });
+
+  it("v2.4.0 的「新功能」最後一項是「加到行事曆」（0006 併入），只出現一次", async () => {
+    const row = await env.DB.prepare("SELECT sections FROM changelog WHERE version = 'v2.4.0'").first<{ sections: string }>();
+    const sections = JSON.parse(row!.sections) as { title: string; items: { text: string }[] }[];
+    const features = sections.find((s) => s.title === "新功能")!;
+    expect(features.items).toHaveLength(5);
+    expect(features.items.at(-1)!.text).toMatch(/^預約後可以加到行事曆：在預約成功視窗或預約資訊視窗點日曆圖示/);
+    expect(row!.sections.split("加到行事曆").length - 1).toBe(1);
+    expect(sections.find((s) => s.title === "改善")!.items).toHaveLength(3);
+  });
 });
 
 describe("migration 帶入的公告", () => {

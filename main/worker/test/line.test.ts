@@ -113,6 +113,8 @@ describe("LINE webhook", () => {
     expect(text).toMatch(/🔑 編輯密碼：\d{4}/);
     const list = await rows();
     expect(list.map((r) => r.room)).toEqual(["A101", "A102"]);
+    // 加到行事曆：連到預約結果頁，並要求 LINE 以手機的預設瀏覽器開啟
+    expect(text).toContain(`📅 加到行事曆：\nhttps://public.test/b/ok?id=${list[0].id}&openExternalBrowser=1`);
     expect(list[0].edit_password).toMatch(/^\d{4}$/);
 
     replies = [];

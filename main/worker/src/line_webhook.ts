@@ -81,7 +81,7 @@ async function bookFromForm(db: D1Database, text: string, now: number): Promise<
   const { request } = built;
   const editPassword = randomEditPassword();
   const result = await createBooking(db, { ...request, editPassword, source: "line" });
-  if (result.ok) return formatBookingSuccess(request, toPublicUser(result.user).name, editPassword);
+  if (result.ok) return formatBookingSuccess(request, toPublicUser(result.user).name, editPassword, result.ids[0]);
   if (result.conflicts) return formatBookingConflicts(result.conflicts);
   if (result.status === 404) return formatBookingErrors(["4️⃣ 找不到這個行編，請確認後重新輸入"]);
   return formatBookingErrors([result.error]);

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Meeting, roomNames, RoomKey } from "../types/common";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import AddToCalendar from "./AddToCalendar";
 
 
 interface MeetingInfoModalProps {
@@ -39,6 +40,19 @@ const MeetingInfoModal = ({
 
       {/* Modal 主體 */}
       <div className="relative bg-white p-4 rounded-2xl shadow-lg z-10 w-full max-w-sm m-8 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
+        {/* 加到行事曆（同組的其他會議室也一起列在地點） */}
+        <AddToCalendar
+          position="top-left"
+          booking={{
+            rooms: [...new Set([meetingInfo.room, ...meetingInfo.isMulti])]
+              .sort()
+              .map((r) => roomNames[r as RoomKey] ?? r),
+            title: meetingInfo.title,
+            start: Date.parse(meetingInfo.startTime),
+            end: Date.parse(meetingInfo.endTime),
+            booker: meetingInfo.user.name,
+          }}
+        />
         {/* 關閉按鈕 */}
         <button
           onClick={onClose}
