@@ -309,6 +309,7 @@ export function formatBookingSuccess(
   request: BookingRequest,
   userName: string,
   editPassword: string,
+  bookingId?: string,
 ): string {
   const start = taipeiParts(request.startTime.getTime());
   return [
@@ -319,8 +320,13 @@ export function formatBookingSuccess(
     `🕒 時間：${start.date} ${start.hhmm} - ${taipeiParts(request.endTime.getTime()).hhmm}`,
     `👤 預約人：${userName}`,
     `🔑 編輯密碼：${editPassword}（在網頁修改或取消時使用）`,
+    ...(bookingId ? ["", `📅 加到行事曆（Google／公司）：`, calendarPageUrl(bookingId)] : []),
   ].join("\n");
 }
+
+// 預約結果頁（有「加到行事曆」按鈕）；openExternalBrowser=1 讓 LINE 用手機預設瀏覽器開啟，才能分享檔案
+export const calendarPageUrl = (bookingId: string) =>
+  `${site().publicBase}/b/ok?id=${encodeURIComponent(bookingId)}&openExternalBrowser=1`;
 
 export function formatBookingConflicts(
   conflicts: { room: string; conflicts: { title: string; startTime: Date | string; endTime: Date | string }[] }[],

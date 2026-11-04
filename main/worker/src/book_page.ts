@@ -14,6 +14,7 @@ import { createBooking, findUserStrict } from "./bookings.ts";
 import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
 import { WEEKEND_MESSAGE } from "./booking_rules.ts";
 import { site } from "./site.ts";
+import { bookingEvent, googleCalendarUrl, icsFile, icsFileName } from "./calendar.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
@@ -122,11 +123,16 @@ input:focus{border-color:#f08b42}
 .btn-cancel{background:#d1d5db;color:#374151}
 .btn-ok{background:#87ca5a;color:#fff}
 .conflict{margin-bottom:12px}
+.cal{margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb}
+.cal h3{margin:0 0 8px;font-size:14px;font-weight:700;text-align:center;color:#374151}
+.cal .buttons{flex-direction:column;gap:8px;margin-top:0}
+.cal .hint{margin-top:8px;line-height:1.5}
+.btn-outline{background:#fff;border:2px solid #dfbb00;color:#374151}
 `;
 
 const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 
-function page(c: Ctx, title: string, body: string, status = 200) {
+function page(c: Ctx, title: string, body: string, status = 200, script = "") {
   const nonce = crypto.randomUUID().replace(/-/g, "");
   const html = `<!doctype html>
 <html lang="zh-Hant">
@@ -147,6 +153,7 @@ for (const f of document.querySelectorAll("form")) f.addEventListener("submit", 
   const b = f.querySelector("button[type=submit]");
   if (b) { b.disabled = true; b.textContent = "預約中…"; }
 });
+${script}
 </script>
 </body>
 </html>`;
@@ -360,5 +367,60 @@ ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
 <div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
-</div>`);
+${first.cancelled ? "" : calendarSection(group.map((r) => r.room), first, booker)}
+</div>`, 200, first.cancelled ? "" : calendarScript(group.map((r) => r.room), first, booker));
+}
+
+// ===== 加到行事曆 =====
+
+function eventOf(rooms: string[], row: BookedRow, booker: string) {
+  return bookingEvent({
+    rooms: rooms.map(roomName),
+    title: row.title,
+    start: row.start_time,
+    end: row.end_time,
+    booker,
+    website: site().website,
+  });
+}
+
+function calendarSection(rooms: string[], row: BookedRow, booker: string) {
+  return `<div class="cal">
+<h3>加到行事曆</h3>
+<div class="buttons">
+<a class="btn btn-outline" href="${escapeHtml(googleCalendarUrl(eventOf(rooms, row, booker)))}" target="_blank" rel="noopener">加到 Google 行事曆</a>
+<button class="btn btn-outline" type="button" id="ics">寄到公司信箱</button>
+</div>
+<p class="hint" id="ics-hint">會開啟手機的分享選單：選信箱 App 寄給自己的公司信箱，在公司信箱點開附件就能加入行事曆。</p>
+</div>`;
+}
+
+// 手機：以分享選單附上 .ics 行事曆檔；不支援分享檔案時（電腦、部分 Android）改為下載
+function calendarScript(rooms: string[], row: BookedRow, booker: string) {
+  // JSON 中的 < 轉成 \u003c，避免內容提前結束 <script>
+  const json = (v: string) => JSON.stringify(v).replace(/</g, "\\u003c");
+  return `const ICS = ${json(icsFile(eventOf(rooms, row, booker)))};
+const NAME = ${json(icsFileName(row.start_time))};
+const icsButton = document.getElementById("ics");
+const icsHint = document.getElementById("ics-hint");
+const icsFileOf = () => new File([ICS], NAME, { type: "text/calendar" });
+const canShareIcs = () => { try { return !!navigator.canShare && navigator.canShare({ files: [icsFileOf()] }); } catch { return false; } };
+if (icsButton && !canShareIcs()) {
+  icsButton.textContent = "下載 .ics 檔";
+  icsHint.textContent = "下載後在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
+}
+if (icsButton) icsButton.addEventListener("click", async () => {
+  const file = icsFileOf();
+  if (canShareIcs()) {
+    try { await navigator.share({ files: [file] }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(file);
+  a.download = NAME;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  icsHint.textContent = "已下載行事曆檔：在信箱 App 新增郵件、附加這個檔案，寄到公司信箱後點開附件就能加入行事曆。";
+});`;
 }

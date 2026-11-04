@@ -1,14 +1,17 @@
 import React from "react";
 import { Check } from "lucide-react";
+import AddToCalendar from "./AddToCalendar";
+import { BookingForCalendar } from "../utils/calendar";
 
 interface AlertModalProps {
   type: "success" | "error";
   title: string;
   message?: string;
   onClose: () => void;
+  calendar?: Omit<BookingForCalendar, "website"> | null; // 預約成功時顯示「加到行事曆」
 }
 
-const AlertModal: React.FC<AlertModalProps> = ({ type, title, message, onClose }) => {
+const AlertModal: React.FC<AlertModalProps> = ({ type, title, message, onClose, calendar }) => {
   const styles = {
     success: {
       btnbg: "bg-[#87CA5A]",
@@ -45,6 +48,8 @@ const AlertModal: React.FC<AlertModalProps> = ({ type, title, message, onClose }
 
         {/* 訊息 */}
         {message && <p className="text-gray-500 text-sm mt-1 whitespace-pre-line">{message}</p>}
+
+        {calendar && <AddToCalendar booking={calendar} />}
 
         {/* 按鈕 */}
         <button
