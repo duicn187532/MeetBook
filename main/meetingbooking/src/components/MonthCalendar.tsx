@@ -98,7 +98,7 @@ const MonthCalendar = ({
                           />
                         ))}
                         {dayMeetings.length > MAX_DOTS && (
-                          <span className="text-[10px] leading-none text-gray-500">
+                          <span className="text-[0.625rem] leading-none text-gray-500">
                             +{dayMeetings.length - MAX_DOTS}
                           </span>
                         )}

@@ -119,3 +119,20 @@ button:active {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
+
+/* 顯示設定的字體風格（config/display.ts）：選用時套用到整個網站，數字與英文也一起換 */
+html[data-font="serif"] body,
+html[data-font="serif"] body * {
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif !important;
+}
+html[data-font="kai"] body,
+html[data-font="kai"] body * {
+  font-family: "LXGW WenKai TC", "Kaiti TC", "DFKai-SB", "BiauKai", serif !important;
+}
+/* 顯示設定視窗中，風格按鈕以各自的字體呈現 */
+html body .font-style-serif {
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif !important;
+}
+html body .font-style-kai {
+  font-family: "LXGW WenKai TC", "Kaiti TC", "DFKai-SB", "BiauKai", serif !important;
+}

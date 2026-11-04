@@ -5,6 +5,10 @@ import "./globals.css";
 import "@fontsource/dm-sans/latin-400.css";
 import "@fontsource/dm-sans/latin-500.css";
 import "@fontsource/dm-sans/latin-700.css";
+import { applyDisplaySettings, loadDisplaySettings } from "./config/display";
+
+// 先套用字體大小與風格，避免畫面先以預設大小顯示再跳動
+applyDisplaySettings(loadDisplaySettings());
 
 // Import MUI LocalizationProvider
 import { LocalizationProvider } from "@mui/x-date-pickers";
