@@ -22,7 +22,7 @@ const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: 
     <button
       onClick={() => setTimeout(onSelectToday, 200)}
       aria-current={todayMode ? "page" : undefined}
-      className={`flex-1 h-[43px] rounded-t-[12px] inline-flex items-center justify-center gap-2 text-[0.9375rem] font-bold tracking-wide ${
+      className={`flex-1 h-[43px] rounded-t-[12px] inline-flex items-center justify-center gap-2 text-[length:calc(0.9375rem*var(--text-scale,1))] font-bold tracking-wide ${
         todayMode ? "bg-[#FFC31D] text-white" : "bg-[#EAEAEA] text-[#222222]"
       }`}
     >
@@ -35,7 +35,7 @@ const RoomSelector = ({ selectedRoom, onSelectRoom, todayMode, onSelectToday }: 
         <button
           key={room}
           onClick={() => setTimeout(() => onSelectRoom(room), 200)}
-          className={`flex-1 h-[43px] text-center text-[0.9375rem] rounded-t-[12px] ${selectedClasses}`}
+          className={`flex-1 h-[43px] text-center text-[length:calc(0.9375rem*var(--text-scale,1))] rounded-t-[12px] ${selectedClasses}`}
         >
           {roomNames[room]}
         </button>

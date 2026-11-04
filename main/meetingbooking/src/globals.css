@@ -92,6 +92,8 @@ body {
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  /* 沒有指定字級的文字也跟著文字大小設定（--text-scale）放大 */
+  font-size: calc(1rem * var(--text-scale, 1));
 }
 
 .MuiMultiSectionDigitalClockSection-item.Mui-disabled {
@@ -121,6 +123,14 @@ button:active {
 }
 
 /* 顯示設定的字體風格（config/display.ts）：選用時套用到整個網站，數字與英文也一起換 */
+html[data-font="sans"] body,
+html[data-font="sans"] body * {
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif !important;
+}
+html[data-font="round"] body,
+html[data-font="round"] body * {
+  font-family: "Huninn", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif !important;
+}
 html[data-font="serif"] body,
 html[data-font="serif"] body * {
   font-family: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif !important;
@@ -130,9 +140,29 @@ html[data-font="kai"] body * {
   font-family: "LXGW WenKai TC", "Kaiti TC", "DFKai-SB", "BiauKai", serif !important;
 }
 /* 顯示設定視窗中，風格按鈕以各自的字體呈現 */
+html body .font-style-sans {
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif !important;
+}
+html body .font-style-round {
+  font-family: "Huninn", "Yuanti TC", "PingFang TC", "Microsoft JhengHei", sans-serif !important;
+}
 html body .font-style-serif {
   font-family: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif !important;
 }
 html body .font-style-kai {
   font-family: "LXGW WenKai TC", "Kaiti TC", "DFKai-SB", "BiauKai", serif !important;
 }
+
+/* 顯示設定的字體粗細（config/display.ts）：整體加粗，原本較粗的文字仍比內文粗
+   粗：一般 400→600、medium 500→700、semibold／bold→800
+   特粗：一般 400→700、medium 500→800、semibold／bold→900 */
+html[data-weight="bold"] body { font-weight: 600; }
+html[data-weight="bold"] body .font-normal { font-weight: 600 !important; }
+html[data-weight="bold"] body .font-medium { font-weight: 700 !important; }
+html[data-weight="bold"] body .font-semibold,
+html[data-weight="bold"] body .font-bold { font-weight: 800 !important; }
+html[data-weight="heavy"] body { font-weight: 700; }
+html[data-weight="heavy"] body .font-normal { font-weight: 700 !important; }
+html[data-weight="heavy"] body .font-medium { font-weight: 800 !important; }
+html[data-weight="heavy"] body .font-semibold,
+html[data-weight="heavy"] body .font-bold { font-weight: 900 !important; }

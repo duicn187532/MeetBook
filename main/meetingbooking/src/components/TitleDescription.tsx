@@ -4,8 +4,8 @@ import DisplaySettings from "./DisplaySettings";
 const TitleDescription = () => (
   <div className="relative font-live mt-4 px-[15px] py-1 pr-12 bg-white">
     <DisplaySettings />
-    <h1 className="text-[1.25rem] leading-tight font-bold text-[#212529]">數金部會議室 (11F)</h1>
-    <p className="text-[0.6875rem] text-[#495057] mt-1.5 mb-1">
+    <h1 className="text-[length:calc(1.25rem*var(--text-scale,1))] leading-tight font-bold text-[#212529]">數金部會議室 (11F)</h1>
+    <p className="text-[length:calc(0.6875rem*var(--text-scale,1))] text-[#495057] mt-1.5 mb-1">
       在這裡，您可以選擇合適的會議室，預訂<span className="text-[#FF3F3F]">並邀請夥伴參加會議</span>。
     </p>
   </div>

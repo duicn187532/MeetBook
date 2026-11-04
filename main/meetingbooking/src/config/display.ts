@@ -1,28 +1,40 @@
-// 顯示設定：字體大小（五級，中間為原本大小）與字體風格（三種），記在這台裝置的瀏覽器
-// 字體大小以 <html> 的 font-size 調整：網站的文字與間距多以 rem 為單位，會一起等比例放大或縮小
-// 明體、楷體的字型打包在網站中（公司網路不一定能連外部字型服務），選用時才載入，且只下載畫面上用到的字
+// 顯示設定：字體大小（標準 100%、大 125%、特大 150%）、字體風格（五種）與字體粗細（三種），記在這台裝置的瀏覽器
+// 字體大小以 CSS 變數 --text-scale 調整：只放大文字，間距與版面不變（見 tailwind.config.js）
+// 黑體、圓體、明體、楷體的字型打包在網站中（公司網路不一定能連外部字型服務），選用時才載入，且只下載畫面上用到的字
 import { loadPref, savePref } from "../utils/storage";
 
 export const FONT_SIZES = [
-  { key: "1", px: 14 },
-  { key: "2", px: 15 },
-  { key: "3", px: 16 }, // 原本的大小
-  { key: "4", px: 17 },
-  { key: "5", px: 18 },
+  { key: "100", label: "標準", scale: 1 }, // 原本的大小
+  { key: "125", label: "大", scale: 1.25 },
+  { key: "150", label: "特大", scale: 1.5 },
 ] as const;
 export type FontSizeKey = (typeof FONT_SIZES)[number]["key"];
-export const DEFAULT_FONT_SIZE: FontSizeKey = "3";
+export const DEFAULT_FONT_SIZE: FontSizeKey = "100";
 
 export const FONT_STYLES = [
   { key: "default", label: "預設" },
+  { key: "sans", label: "黑體" },
+  { key: "round", label: "圓體" },
   { key: "serif", label: "明體" },
   { key: "kai", label: "楷體" },
 ] as const;
 export type FontStyleKey = (typeof FONT_STYLES)[number]["key"];
 export const DEFAULT_FONT_STYLE: FontStyleKey = "default";
 
+// 字體粗細：整體加粗，原本較粗的標題仍比內文粗（對應關係見 globals.css）
+export const FONT_WEIGHTS = [
+  { key: "normal", label: "標準" },
+  { key: "bold", label: "粗" },
+  { key: "heavy", label: "特粗" },
+] as const;
+export type FontWeightKey = (typeof FONT_WEIGHTS)[number]["key"];
+export const DEFAULT_FONT_WEIGHT: FontWeightKey = "normal";
+
 // 各風格的字型檔（只在選用時載入一次）
 const fontLoaders: Partial<Record<FontStyleKey, () => Promise<unknown>>> = {
+  // 黑體另載入粗體，標題與「粗」「特粗」較自然（其他字型只有一般粗細，由瀏覽器加粗）
+  sans: () => Promise.all([import("@fontsource/noto-sans-tc/400.css"), import("@fontsource/noto-sans-tc/700.css")]),
+  round: () => import("@fontsource/huninn/400.css"),
   serif: () => import("@fontsource/noto-serif-tc/400.css"),
   kai: () => import("@fontsource/lxgw-wenkai-tc/400.css"),
 };
@@ -40,20 +52,26 @@ export function preloadFontStyles() {
 export interface DisplaySettings {
   fontSize: FontSizeKey;
   fontStyle: FontStyleKey;
+  fontWeight: FontWeightKey;
 }
 
 export function loadDisplaySettings(): DisplaySettings {
   return {
-    fontSize: loadPref("fontSize", FONT_SIZES.map((s) => s.key)) ?? DEFAULT_FONT_SIZE,
+    // 先前五級的設定（fontSize）不沿用，改用新的 textSize
+    fontSize: loadPref("textSize", FONT_SIZES.map((s) => s.key)) ?? DEFAULT_FONT_SIZE,
     fontStyle: loadPref("fontStyle", FONT_STYLES.map((s) => s.key)) ?? DEFAULT_FONT_STYLE,
+    fontWeight: loadPref("fontWeight", FONT_WEIGHTS.map((s) => s.key)) ?? DEFAULT_FONT_WEIGHT,
   };
 }
 
 /** 套用到頁面（不儲存）；預設值時移除設定，與原本完全相同 */
-export function applyDisplaySettings({ fontSize, fontStyle }: DisplaySettings) {
+export function applyDisplaySettings({ fontSize, fontStyle, fontWeight }: DisplaySettings) {
   const root = document.documentElement;
-  const px = FONT_SIZES.find((s) => s.key === fontSize)?.px ?? 16;
-  root.style.fontSize = fontSize === DEFAULT_FONT_SIZE ? "" : `${px}px`;
+  if (fontWeight === DEFAULT_FONT_WEIGHT) delete root.dataset.weight;
+  else root.dataset.weight = fontWeight;
+  const scale = FONT_SIZES.find((s) => s.key === fontSize)?.scale ?? 1;
+  if (scale === 1) root.style.removeProperty("--text-scale");
+  else root.style.setProperty("--text-scale", String(scale));
   if (fontStyle === DEFAULT_FONT_STYLE) {
     delete root.dataset.font;
   } else {
@@ -66,7 +84,8 @@ export function applyDisplaySettings({ fontSize, fontStyle }: DisplaySettings) {
 }
 
 export function saveDisplaySettings(settings: DisplaySettings) {
-  savePref("fontSize", settings.fontSize);
+  savePref("textSize", settings.fontSize);
   savePref("fontStyle", settings.fontStyle);
+  savePref("fontWeight", settings.fontWeight);
   applyDisplaySettings(settings);
 }
