@@ -11,7 +11,7 @@ import { adminGuard, adminRouter } from "./admin.ts";
 import { getNotices } from "./notices.ts";
 import { mcpHandler } from "./mcp.ts";
 import { aiDay, aiGuide, robotsTxt } from "./ai.ts";
-import { bookDone, calendarFile, bookPage, bookSubmit } from "./book_page.ts";
+import { bookDone, calendarFile, calendarGoogle, bookPage, bookSubmit } from "./book_page.ts";
 
 // strict: false：/api/bookings 與 /api/bookings/ 視為相同（前端送出的網址結尾有 /）
 const app = new Hono<{ Bindings: Env }>({ strict: false });
@@ -84,6 +84,7 @@ app.get("/b", bookPage);
 app.post("/b", bookSubmit);
 app.get("/b/ok", bookDone);
 app.get("/cal/:file", calendarFile);
+app.get("/cal/:id/google", calendarGoogle);
 
 // LINE 官方帳號 webhook（在 LINE Developers 設定為 https://<網域>/line/webhook）
 app.post("/line/webhook", lineWebhook);

@@ -320,13 +320,14 @@ export function formatBookingSuccess(
     `🕒 時間：${start.date} ${start.hhmm} - ${taipeiParts(request.endTime.getTime()).hhmm}`,
     `👤 預約人：${userName}`,
     `🔑 編輯密碼：${editPassword}（在網頁修改或取消時使用）`,
-    ...(bookingId ? ["", `📅 加入行事曆：`, calendarFileUrl(bookingId)] : []),
+    ...(bookingId ? ["", `📅 加入行事曆：`, calendarPageUrl(bookingId)] : []),
   ].join("\n");
 }
 
-// 這筆預約的 .ics 行事曆檔；openExternalBrowser=1 讓 LINE 用手機預設瀏覽器開啟（iPhone 才會顯示「加入行事曆」）
-export const calendarFileUrl = (bookingId: string) =>
-  `${site().publicBase}/cal/${encodeURIComponent(bookingId)}.ics?openExternalBrowser=1`;
+// 預約結果頁（有「加入行事曆」「Google」「分享 ics」）；openExternalBrowser=1 讓 LINE 用手機預設瀏覽器開啟
+// （直接連到 .ics 時，iPhone 會當成「訂閱行事曆」）
+export const calendarPageUrl = (bookingId: string) =>
+  `${site().publicBase}/b/ok?id=${encodeURIComponent(bookingId)}&openExternalBrowser=1`;
 
 export function formatBookingConflicts(
   conflicts: { room: string; conflicts: { title: string; startTime: Date | string; endTime: Date | string }[] }[],
