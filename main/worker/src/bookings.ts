@@ -26,7 +26,11 @@ interface HandlerResult {
   body: Record<string, unknown>;
 }
 
-export const MASTER_PASSWORD = "87878787";
+// 萬用編輯密碼（MASTER_PASSWORD secret）：可修改或取消任何預約；未設定或少於 8 個字元時不啟用
+export function masterPasswordMatches(env: { MASTER_PASSWORD?: string }, password: string | undefined): boolean {
+  const master = env.MASTER_PASSWORD ?? "";
+  return master.length >= 8 && password === master;
+}
 
 // 寫入時遇到其他請求同時修改（整批回復）後重新讀取再試的次數；對應 MongoDB withTransaction 的自動重試
 const MAX_ATTEMPTS = 8;
@@ -308,7 +312,7 @@ export async function updateBooking(c: Ctx) {
     const booking = await findActiveBooking(c.env.DB, id);
     if (!booking) return respond(c, { status: 404, body: { error: "找不到該筆資料" } });
 
-    if (booking.editPassword && editPassword !== MASTER_PASSWORD && booking.editPassword !== editPassword) {
+    if (booking.editPassword && !masterPasswordMatches(c.env, editPassword) && booking.editPassword !== editPassword) {
       logEvent("warning", "更新預訂失敗，編輯密碼錯誤", {
         module: "BookingController",
         function: "updateBooking",

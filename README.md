@@ -2,7 +2,7 @@
 
 會議室預約系統：前端 React + Vite（部署在 GitHub Pages），後端 Deno + Oak + MongoDB Atlas（部署在 Deno Deploy）。
 
-> **後端已遷移到 Cloudflare Workers + D1**（`main/worker`）。網站與管理後台使用 `https://meetbook.pages.dev`（Cloudflare Pages 入口，轉給 Worker；公司網路擋 `*.workers.dev`，見 `main/pages-entry`），LINE webhook 使用 `https://meetbook.duicn187532.workers.dev/line/webhook`。
+> **後端已遷移到 Cloudflare Workers + D1**（`main/worker`）。網站與管理後台使用 `<後端網址>`（Cloudflare Pages 入口，轉給 Worker；公司網路擋 `*.workers.dev`，見 `main/pages-entry`），LINE webhook 使用 `<Worker 網址>/line/webhook`。
 > 正式切換的步驟與回復方式見 [`main/worker/README.md` 的「正式切換」](main/worker/README.md#正式切換)。
 > 切換完成並穩定後，會移除下方 Deno 後端的說明與程式。
 
@@ -58,9 +58,9 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
   - 只能預約今天 08:45–18:15 之間；開始時間可比現在早 15 分鐘內（模板帶入的是傳送時間）。
   - 成功時回覆一組隨機 4 位數編輯密碼，供在網頁修改或取消；衝突時列出占用的預約。
 - `ai`（也接受 `AI`、全形 `Ａｉ`、`ai預約`、`ai教學`、`ai設定`）：回覆三則用 AI 預約的設定教學（Worker 版才有）。
-  - 方法一：在 ChatGPT、Claude（免費版也可以）貼上 `https://meetbook.pages.dev/ai`，並說明用 AI 預約的優點（例如同一個對話會記得行編與習慣）。
+  - 方法一：在 ChatGPT、Claude（免費版也可以）貼上 `<後端網址>/ai`，並說明用 AI 預約的優點（例如同一個對話會記得行編與習慣）。
   - 範本：可以長按複製、貼到 AI 對話中填寫的訊息（行編、常用會議室與人數、這次想預約的內容）。
-  - 方法二：把 `https://meetbook.pages.dev/mcp` 加為連接器。
+  - 方法二：把 `<後端網址>/mcp` 加為連接器。
 - 其他訊息：一對一聊天時回覆可用的指令（含 `ai`）；群組中不回覆，避免打擾（Worker 版）。LINE 重送（redelivery）的事件會略過，避免重複預約。
 
 解析與回覆文字在 `line_bot.ts`（有單元測試），webhook 在 `line_webhook.ts`，寫入沿用網頁的 `createBooking`（同一套衝突檢查與交易）。
@@ -69,7 +69,7 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 
 1. LINE Developers → 該官方帳號的 Messaging API channel：取得 Channel secret（Basic settings）與 Channel access token（Messaging API，long-lived）。
 2. Deno Deploy → Environment Variables 新增 `LINE_CHANNEL_SECRET`、`LINE_CHANNEL_ACCESS_TOKEN`（設為 secret，Production 與 Development 都勾選）。
-3. LINE Developers → Messaging API → Webhook URL 設為 `https://meetbook.duicn187532.workers.dev/line/webhook`（Cloudflare Worker；切換前為 `https://meetingbooking.duicn187532.deno.net/line/webhook`），按 Verify，並開啟 Use webhook。
+3. LINE Developers → Messaging API → Webhook URL 設為 `<Worker 網址>/line/webhook`（Cloudflare Worker；切換前為 `<舊 Deno 網址>/line/webhook`），按 Verify，並開啟 Use webhook。
 4. LINE Official Account Manager → 關閉「自動回應訊息」（否則會多一則預設回覆）；圖文選單的按鈕設為傳送文字 `快速查詢`／`快速預約`／`ai`。
 
 ### 管理後台（/admin）
@@ -86,7 +86,7 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
 
 ### 用 AI 助理查詢與預約（/ai、/b）
 
-同事在 ChatGPT、Claude 等 AI 助理（免費版也可以）開一個新對話，貼上 `https://meetbook.pages.dev/ai`，就能請 AI 查空檔並產生預約連結；點開連結、在確認頁按一下就完成預約。
+同事在 ChatGPT、Claude 等 AI 助理（免費版也可以）開一個新對話，貼上 `<後端網址>/ai`，就能請 AI 查空檔並產生預約連結；點開連結、在確認頁按一下就完成預約。
 
 - `GET /ai`（`main/worker/src/ai.ts`）：給 AI 讀的純文字說明，內容包括：
   - 現在時間、會議室、預約規則
@@ -95,26 +95,26 @@ Log 以 JSON 輸出到 stdout/stderr，部署後可在 Deno Deploy 的 Logs 頁�
   - 如何產生預約連結
 - `GET /ai/day/YYYY-MM-DD`：某天各會議室的空檔與預約，資料與網站公開的相同（預約者只顯示姓名，沒有姓名時顯示行編後 4 碼），不含行編與編輯密碼。只能查 31 天前到 180 天後。
 - 免費版 ChatGPT 通常只能開啟使用者貼的網址，或已讀取頁面中出現的網址，所以每天的詳細網址都列在 `/ai` 上，空檔也直接寫在 `/ai`，只讀一頁就夠用。
-- 預約連結：`https://meetbook.pages.dev/b?room=Beta&date=2026-11-05&start=14:00&end=15:00&title=週會&people=6&user=5977`（`main/worker/src/book_page.ts`）。
+- 預約連結：`<後端網址>/b?room=Beta&date=2026-11-05&start=14:00&end=15:00&title=週會&people=6&user=1234`（`main/worker/src/book_page.ts`）。
   - **打開連結不會預約**：連結預覽、資安掃描只會讀取頁面。確認頁只有幾 KB，外觀沿用網站，打開時先檢查時段與預約人。
   - 使用者按「確認預約」才以網站相同的 `createBooking` 預約；成功後轉到 `/b/ok` 結果頁，重新整理不會重複送出。
   - **編輯密碼不放在連結中**（會留在 AI 對話紀錄與瀏覽紀錄），由使用者在確認頁自行填寫；不填則與網站相同，任何人都能修改，結果頁會提醒。
 - 回應標頭為 `Cache-Control: no-store` 與 `X-Robots-Tag: noindex`；`/robots.txt` 只允許 `/ai`。
 
-使用範例：「請閱讀 https://meetbook.pages.dev/ai ，幫我找明天下午 Beta 一小時的空檔，並產生預約連結」。
+使用範例：「請閱讀 <後端網址>/ai ，幫我找明天下午 Beta 一小時的空檔，並產生預約連結」。
 ### AI 助理預約（MCP 伺服器，/mcp）
 
 給有付費版 AI（可新增連接器）的使用者的另一種方式；免費版請用上面的 `/ai`。
 
-讓支援 MCP（Model Context Protocol）的 AI 助理（例如 Claude）用對話查詢與預約會議室。網址：`https://meetbook.pages.dev/mcp`（Cloudflare Worker 版才有，程式在 `main/worker/src/mcp.ts`）。
+讓支援 MCP（Model Context Protocol）的 AI 助理（例如 Claude）用對話查詢與預約會議室。網址：`<後端網址>/mcp`（Cloudflare Worker 版才有，程式在 `main/worker/src/mcp.ts`）。
 
 - **第一階段只能查詢與預約**，不能修改或取消（請到網站，用預約時取得的編輯密碼）。
 - 工具：`list_rooms`（會議室、座位、設備與規則）、`list_bookings`（某天或連續幾天的預約）、`find_free_slots`（空檔）、`create_booking`（預約）。
 - 與網站相同不需登入；預約一樣要提供已登記、未停用的行編（檢查碼可省略），沿用網站的防止重複預約。查詢結果與網站公開的資料相同（預約者只顯示姓名，沒有姓名時顯示行編後 4 碼），不含編輯密碼。
 - 另外檢查：只能預約週一到週五 08:45–18:15、時間以 5 分鐘為單位、不能預約已經過去的時段、180 天內。編輯密碼不自動產生：使用者主動提供才設定，回覆中不重複密碼；沒提供時與網站相同不設密碼，並提醒任何人都能修改。
 - 連線方式：
-  - Claude（網頁版或 App）：設定 → Connectors（連接器）→ 新增自訂連接器，網址填 `https://meetbook.pages.dev/mcp`，不需要驗證；能否新增自訂連接器依 Claude 方案而定。
-  - Claude Code：`claude mcp add --transport http meetbook https://meetbook.pages.dev/mcp`
+  - Claude（網頁版或 App）：設定 → Connectors（連接器）→ 新增自訂連接器，網址填 `<後端網址>/mcp`，不需要驗證；能否新增自訂連接器依 Claude 方案而定。
+  - Claude Code：`claude mcp add --transport http meetbook <後端網址>/mcp`
 - 協定：Streamable HTTP 的無狀態模式（每個 POST 回一個 JSON，不使用 session 與 SSE；GET 回 405）。
 
 ### 測試
@@ -141,7 +141,7 @@ deno task migrate:times --apply   # 實際寫入；寫入前會產生 migration-
 
 ### 部署到 Deno Deploy
 
-App：`duicn187532/meetingbooking`（https://meetingbooking.duicn187532.deno.net）
+App：`<Deno 專案>`（<舊 Deno 網址>）
 
 1. App Settings 已連結 GitHub：Root directory 設為 `main/project`，Entrypoint 為 `server.ts`。push 到正式分支即部署；其他分支會產生 preview。
 2. App Settings → Environment Variables 設定 `ENV=production`、`MONGODB_URI`、`DB_NAME`（`MONGODB_URI` 設為 secret）。**Production 與 Development 兩個 context 都要勾選**：建置時的 warm up 跑在 preview（Development context），缺變數時預覽環境會連不到資料庫。
@@ -150,7 +150,7 @@ App：`duicn187532/meetingbooking`（https://meetingbooking.duicn187532.deno.net
 服務啟動時不等待資料庫，連不上時 API 回 503、log 會記錄 `MongoDB 連線失敗` 與真正原因，資料庫恢復後自動重連。部署後確認：
 
 ```bash
-curl https://meetingbooking.duicn187532.deno.net/healthz   # {"ok":true,"db":"ok"}
+curl <舊 Deno 網址>/healthz   # {"ok":true,"db":"ok"}
 ```
 
 log 中重複出現的 `oak send() does not work under Node.js.` 是 oak 的無害警告，可忽略。
@@ -177,7 +177,7 @@ npm run dev
 **公告與更新日誌**：內容由管理後台（`/admin` →「公告」）維護，存在 D1，開啟網站時以 `GET /api/notices` 讀取（`src/config/notices.ts`）。沒看過、且在公告期間內的項目會跳出一次：先顯示公告，按「知道了」後再顯示更新日誌。
 - **公告**：標題、內容（可換行）、開始日與結束日（台北時間，含當天；新增時預設 7 天）。看過的公告 id 記在 `meetbook.announcementsSeen`。
 - **更新日誌**：一個版本一筆（版號為代號，建立後不能修改），改版日（台北時間）起 7 天內跳出；記錄看過的最新一筆版號（`meetbook.changelogSeen`）。版號為 `主版號.次版號.修訂號`：整體改版加主版號、新功能或一批改善加次版號、只有修正加修訂號。
-- 修改已發佈的內容不會讓看過的人再看一次；讀取失敗時不顯示，不影響預約。視窗底部固定顯示聯絡窗口（#51164 祐晨）。
+- 修改已發佈的內容不會讓看過的人再看一次；讀取失敗時不顯示，不影響預約。視窗底部固定顯示聯絡窗口（由 GitHub Secret `CONTACT_LABEL` 設定）。
 
 ## CI
 

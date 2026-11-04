@@ -2,7 +2,7 @@
 import { env } from "cloudflare:test";
 import { exports } from "cloudflare:workers";
 
-export const ORIGIN = "https://duicn187532.github.io";
+export const ORIGIN = "https://frontend.test";
 
 export async function api(method: string, path: string, body?: unknown, headers: Record<string, string> = {}) {
   const res = await exports.default.fetch(`https://w.test${path}`, {
@@ -32,7 +32,7 @@ export async function seedUser(over: Partial<Record<string, unknown>> = {}) {
   const u = {
     id: "001234",
     name: "測試員",
-    extension: "51164",
+    extension: "52001",
     department_code: "D",
     department_label: "資訊部",
     group_code: "G",

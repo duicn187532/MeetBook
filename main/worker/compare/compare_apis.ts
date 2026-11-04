@@ -1,6 +1,6 @@
 // 同時查詢新舊後端，比對回應是否相同
 //
-//   OLD_API_BASE=https://...deno.net NEW_API_BASE=https://...workers.dev \
+//   OLD_API_BASE=<舊後端網址> NEW_API_BASE=<新後端網址> \
 //   [ADMIN_PASSWORD=... OLD_ADMIN_PASSWORD=...] node compare/compare_apis.ts <報告.md>
 //
 // 只送出不會改變資料的請求：GET 查詢，以及一定會在寫入前被拒絕的請求（缺少欄位、找不到使用者、找不到預約）。
@@ -171,7 +171,8 @@ export async function runComparison(opts: {
 
   // ===== CORS =====
   {
-    const origin = "https://duicn187532.github.io";
+    // 預約網站的來源：由 repo 擁有者推算（GitHub Actions 的環境變數），不寫在程式中
+    const origin = process.env.FRONTEND_ORIGIN || `https://${(process.env.GITHUB_REPOSITORY_OWNER ?? "").toLowerCase()}.github.io`;
     const [o, n] = await both("/api/bookings/?from=bad", { headers: { Origin: origin } });
     const ao = o.headers.get("access-control-allow-origin");
     const an = n.headers.get("access-control-allow-origin");

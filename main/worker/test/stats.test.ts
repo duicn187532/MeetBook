@@ -26,7 +26,7 @@ async function seed(n: number, seedValue: number) {
     const start = base + Math.floor(r() * 50 * 24 * 60) * MIN;
     const duration = pick([30, 60, 90, 120, 510, 0, -30, 26 * 60, 3 * 24 * 60]) * MIN;
     const userKind = pick(["obj", "obj", "obj", "obj", "noid", "raw", "rawspace", "none"]);
-    const uid = pick(["001234", "005977", "000111", "009999"]);
+    const uid = pick(["001234", "004321", "000111", "009999"]);
     stmts.push(
       env.DB.prepare(
         `INSERT INTO bookings (id, title, user_id, user_name, user_extension, user_department_code, user_department_label,

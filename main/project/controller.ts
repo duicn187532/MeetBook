@@ -16,7 +16,7 @@ import {
   validateBookingTimes,
 } from "./booking_rules.ts";
 import { ACTIVE_USER_FILTER } from "./admin_rules.ts";
-import { READ_ONLY } from "./config.ts";
+import { MASTER_PASSWORD, READ_ONLY } from "./config.ts";
 import { READ_ONLY_MESSAGE } from "./read_only.ts";
 import type { BookingDoc, UserDoc, UserInfo } from "./types.ts";
 
@@ -27,7 +27,7 @@ interface HandlerResult {
   body: Record<string, unknown>;
 }
 
-const MASTER_PASSWORD = "87878787";
+const masterMatches = (password: string | undefined) => MASTER_PASSWORD.length >= 8 && password === MASTER_PASSWORD;
 
 function respond(ctx: Ctx, { status, body }: HandlerResult) {
   ctx.response.status = status;
@@ -278,7 +278,7 @@ async function updateBooking(ctx: Ctx) {
       return;
     }
 
-    if (booking.editPassword && editPassword !== MASTER_PASSWORD && booking.editPassword !== editPassword) {
+    if (booking.editPassword && !masterMatches(editPassword) && booking.editPassword !== editPassword) {
       respond(ctx, { status: 403, body: { error: "編輯密碼錯誤，無法更新資料" } });
       logEvent("warning", "更新預訂失敗，編輯密碼錯誤", {
         module: "BookingController",

@@ -1,7 +1,7 @@
 // 預約連結的確認頁（/b）：AI 助理產生連結，使用者點開後在這一頁按「確認預約」才會預約。
 // 只有幾 KB 的單頁 HTML，不用載入整個網站；外觀沿用網站的顏色與按鈕。
 //
-//   GET  /b?room=Beta&date=2026-11-11&start=14:00&end=15:00&title=週會&people=6&user=5977
+//   GET  /b?room=Beta&date=2026-11-11&start=14:00&end=15:00&title=週會&people=6&user=1234
 //        顯示預約內容並先檢查時段與預約人；打開連結本身不會預約（連結預覽、資安掃描只會讀取頁面）
 //   POST /b       按「確認預約」：以網站相同的 createBooking 預約，成功後轉到 /b/ok（重新整理不會重複送出）
 //   GET  /b/ok?id=…   預約結果
@@ -13,10 +13,10 @@ import { logEvent } from "./logger.ts";
 import { createBooking, findUserStrict } from "./bookings.ts";
 import { DAY_END, DAY_START, ROOMS, taipeiParts } from "./line_bot.ts";
 import { WEEKEND_MESSAGE } from "./booking_rules.ts";
+import { site } from "./site.ts";
 
 type Ctx = Context<{ Bindings: Env }>;
 
-export const WEBSITE_URL = "https://duicn187532.github.io/MeetBook/";
 const MINUTE = 60_000;
 const DAY = 86_400_000;
 const STEP_MINUTES = 5;
@@ -176,7 +176,7 @@ function errorPage(c: Ctx, errors: string[]) {
 <h2>這個預約連結有誤</h2>
 <p class="error">${escapeHtml(errors.join("\n"))}</p>
 <p class="hint">請回到 AI 助理重新產生連結，或直接到網站預約。</p>
-<div class="buttons"><a class="btn btn-primary" href="${WEBSITE_URL}">到網站預約</a></div>
+<div class="buttons"><a class="btn btn-primary" href="${escapeHtml(site().website)}">到網站預約</a></div>
 </div>`, 400);
 }
 
@@ -253,7 +253,7 @@ ${userHint}
 </div>
 ${message ? `<p class="error">${escapeHtml(message)}</p>` : ""}
 <div class="buttons">
-<a class="btn btn-cancel" href="${WEBSITE_URL}">取消</a>
+<a class="btn btn-cancel" href="${escapeHtml(site().website)}">取消</a>
 <button class="btn btn-primary" type="submit"${conflicts.length ? " disabled" : ""}>確認預約</button>
 </div>
 </form>`, status);
@@ -359,6 +359,6 @@ export async function bookDone(c: Ctx) {
 ${noPassword
     ? `<p class="warn">沒有設定編輯密碼：任何人都能在網站上修改或取消這筆預約。</p>`
     : `<p class="hint">已設定編輯密碼，之後在網站修改或取消時使用。</p>`}
-<div class="buttons"><a class="btn btn-ok" href="${WEBSITE_URL}">查看預約</a></div>
+<div class="buttons"><a class="btn btn-ok" href="${escapeHtml(site().website)}">查看預約</a></div>
 </div>`);
 }

@@ -7,9 +7,9 @@ import { toPublicBooking, toPublicUser } from "./booking_rules.ts";
 import { createBooking } from "./bookings.ts";
 import { type BookingRow, rowToBooking } from "./db.ts";
 import {
-  AI_GUIDE_CONNECTOR,
-  AI_GUIDE_FREE,
-  AI_TEMPLATE,
+  aiGuideConnector,
+  aiGuideFree,
+  aiTemplate,
   BOOK_COMMAND,
   BOOK_INSTRUCTIONS,
   bookTemplate,
@@ -18,7 +18,7 @@ import {
   formatBookingErrors,
   formatBookingSuccess,
   formatTodayBookings,
-  HELP_REPLY,
+  helpReply,
   isAiCommand,
   isTaipeiWeekend,
   parseBookingFields,
@@ -104,11 +104,11 @@ async function handleText(
     return { action: "template", texts: [BOOK_INSTRUCTIONS, bookTemplate(now)] };
   }
   // 「ai」：兩種用 AI 預約的設定教學；方法一之後接一則可以直接複製貼上的範本
-  if (isAiCommand(command)) return { action: "ai-guide", texts: [AI_GUIDE_FREE, AI_TEMPLATE, AI_GUIDE_CONNECTOR] };
+  if (isAiCommand(command)) return { action: "ai-guide", texts: [aiGuideFree(), aiTemplate(), aiGuideConnector()] };
   const booked = await bookFromForm(db, text, now);
   if (booked) return { action: "book", texts: [booked] };
   // 一對一聊天時說明可以用的指令；群組中的一般聊天不回覆
-  return direct ? { action: "help", texts: [HELP_REPLY] } : { action: "ignore", texts: [] };
+  return direct ? { action: "help", texts: [helpReply()] } : { action: "ignore", texts: [] };
 }
 
 async function handleEvent(env: Env, event: LineEvent): Promise<void> {

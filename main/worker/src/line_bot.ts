@@ -1,5 +1,6 @@
 // LINE 官方帳號「快速查詢」「快速預約」：訊息解析與回覆文字（純函式，方便單元測試）
 import type { PublicBooking } from "./types.ts";
+import { site } from "./site.ts";
 
 const MINUTE = 60_000;
 const TAIPEI_OFFSET = 8 * 60 * MINUTE;
@@ -38,9 +39,9 @@ export const BOOK_INSTRUCTIONS = [
 
 // ===== AI 預約教學（傳送「ai」）=====
 
-export const AI_PAGE_URL = "https://meetbook.pages.dev/ai";
-export const MCP_URL = "https://meetbook.pages.dev/mcp";
-export const WEBSITE_URL = "https://duicn187532.github.io/MeetBook/";
+// 網址由部署時的設定提供（見 site.ts），不寫在程式中
+export const aiPageUrl = () => `${site().publicBase}/ai`;
+export const mcpUrl = () => `${site().publicBase}/mcp`;
 
 /** 「ai」「AI」「Ａｉ」「ai預約」「AI 教學」等都算 */
 export function isAiCommand(text: string): boolean {
@@ -49,7 +50,7 @@ export function isAiCommand(text: string): boolean {
 }
 
 // 手機上一行約 18 個字：每行只講一件事、分段加標題，方便快速掃過並照著做
-export const AI_GUIDE_FREE = [
+export const aiGuideFree = () => [
   "🤖 用 AI 預約｜方法一",
   "ChatGPT、Claude 免費版就能用",
   "",
@@ -72,9 +73,9 @@ export const AI_GUIDE_FREE = [
 ].join("\n");
 
 // 方法一的範本：使用者長按複製整則訊息，貼到 AI 對話中填寫（網址自成一行，AI 比較好辨識）
-export const AI_TEMPLATE = [
+export const aiTemplate = () => [
   "請讀這個網址：",
-  AI_PAGE_URL,
+  aiPageUrl(),
   "當我的會議室預約助理。",
   "之後預約都沿用下面的資料，",
   "每次都重新讀網址確認空檔。",
@@ -87,7 +88,7 @@ export const AI_TEMPLATE = [
   "（例：明天兩點 Beta 一小時 週會）",
 ].join("\n");
 
-export const AI_GUIDE_CONNECTOR = [
+export const aiGuideConnector = () => [
   "🔌 用 AI 預約｜方法二",
   "適合：能加「連接器」的 Claude",
   "",
@@ -95,12 +96,12 @@ export const AI_GUIDE_CONNECTOR = [
   "1. Claude → 設定 → 連接器",
   "2. 新增自訂連接器",
   "3. 網址貼上：",
-  MCP_URL,
+  mcpUrl(),
   "4. 不用驗證，按新增",
   "",
   "【之後】",
   "直接說：",
-  "「明天兩點訂 Beta，行編 5977」",
+  "「明天兩點訂 Beta，行編 1234」",
   "",
   "【注意】",
   "・只能查詢、預約",
@@ -109,14 +110,14 @@ export const AI_GUIDE_CONNECTOR = [
 ].join("\n");
 
 // 一對一聊天收到看不懂的訊息時的說明（群組中不回覆，避免打擾）
-export const HELP_REPLY = [
+export const helpReply = () => [
   "👋 傳送以下文字：",
   `・${QUERY_COMMAND}｜看今天的預約`,
   `・${BOOK_COMMAND}｜預約今天`,
   "・ai｜用 AI 預約的教學",
   "",
   "網站：",
-  WEBSITE_URL,
+  site().website,
 ].join("\n");
 
 // ===== 時間 =====

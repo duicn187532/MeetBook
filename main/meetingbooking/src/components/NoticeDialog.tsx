@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { CONTACT } from "../config/contact";
 
 interface NoticeDialogProps {
   icon: LucideIcon;
@@ -31,7 +32,7 @@ const NoticeDialog = ({ icon: Icon, title, onClose, children }: NoticeDialogProp
 
       {/* 尾：聯絡窗口 */}
       <p className="mt-3 text-center text-xs text-gray-500">
-        有問題或建議，請聯繫負責人 <span className="font-semibold text-gray-700">#51164 祐晨</span>
+        有問題或建議，請聯繫 <span className="font-semibold text-gray-700">{CONTACT}</span>
       </p>
 
       <button onClick={onClose} className="mt-2 bg-[#F08B42] text-white rounded-xl w-full py-2 text-sm">

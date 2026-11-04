@@ -38,8 +38,8 @@ describe("normalizeBooking", () => {
   });
 
   it("user 是字串時存在 user_raw，其他 user 欄位為 NULL", () => {
-    const r = normalizeBooking(modernBooking({ user: "王小明 51164" }));
-    expect(r.ok && r.row.user_raw).toBe("王小明 51164");
+    const r = normalizeBooking(modernBooking({ user: "王小明 52001" }));
+    expect(r.ok && r.row.user_raw).toBe("王小明 52001");
     expect(r.ok && r.row.user_id).toBe(null);
     expect(r.flags).toContain("userString");
   });
@@ -100,8 +100,8 @@ describe("normalizeUser", () => {
   });
 
   it("name 是 null 時保持 NULL；行編、分機是數字時轉成字串並標記", () => {
-    const r = normalizeUser({ id: 444, name: null, extension: 51164 }, 3);
-    expect(r.ok && r.row).toMatchObject({ seq: 3, id: "444", name: null, extension: "51164" });
+    const r = normalizeUser({ id: 444, name: null, extension: 52001 }, 3);
+    expect(r.ok && r.row).toMatchObject({ seq: 3, id: "444", name: null, extension: "52001" });
     expect(r.flags).toEqual(expect.arrayContaining(["nameNull", "idNumber", "extensionNumber", "idNotSixDigits"]));
   });
 

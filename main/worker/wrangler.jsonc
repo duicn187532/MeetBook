@@ -2,7 +2,8 @@
 // 只使用 Workers 免費方案與 D1，不需要信用卡
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "meetbook",
+  // 實際的 Worker 名稱由部署時的 --name 指定（GitHub Secret CF_WORKER_NAME；repo 為公開，不寫在這裡）
+  "name": "app",
   "main": "src/index.ts",
   // 目前 wrangler 4.156.1 內建 workerd 支援的最新日期
   "compatibility_date": "2026-11-01",

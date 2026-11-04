@@ -38,7 +38,7 @@ beforeAll(async () => {
         pick(TRICKY),
         kind === "obj" ? pick(["001234", "12", "", "000099"]) : null,
         kind === "obj" ? pick([...TRICKY, null]) : null,
-        kind === "obj" ? pick(["", "51164", null]) : null,
+        kind === "obj" ? pick(["", "52001", null]) : null,
         kind === "obj" ? pick(["", "strategy", "technology", "marketing", "other", null]) : null,
         kind === "obj" ? pick(["", "數位策略", "金融科技部", "其他", null]) : null,
         kind === "obj" ? pick(["", "company", "innovation", "x", null]) : null,

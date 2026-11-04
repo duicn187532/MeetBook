@@ -1,6 +1,6 @@
 # MeetBook 後端（Cloudflare Workers + D1）
 
-> 遷移進行中。這個 Worker 部署在 `https://meetbook.duicn187532.workers.dev`。依「[正式切換](#正式切換)」的步驟合併切換 PR 後，前端與 LINE 改用這個 Worker；在那之前正式環境仍是 Deno Deploy + MongoDB Atlas（`main/project`）。
+> 遷移進行中。這個 Worker 部署在 `<Worker 網址>`。依「[正式切換](#正式切換)」的步驟合併切換 PR 後，前端與 LINE 改用這個 Worker；在那之前正式環境仍是 Deno Deploy + MongoDB Atlas（`main/project`）。
 
 | 路徑 | 內容 |
 |---|---|
@@ -11,7 +11,7 @@
 | `compare/` | 新舊後端比對與 CPU 時間報告（GitHub Actions 執行） |
 | `wrangler.jsonc` | Worker 與 D1 設定 |
 
-**網址**：公司網路擋 `*.workers.dev`，所以另有 Cloudflare Pages 入口 `https://meetbook.pages.dev`（見 `main/pages-entry`），請求在 Cloudflare 內部轉給這個 Worker，前端與管理後台用這個網址；LINE webhook 直接使用 `https://meetbook.duicn187532.workers.dev/line/webhook`。
+**網址**：公司網路擋 `*.workers.dev`，所以另有 Cloudflare Pages 入口 `<後端網址>`（見 `main/pages-entry`），請求在 Cloudflare 內部轉給這個 Worker，前端與管理後台用這個網址；LINE webhook 直接使用 `<Worker 網址>/line/webhook`。
 
 相關 workflow：
 
@@ -197,22 +197,32 @@ tar -xzf backup.tar.gz                                      # 得到 atlas/booke
 
 合併到 main 時自動執行。步驟依序是：
 
-1. 型別檢查。
-2. 準備 D1（不存在就建立）並套用 migrations。
-3. 部署 Worker，同時寫入 secrets。
-4. 檢查 `/healthz`。
+1. 檢查部署設定（下表的 GitHub Secrets），缺少時直接失敗。
+2. 型別檢查。
+3. 準備 D1（不存在就建立）並套用 migrations。
+4. 部署 Worker，同時寫入 secrets 與對外網址。
+5. 部署 Cloudflare Pages 入口（見 `main/pages-entry`）。
+6. 檢查 Worker 與 Pages 入口的 `/healthz`。
 
-部署完成後，Summary 會列出 Worker 的網址。
+### 部署設定
 
-Worker 的 secrets 由 GitHub Secrets 寫入，部署時用 `wrangler deploy --secrets-file`；沒有設定的 secret 會保留 Worker 上原本的值。
+repo 為公開，所以 **Worker／Pages 的名稱、對外網址、萬用密碼、聯絡窗口都不寫在檔案中**，放在 GitHub Secrets（Settings → Secrets and variables → Actions → Secrets）。用 Secrets 而不是 Variables，是因為 GitHub 會在 Actions 的 log 中把 Secrets 的值自動顯示為 `***`；log 中的 `*.workers.dev`／`*.pages.dev` 網址也會被遮蔽，Summary 只列健康檢查結果。
 
 | GitHub Secret | 用途 |
 |---|---|
+| `CF_WORKER_NAME` | Cloudflare Worker 的名稱（`wrangler deploy --name`；`wrangler.jsonc` 中的 `app` 只是佔位） |
+| `CF_PAGES_PROJECT` | Cloudflare Pages 入口的專案名稱 |
+| `PUBLIC_BASE_URL` | 同事使用的後端網址（Pages 入口，結尾不要 `/`）。前端的 API 網址、LINE「ai」教學中的網址都由此產生 |
+| `MASTER_PASSWORD` | 萬用編輯密碼（可修改或取消任何預約；至少 8 個字元，未設定時不啟用） |
+| `CONTACT_LABEL` | 網站上顯示的聯絡窗口（例如「分機 12345 王小明」；未設定時顯示「系統負責人」） |
 | `ADMIN_PASSWORD` | 管理後台密碼（至少 8 個字元，少於 8 個字元時 `/admin` 一律 404） |
 | `LINE_CHANNEL_SECRET` | LINE 簽章驗證 |
 | `LINE_CHANNEL_ACCESS_TOKEN` | LINE 回覆訊息 |
+| `OLD_API_BASE`、`NEW_API_BASE` | 只有「新舊 API 比對」workflow 使用 |
 
-還沒設定 `CLOUDFLARE_API_TOKEN`／`CLOUDFLARE_ACCOUNT_ID` 時，workflow 會略過部署，不會失敗。
+- 預約網站的網址與 CORS 允許的來源由 repo 名稱推算（`https://<帳號>.github.io/<repo>/`），不需要設定。
+- Worker 的 secrets 以 `wrangler deploy --secrets-file` 寫入，沒有設定的 secret 會保留 Worker 上原本的值；對外網址以 `--var WEBSITE_URL／PUBLIC_BASE_URL／FRONTEND_ORIGIN` 寫入（程式見 `src/site.ts`、`src/env.ts`）。
+- 還沒設定 `CLOUDFLARE_API_TOKEN`／`CLOUDFLARE_ACCOUNT_ID` 時，workflow 會略過部署，不會失敗。
 
 ## 正式切換
 
@@ -233,15 +243,15 @@ Worker 的 secrets 由 GitHub Secrets 寫入，部署時用 `wrangler deploy --s
    - Summary 的「匯入後驗證」要兩列都是 ✅。
 3. **合併 PR 4b（切換）**：合併後「Deploy frontend」會自動執行，約 2 分鐘。到 Actions 確認它成功（綠色勾勾）。
 4. **防止 D1 被覆蓋**：Settings → Secrets and variables → Actions → **Variables** → New repository variable，`D1_IS_PRODUCTION`，值為 `true`。從此轉檔 workflow 會拒絕再匯入。
-5. **LINE webhook**：LINE Developers → 你的 Channel → **Messaging API** → Webhook URL 改成 `https://meetbook.duicn187532.workers.dev/line/webhook` → **Update** → **Verify**（要出現 Success）。
+5. **LINE webhook**：LINE Developers → 你的 Channel → **Messaging API** → Webhook URL 改成 `<Worker 網址>/line/webhook` → **Update** → **Verify**（要出現 Success）。
 6. **停止喚醒舊系統**：cron-job.org → 把喚醒 Deno 的那個 job 停用（Disable）。Workers 不需要喚醒。
 7. **驗證**（用手機）：
-   - [ ] 打開 <https://duicn187532.github.io/MeetBook/>，重新整理，看得到預約。
+   - [ ] 打開 <<預約網站>>，重新整理，看得到預約。
    - [ ] 新增一筆測試預約，再用編輯密碼取消。
-   - [ ] 打開新的管理後台 <https://meetbook.duicn187532.workers.dev/admin>，「預約紀錄 → 送出時間 → 今天」看得到剛剛那筆測試預約。
+   - [ ] 打開新的管理後台 <<Worker 網址>/admin>，「預約紀錄 → 送出時間 → 今天」看得到剛剛那筆測試預約。
    - [ ] LINE 傳「快速查詢」，有回覆。
 8. **通知同事**：請大家重新整理頁面。如果還看到「已搬到新主機」，等幾分鐘再試，這是 GitHub Pages 的快取。
-   - 管理後台的網址改為 `https://meetbook.duicn187532.workers.dev/admin`。
+   - 管理後台的網址改為 `<Worker 網址>/admin`。
 
 ### 切換後
 
@@ -254,9 +264,9 @@ Worker 的 secrets 由 GitHub Secrets 寫入，部署時用 `wrangler deploy --s
 依照先前的決定（回復策略 A）：切換後在新系統建立的預約不會自動回到舊系統，需要手動補登。
 
 1. **先記下新系統的新預約**：打開新的管理後台 → 預約紀錄 → 送出時間 → 從切換當天到今天 → 截圖。這些是要補登到舊系統的預約。
-2. **前端改回舊後端**：Settings → Secrets and variables → Actions → Variables → 新增（或修改）`VITE_API_URL`，值為 `https://meetingbooking.duicn187532.deno.net/api/bookings/`；然後 Actions →「Deploy frontend」→ Run workflow。
+2. **前端改回舊後端**：Settings → Secrets and variables → Actions → Variables → 新增（或修改）`VITE_API_URL`，值為 `<舊 Deno 網址>/api/bookings/`；然後 Actions →「Deploy frontend」→ Run workflow。
 3. **舊系統恢復寫入**：Deno Deploy → Environment Variables → 刪除 `READ_ONLY`。
-4. **LINE webhook 改回**：`https://meetingbooking.duicn187532.deno.net/line/webhook` → Update → Verify。
+4. **LINE webhook 改回**：`<舊 Deno 網址>/line/webhook` → Update → Verify。
 5. **cron-job.org**：重新啟用喚醒 job。
 6. 依第 1 步的截圖補登預約。
 

@@ -1,5 +1,6 @@
 // api/meetingApi.ts
 import dayjs from "dayjs";
+import { CONTACT } from "../config/contact";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import {
@@ -26,7 +27,7 @@ async function apiFetch(endpoint: string, options?: RequestInit, notify = true):
     if (res.status >= 500) throw new Error(`API server error: ${res.status}`);
     return res;
   } catch (err) {
-    if (notify) alert("伺服器掛了！請通知祐晨 #51164");
+    if (notify) alert(`伺服器掛了！請通知${CONTACT}`);
     throw err;
   }
 }
