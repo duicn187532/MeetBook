@@ -197,31 +197,7 @@ describe("行事曆檔 /cal/:id.ics 與預約結果頁 /b/ok 的「加入行事�
     expect((await api("GET", "/cal/nope.ics")).status).toBe(404);
     expect((await api("GET", `/cal/${"a".repeat(65)}.ics`)).status).toBe(404);
     expect((await api("GET", "/cal/a'b.ics")).status).toBe(404);
-  });
-});
-
-describe("Notes 會議試用頁 /cal/:id/trial（暫時性）", () => {
-  beforeEach(async () => {
-    await resetDb();
-    await seedUser();
-  });
-
-  it("有四個方案按鈕與信箱欄位；信箱不送到伺服器（沒有表單）；找不到回 404", async () => {
-    await env.DB.prepare(
-      "INSERT INTO bookings (id, title, user_id, room, participants_num, start_time, end_time, edit_password, cancelled, is_multi, created_time, updated_count) VALUES ('tr1', '週會', '001234', 'A101', 3, ?, ?, '', 0, '[]', 0, 0)",
-    ).bind(at("2026-11-11", "14:00"), at("2026-11-11", "15:00")).run();
-    const res = await api("GET", "/cal/tr1/trial");
-    expect(res.status).toBe(200);
-    expect(res.headers.get("x-robots-tag")).toBe("noindex");
-    for (const k of ["1", "2", "3", "4"]) expect(res.text).toContain(`data-variant="${k}"`);
-    expect(res.text).toContain('<input id="email" type="email"');
-    expect(res.text).not.toContain("<form");
-    expect(res.text).toContain("METHOD:REQUEST");
-    expect(res.text).toContain("X-LOTUS-APPTTYPE:3");
-    // 頁面中的 script 跳脫正確（\r\n、\s 沒有變成真正的換行或字母）
-    expect(res.text).toContain("UID:([^\\r\\n]+)");
-    expect(res.text).toContain('extra.join("\\r\\n")');
-    expect(res.text).toContain("[^\\s@:;,]+\\.[^\\s@:;,]+$");
-    expect((await api("GET", "/cal/nope/trial")).status).toBe(404);
+    // Notes 會議試用頁已移除
+    expect((await api("GET", `/cal/${row.id}/trial`)).status).toBe(404);
   });
 });
