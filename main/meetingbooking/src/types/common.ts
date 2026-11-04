@@ -97,6 +97,7 @@ export interface BookingResponseBody {
   message?: string;
   error?: string;
   bookedRooms?: string[];
+  ids?: string[]; // 新增成功時各會議室的預約 id
   conflicts?: unknown[];
 }
 
