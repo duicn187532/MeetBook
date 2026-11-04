@@ -10,7 +10,7 @@ import {
   saveDisplaySettings,
 } from "../config/display";
 
-// 右上角的齒輪：打開小視窗調整字體大小（標準、大、特大）、字體風格與字體粗細（各三種），立即套用並記在這台裝置
+// 右上角的齒輪：打開小視窗調整字體大小（標準、大、特大）、字體風格（五種）與字體粗細（三種），立即套用並記在這台裝置
 const DisplaySettings = () => {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<Settings_>(loadDisplaySettings);
@@ -61,7 +61,7 @@ const DisplaySettings = () => {
         <div
           role="dialog"
           aria-label="顯示設定"
-          className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-left"
+          className="absolute right-0 top-full mt-1 w-72 max-w-[calc(100vw-1rem)] bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-left"
         >
           <div className="text-sm font-semibold text-gray-600 mb-2">字體大小</div>
           <div className="flex gap-1.5 mb-3" role="radiogroup" aria-label="字體大小">
@@ -88,9 +88,10 @@ const DisplaySettings = () => {
                 role="radio"
                 aria-checked={settings.fontStyle === s.key}
                 onClick={() => update({ fontStyle: s.key })}
-                className={`${option(settings.fontStyle === s.key)} p-0 shadow-none h-9 text-sm font-style-${s.key}`}
+                className={`${option(settings.fontStyle === s.key)} p-0 shadow-none h-9 font-style-${s.key}`}
               >
-                {s.label}
+                {/* 以固定像素顯示，按鈕不隨字體大小設定改變 */}
+                <span style={{ fontSize: "14px" }} className="leading-none">{s.label}</span>
               </button>
             ))}
           </div>

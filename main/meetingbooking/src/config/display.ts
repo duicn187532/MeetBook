@@ -1,6 +1,6 @@
-// 顯示設定：字體大小（標準 100%、大 125%、特大 150%）、字體風格（三種）與字體粗細（三種），記在這台裝置的瀏覽器
+// 顯示設定：字體大小（標準 100%、大 125%、特大 150%）、字體風格（五種）與字體粗細（三種），記在這台裝置的瀏覽器
 // 字體大小以 CSS 變數 --text-scale 調整：只放大文字，間距與版面不變（見 tailwind.config.js）
-// 明體、楷體的字型打包在網站中（公司網路不一定能連外部字型服務），選用時才載入，且只下載畫面上用到的字
+// 黑體、圓體、明體、楷體的字型打包在網站中（公司網路不一定能連外部字型服務），選用時才載入，且只下載畫面上用到的字
 import { loadPref, savePref } from "../utils/storage";
 
 export const FONT_SIZES = [
@@ -13,6 +13,8 @@ export const DEFAULT_FONT_SIZE: FontSizeKey = "100";
 
 export const FONT_STYLES = [
   { key: "default", label: "預設" },
+  { key: "sans", label: "黑體" },
+  { key: "round", label: "圓體" },
   { key: "serif", label: "明體" },
   { key: "kai", label: "楷體" },
 ] as const;
@@ -30,6 +32,9 @@ export const DEFAULT_FONT_WEIGHT: FontWeightKey = "normal";
 
 // 各風格的字型檔（只在選用時載入一次）
 const fontLoaders: Partial<Record<FontStyleKey, () => Promise<unknown>>> = {
+  // 黑體另載入粗體，標題與「粗」「特粗」較自然（其他字型只有一般粗細，由瀏覽器加粗）
+  sans: () => Promise.all([import("@fontsource/noto-sans-tc/400.css"), import("@fontsource/noto-sans-tc/700.css")]),
+  round: () => import("@fontsource/huninn/400.css"),
   serif: () => import("@fontsource/noto-serif-tc/400.css"),
   kai: () => import("@fontsource/lxgw-wenkai-tc/400.css"),
 };
