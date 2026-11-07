@@ -47,6 +47,9 @@ jobs:
           # 要暫時換後端時，到 Settings → Variables 設定 VITE_API_URL 後手動執行這個 workflow
           VITE_API_URL: ${{ vars.VITE_API_URL || format('{0}/api/bookings/', secrets.PUBLIC_BASE_URL) }}
           VITE_CONTACT: ${{ secrets.CONTACT_LABEL }}
+          # 中繼網址（舊 Deno 網址，轉給同一個 Worker）：公司網路連不上上面的網址時，網站自動改用這個網址
+          # 未設定 BRIDGE_BASE_URL 時不啟用（見 main/project/bridge.ts、main/meetingbooking/src/api/backend.ts）
+          VITE_API_URL_BRIDGE: ${{ secrets.BRIDGE_BASE_URL && format('{0}/api/bookings/', secrets.BRIDGE_BASE_URL) || '' }}
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
