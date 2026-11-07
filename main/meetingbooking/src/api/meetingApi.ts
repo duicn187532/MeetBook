@@ -13,17 +13,17 @@ import {
   Meeting,
 } from "../types/common";
 import type { Notices } from "../config/notices";
+import { backendFetch, backendUrl } from "./backend";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Taipei");
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 // 網路錯誤或 5xx 時提示使用者（notify 為 false 時由呼叫端自行提示）；4xx 交給呼叫端處理
+// endpoint 相對於 <後端>/api/bookings/；公司網路連不上時自動改走中繼網址（見 backend.ts）
 async function apiFetch(endpoint: string, options?: RequestInit, notify = true): Promise<Response> {
   try {
-    const res = await fetch(API_URL + endpoint, options);
+    const res = await backendFetch(endpoint, options);
     if (res.status >= 500) throw new Error(`API server error: ${res.status}`);
     return res;
   } catch (err) {
@@ -56,7 +56,7 @@ export async function fetchEventsApi(range: DateRange): Promise<Meeting[]> {
 // 公告與更新日誌（目前在公告期間內的項目）；與預約 API 同一台後端，網址為 /api/notices
 // 讀取失敗時不打擾使用者，視為沒有公告
 export async function fetchNoticesApi(): Promise<Notices> {
-  const res = await fetch(new URL("../notices", new URL(API_URL, window.location.href)));
+  const res = await backendFetch("../notices");
   if (!res.ok) throw new Error(`API 回應錯誤: ${res.status}`);
   const body = await res.json();
   return {
@@ -65,8 +65,8 @@ export async function fetchNoticesApi(): Promise<Notices> {
   };
 }
 
-// 行事曆相關網址（API_URL 為 <後端>/api/bookings/）
-const backendUrl = (path: string) => new URL(`../../${path}`, new URL(API_URL, window.location.href));
+// 行事曆相關網址（<後端>/cal/...）；使用目前連得上的後端網址
+const calUrl = (path: string) => backendUrl(`../../${path}`);
 
 // openExternalBrowser=1：在 LINE 內建瀏覽器中改用手機預設瀏覽器直接開啟（LINE 內建瀏覽器打不開 .ics，也沒有登入 Google）；其他瀏覽器會忽略
 function withExternal(url: URL): string {
@@ -75,16 +75,14 @@ function withExternal(url: URL): string {
 }
 
 // 這筆預約的 .ics 行事曆檔（<後端>/cal/<id>.ics）
-export const calendarFileUrl = (bookingId: string) => withExternal(backendUrl(`cal/${encodeURIComponent(bookingId)}.ics`));
+export const calendarFileUrl = (bookingId: string) => withExternal(calUrl(`cal/${encodeURIComponent(bookingId)}.ics`));
 
 // 轉到 Google 行事曆新增活動頁（<後端>/cal/<id>/google）
-export const calendarGoogleUrl = (bookingId: string) => withExternal(backendUrl(`cal/${encodeURIComponent(bookingId)}/google`));
+export const calendarGoogleUrl = (bookingId: string) => withExternal(calUrl(`cal/${encodeURIComponent(bookingId)}/google`));
 
 // 取得 Google 行事曆新增活動頁的網址（calendar.google.com）。直接連到這個網址，iPhone 才會開 Google 日曆 App
 export async function fetchGoogleCalendarUrl(bookingId: string): Promise<string> {
-  const url = backendUrl(`cal/${encodeURIComponent(bookingId)}/google`);
-  url.searchParams.set("format", "json");
-  const res = await fetch(url);
+  const res = await backendFetch(`../../cal/${encodeURIComponent(bookingId)}/google?format=json`);
   if (!res.ok) throw new Error(`Google 行事曆網址讀取失敗: ${res.status}`);
   const body = await res.json();
   if (typeof body?.url !== "string" || !body.url.startsWith("https://calendar.google.com/")) throw new Error("Google 行事曆網址格式不正確");
@@ -93,7 +91,7 @@ export async function fetchGoogleCalendarUrl(bookingId: string): Promise<string>
 
 // 讀取 .ics 行事曆檔，給「分享 ics」使用；檔名依開始時間（台北時間）命名，例如 meeting-20261111-1400.ics
 export async function fetchCalendarFile(bookingId: string): Promise<File> {
-  const res = await fetch(backendUrl(`cal/${encodeURIComponent(bookingId)}.ics`));
+  const res = await backendFetch(`../../cal/${encodeURIComponent(bookingId)}.ics`);
   if (!res.ok) throw new Error(`行事曆檔讀取失敗: ${res.status}`);
   const text = await res.text();
   const m = /DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})\d{2}Z/.exec(text);
