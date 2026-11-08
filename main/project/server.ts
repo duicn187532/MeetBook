@@ -7,6 +7,18 @@ import { logEvent } from "./logger.ts";
 import { lineWebhook } from "./line_webhook.ts";
 import { adminGuard, adminRouter } from "./admin.ts";
 import { isBlockedWrite, READ_ONLY_MESSAGE } from "./read_only.ts";
+import { createBridge, parseBridgeTarget } from "./bridge.ts";
+
+// 中繼模式（見 bridge.ts）：設定 BRIDGE_TARGET 後所有請求都轉給 Worker，不再使用 MongoDB 與下面的路由
+const rawBridgeTarget = Deno.env.get("BRIDGE_TARGET");
+const bridgeTarget = parseBridgeTarget(rawBridgeTarget);
+if (rawBridgeTarget && !bridgeTarget) {
+  logEvent("error", "BRIDGE_TARGET 格式不正確（需為 https 網址），中繼模式未啟用");
+}
+if (bridgeTarget) {
+  console.log("Bridge mode: on");
+  await Deno.serve({ port: PORT, hostname: "0.0.0.0" }, createBridge(bridgeTarget)).finished;
+}
 
 const app = new Application();
 const router = new Router();

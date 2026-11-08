@@ -155,6 +155,20 @@ curl <舊 Deno 網址>/healthz   # {"ok":true,"db":"ok"}
 
 log 中重複出現的 `oak send() does not work under Node.js.` 是 oak 的無害警告，可忽略。
 
+### 中繼模式（公司網路連不上新後端時）
+
+公司網路擋 `*.workers.dev` 與 `*.pages.dev`，但連得到舊的 Deno 網址。中繼模式讓舊 Deno 服務不再使用 MongoDB，把所有請求（`/api/*`、`/cal/*`、`/b/*`、`/admin`…）原封不動轉給 Worker，資料只有 Worker（D1）一份（`main/project/bridge.ts`）。網站先用平常的網址，連不上（連線失敗，或查詢等 8 秒沒回應）時自動改用中繼網址，並記住 12 小時（`main/meetingbooking/src/api/backend.ts`）。
+
+1. Deno Deploy → App Settings → Environment Variables 新增 `BRIDGE_TARGET` = `<Worker 網址>`（https 開頭，例如 `https://xxx.workers.dev`），Production 與 Development 都勾選。環境變數在下一次部署才生效（push 到正式分支時自動部署）。
+2. 確認 `<舊 Deno 網址>/healthz` 回 `{"ok":true,"db":"ok"}`（這時是 Worker 回應的）。
+3. GitHub → Settings → Secrets and variables → Actions → Secrets 新增 `BRIDGE_BASE_URL` = `<舊 Deno 網址>`（結尾不要 `/`），再到 Actions 手動執行「部署前端」。
+4. 停用：刪除 Deno 的 `BRIDGE_TARGET`（回到舊系統）或 GitHub 的 `BRIDGE_BASE_URL`（網站不再切換）。
+
+注意：
+- 經過中繼時 Worker 看到的來源 IP 都是 Deno 的 IP，管理後台「登入失敗次數限制」會由走中繼的人共用。
+- LINE 回覆中的連結仍是 `<後端網址>`（pages.dev），在公司網路打不開；網站本身不受影響。
+- Deno Deploy 停止服務後中繼也會失效，屆時需要其他做法。
+
 ## 前端（main/meetingbooking）
 
 ```bash
